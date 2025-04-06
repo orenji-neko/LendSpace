@@ -1,0 +1,63 @@
+﻿@page "/User/Billing"
+@attribute [Authorize]
+
+@inject ApplicationDbContext Context
+@inject AuthProvider AuthProvider
+@inject UserManager<UserModel> UserManager
+
+<div class="min-h-screen bg-gray-50 w-full p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">List of Billings</h1>
+            <p class="text-gray-600">Manage your billing records</p>
+        </header>
+
+        <main class="bg-white rounded-lg shadow overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issued At</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach (var billing in billings!)
+                    {
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@billing.Name</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$@billing.Amount</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@billing.IssuedAt.ToString("MMM dd, yyyy")</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full @StatusColor(billing.IsPaid)">
+                                    @(billing.IsPaid ? "Paid" : "Pending")
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </main>
+    </div>
+</div>
+
+@code {
+
+    private UserModel? currentUser { get; set; }
+    private IEnumerable<BillingModel>? billings { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUser ??= await AuthProvider.GetCurrentUser();
+
+        billings ??= Context.Billing
+        .Where(b => b.UserId == currentUser!.Id)
+        .ToArray();
+    }
+
+    private string StatusColor(bool isPaid)
+    {
+        return isPaid ? "bg-green-400" : "bg-yellow-400";
+    }
+}

@@ -1,0 +1,90 @@
+﻿@page "/User/Facility"
+@rendermode InteractiveServer
+
+@using LendSpace.Models
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Context
+
+<PageTitle>Events</PageTitle>
+
+<div class="min-h-screen w-full bg-gray-100 p-8">
+	<header class="mb-8">
+		<div class="max-w-4xl mx-auto">
+			<h1 class="text-3xl font-bold text-gray-800 mb-2">Facility</h1>
+
+			<div class="relative mt-4">
+				<input type="text"
+					   class="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+					   placeholder="Search events by name or description..."
+					   @bind="searchTerm"
+					   @bind:event="oninput" />
+				<svg class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+				</svg>
+			</div>
+		</div>
+	</header>
+
+	<!-- Facilities Grid -->
+	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+		@foreach (var facility in filteredFacilities!)
+		{
+			<Card ClassName="transition-transform delay-100 hover:scale-110 cursor-pointer">
+				<!-- Facility Card Content -->
+				<div class="relative h-48 overflow-hidden">
+					<img src="image/facility1.png" alt="@facility.Name">
+					<div class="absolute top-2 right-2">
+						<span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Available</span>
+					</div>
+					<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+						<h3 class="text-xl font-semibold text-white">@facility.Name</h3>
+					</div>
+				</div>
+
+				<div class="p-4">
+					<div class="flex items-center text-sm text-gray-500 mb-2">
+						<i class="fas fa-map-marker-alt mr-1.5 text-xs"></i>
+						<span class="truncate">@facility.Address</span>
+					</div>
+					<p class="text-gray-700 text-sm line-clamp-2 mb-3">@facility.Description</p>
+				</div>
+			</Card>
+		}
+	</div>
+</div>
+
+@code {
+	private string searchTerm = string.Empty;
+	private bool showFilterDropdown = false;
+
+	private IEnumerable<FacilityModel>? facilities { get; set; }
+	private IEnumerable<FacilityModel>? filteredFacilities { get; set; }
+	private FacilityModel? selectedFacility { get; set; }
+
+	private List<string> facilityCategories = new() { "Event Spaces", "Sports Facilities", "Meeting Rooms" };
+
+	protected override void OnInitialized()
+	{
+		facilities ??= Context.Facility.ToArray();
+
+		filteredFacilities ??= facilities
+				.Where(f => f.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+					f.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+				.ToList();
+	}
+
+	private void ToggleFilterDropdown()
+	{
+		showFilterDropdown = !showFilterDropdown;
+	}
+
+	private void ShowFacilityModal(FacilityModel facility)
+	{
+		selectedFacility = facility;
+	}
+
+	private void CloseModal()
+	{
+		selectedFacility = null;
+	}
+}

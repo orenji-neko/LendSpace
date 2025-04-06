@@ -1,0 +1,18 @@
+﻿<div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+    <div class="flex items-center">
+        <div class="p-3 rounded-full bg-@(Color)-50 text-@(Color)-600 mr-4">
+            <i class="fas fa-@Icon text-lg"></i>
+        </div>
+        <div>
+            <p class="text-sm text-gray-500">@Title</p>
+            <p class="text-2xl font-bold">@Value</p>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = null!;
+    [Parameter] public string Value { get; set; } = null!;
+    [Parameter] public string Icon { get; set; } = null!;
+    [Parameter] public string Color { get; set; } = "gray";
+}

@@ -1,0 +1,202 @@
+﻿@page "/User"
+@rendermode InteractiveServer
+@using LendSpace.Models
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Context
+
+<PageTitle>Dashboard</PageTitle>
+
+<div class="min-h-screen bg-gray-50 p-6">
+	<!-- Header -->
+	<div class="mb-8">
+		<h1 class="text-3xl font-bold text-gray-900">Welcome Back, <span class="text-blue-600">@User?.FirstName</span></h1>
+		<p class="text-gray-500 mt-2">@DateTime.Now.ToString("dddd, MMMM dd, yyyy")</p>
+	</div>
+
+	<!-- Stats Grid -->
+	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+		<!-- Unpaid Bills Card -->
+		<div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+			<div class="flex items-center justify-between">
+				<div>
+					<p class="text-sm text-gray-500 mb-1">Unpaid Bills</p>
+					<p class="text-2xl font-bold text-red-600">@unpaidBillsCount</p>
+				</div>
+				<div class="p-3 bg-red-100 rounded-lg">
+					<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+				</div>
+			</div>
+		</div>
+
+		<!-- Upcoming Events Card -->
+		<div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+			<div class="flex items-center justify-between">
+				<div>
+					<p class="text-sm text-gray-500 mb-1">Upcoming Events</p>
+					<p class="text-2xl font-bold text-blue-600">@upcomingEventsCount</p>
+				</div>
+				<div class="p-3 bg-blue-100 rounded-lg">
+					<svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+					</svg>
+				</div>
+			</div>
+		</div>
+
+		<!-- Available Facilities Card -->
+		<div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+			<div class="flex items-center justify-between">
+				<div>
+					<p class="text-sm text-gray-500 mb-1">Available Facilities</p>
+					<p class="text-2xl font-bold text-green-600">@availableFacilitiesCount</p>
+				</div>
+				<div class="p-3 bg-green-100 rounded-lg">
+					<svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+					</svg>
+				</div>
+			</div>
+		</div>
+
+		<!-- Recent Announcements Card -->
+		<div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+			<div class="flex items-center justify-between">
+				<div>
+					<p class="text-sm text-gray-500 mb-1">New Announcements</p>
+					<p class="text-2xl font-bold text-purple-600">@recentAnnouncementsCount</p>
+				</div>
+				<div class="p-3 bg-purple-100 rounded-lg">
+					<svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+					</svg>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Main Content -->
+	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+		<!-- Left Column -->
+		<div class="space-y-6">
+			<!-- Bills Chart -->
+			<div class="bg-white p-6 rounded-xl shadow-sm">
+				<h3 class="text-lg font-semibold mb-4">Billing Overview</h3>
+			</div>
+
+			<!-- Recent Announcements -->
+			<div class="bg-white p-6 rounded-xl shadow-sm">
+				<h3 class="text-lg font-semibold mb-4">Recent Announcements</h3>
+				<div class="space-y-4">
+					@foreach (var announcement in recentAnnouncements)
+					{
+						<div class="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+							<div class="flex justify-between items-start">
+								<div>
+									<h4 class="font-medium text-gray-900">@announcement.Heading</h4>
+									<p class="text-sm text-gray-500 mt-1">@announcement.PostedAt.ToString("MMM dd, yyyy")</p>
+								</div>
+								<span class="text-sm text-gray-500 line-clamp-2">@announcement.Body</span>
+							</div>
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+
+		<!-- Right Column -->
+		<div class="space-y-6">
+			<!-- Upcoming Events -->
+			<div class="bg-white p-6 rounded-xl shadow-sm">
+				<h3 class="text-lg font-semibold mb-4">Upcoming Events</h3>
+				<div class="space-y-4">
+					@foreach (var eventItem in upcomingEvents)
+					{
+						<div class="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+							<div class="flex justify-between items-start">
+								<div>
+									<h4 class="font-medium text-gray-900">@eventItem.Name</h4>
+									<p class="text-sm text-gray-500 mt-1">@eventItem.StartedAt.ToString("MMM dd, yyyy")</p>
+								</div>
+								<span class="text-sm text-gray-500 line-clamp-2">@eventItem.Description</span>
+							</div>
+						</div>
+					}
+				</div>
+			</div>
+
+			<!-- Recent Bills -->
+			<div class="bg-white p-6 rounded-xl shadow-sm">
+				<h3 class="text-lg font-semibold mb-4">Recent Bills</h3>
+				<div class="space-y-4">
+					@foreach (var bill in recentBills)
+					{
+						<div class="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+							<div class="flex justify-between items-center">
+								<div>
+									<h4 class="font-medium text-gray-900">@bill.Name</h4>
+									<p class="text-sm text-gray-500">@bill.IssuedAt.ToString("MMM dd, yyyy")</p>
+								</div>
+								<div class="text-right">
+									<p class="font-medium @(bill.IsPaid ? "text-green-600" : "text-red-600")">₱@bill.Amount.ToString("N2")</p>
+									<div class="flex items-center gap-2 mt-1">
+										<div class="w-2 h-2 rounded-full @(bill.IsPaid ? "bg-green-500" : "bg-red-500")"></div>
+										<span class="text-sm">@(bill.IsPaid ? "Paid" : "Unpaid")</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@code {
+	private UserModel? User { get; set; }
+	private int unpaidBillsCount;
+	private int upcomingEventsCount;
+	private int availableFacilitiesCount;
+	private int recentAnnouncementsCount;
+	private List<BillingModel> recentBills = new();
+	private List<EventModel> upcomingEvents = new();
+	private List<AnnouncementModel> recentAnnouncements = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadData();
+	}
+
+	private async Task LoadData()
+	{
+		// Load user data
+		User = await Context.Users
+			.Include(u => u.Billings)
+			.FirstOrDefaultAsync(u => u.UserName == "current_user");
+
+		// Load counts
+		unpaidBillsCount = await Context.Billing.CountAsync(b => !b.IsPaid);
+		upcomingEventsCount = await Context.Events.CountAsync(e => e.StartedAt > DateOnly.FromDateTime(DateTime.Now));
+		availableFacilitiesCount = await Context.Facility.CountAsync(f => f.Available == true);
+		recentAnnouncementsCount = await Context.Announcements.CountAsync(a => a.PostedAt > DateOnly.FromDateTime(DateTime.Now.AddDays(-7)));
+
+		// Load recent data
+		recentBills = await Context.Billing
+			.OrderByDescending(b => b.IssuedAt)
+			.Take(5)
+			.ToListAsync();
+
+		upcomingEvents = await Context.Events
+			.Where(e => e.StartedAt > DateOnly.FromDateTime(DateTime.Now))
+			.OrderBy(e => e.StartedAt)
+			.Take(5)
+			.ToListAsync();
+
+		recentAnnouncements = await Context.Announcements
+			.OrderByDescending(a => a.PostedAt)
+			.Take(5)
+			.ToListAsync();
+	}
+}

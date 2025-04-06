@@ -1,0 +1,39 @@
+﻿@typeparam TItem
+
+<div @onclick="Show" @onmouseleave="Close">
+	@ChildContent
+	@if (IsOpen)
+	{
+		<ul class="fixed bg-white w-fit py-2 shadow">
+			@foreach (var item in Items)
+			{
+				<li @onclick="() => SelectItem(item)" class="hover:bg-gray-100 px-4 py-2">@item.ToString()</li>
+			}
+		</ul>
+	}
+</div>
+
+@code {
+	[Parameter] public RenderFragment? ChildContent { get; set; }
+	[Parameter] public List<TItem> Items { get; set; } = new List<TItem>();
+	[Parameter] public EventCallback<TItem> OnSelectedItemChanged { get; set; }
+
+	private bool IsOpen { get; set; }
+	private TItem? CurrentSelection { get; set; }
+
+	private void Show()
+	{
+		IsOpen = true;
+	}
+
+	private void Close()
+	{
+		IsOpen = false;
+	}
+
+	private void SelectItem(TItem item)
+	{
+		CurrentSelection = item;
+		IsOpen = false;
+	}
+}
