@@ -1,5 +1,7 @@
 ﻿@rendermode InteractiveServer
-@inject AuthProvider AuthProvider
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ApplicationDbContext Context
+@inject UserManager<UserModel> UserManager
 
 <nav class="bg-white shadow-md py-4 sticky top-0 z-10">
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -61,6 +63,15 @@
 						</button>
 					</Dropdown>
 				}
+				else
+				{
+					<NavLink href="/" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+						<span class="oi oi-plus mr-1"></span> Home
+					</NavLink>
+					<NavLink href="/Login" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+						<span class="oi oi-plus mr-1"></span> Login
+					</NavLink>
+				}
 			</div>
 		</div>
 
@@ -88,6 +99,15 @@
 						<span class="oi oi-plus mr-1"></span> Billing
 					</NavLink>
 				}
+				else
+				{
+					<NavLink href="/" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+						<span class="oi oi-plus mr-1"></span> Home
+					</NavLink>
+					<NavLink href="/Login" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+						<span class="oi oi-plus mr-1"></span> Login
+					</NavLink>
+				}
 			</div>
 		</div>
 	</div>
@@ -99,7 +119,17 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		currentUser ??= await AuthProvider.GetCurrentUser();
+		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+		var userPrincipal = authState.User;
+
+		if(userPrincipal.Identity != null && userPrincipal.Identity.IsAuthenticated)
+		{
+			currentUser = await UserManager.GetUserAsync(userPrincipal);
+		}
+		else
+		{
+			currentUser = null;
+		}
 	}
 
 	private void ToggleNavMenu()

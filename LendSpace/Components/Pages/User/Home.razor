@@ -1,5 +1,7 @@
 ﻿@page "/User"
 @rendermode InteractiveServer
+@attribute [Authorize]
+
 @using LendSpace.Models
 @using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext Context

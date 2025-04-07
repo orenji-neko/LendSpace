@@ -2,7 +2,7 @@
 @attribute [Authorize]
 
 @inject ApplicationDbContext Context
-@inject AuthProvider AuthProvider
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<UserModel> UserManager
 
 <div class="min-h-screen bg-gray-50 w-full p-8">
@@ -49,7 +49,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        currentUser ??= await AuthProvider.GetCurrentUser();
+        var userPrincipal = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        currentUser ??= await UserManager.GetUserAsync(userPrincipal.User);
 
         billings ??= Context.Billing
         .Where(b => b.UserId == currentUser!.Id)

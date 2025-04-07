@@ -1,7 +1,6 @@
 using LendSpace.Components;
 using LendSpace.Data;
 using LendSpace.Models;
-using LendSpace.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -24,12 +23,16 @@ builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddRoles<IdentityRole>();
 
-builder.Services.AddScoped<AuthProvider>();
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("AdminPolicy", policy =>
+    {
+        policy.RequireClaim("role", "Admin");
+    });
 
-// Configuration
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Login";
+    options.AccessDeniedPath = "/AccessDenied";
 });
 
 var app = builder.Build();
@@ -42,12 +45,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseHttpsRedirection();
 app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.Run();

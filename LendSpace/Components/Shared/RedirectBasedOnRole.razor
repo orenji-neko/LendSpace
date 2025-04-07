@@ -1,0 +1,27 @@
+﻿@using System.Security.Claims
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the current authentication state
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        // Check for roles and redirect accordingly
+        if (user.IsInRole("Admin"))
+        {
+            NavigationManager.NavigateTo("/Admin", forceLoad: true);
+        }
+        else if (user.IsInRole("User"))
+        {
+            NavigationManager.NavigateTo("/User", forceLoad: true);
+        }
+        else
+        {
+            // Fallback redirection if needed
+            NavigationManager.NavigateTo("/Login", forceLoad: true);
+        }
+    }
+}

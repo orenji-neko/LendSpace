@@ -2,6 +2,7 @@
 @code {
     protected override void OnInitialized()
     {
+        Console.WriteLine("Login");
         Navigation.NavigateTo($"Login?redirectUri={Uri.EscapeDataString(Navigation.Uri)}", true);
     }
 }
