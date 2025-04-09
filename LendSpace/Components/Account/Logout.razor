@@ -1,0 +1,16 @@
+﻿@page "/Logout"
+@attribute [Authorize]
+
+@inject SignInManager<UserModel> SignInManager;
+@inject NavigationManager NavigationManager;
+
+@code {
+
+	protected override async Task OnInitializedAsync()
+	{
+		base.OnInitialized();
+		await SignInManager.SignOutAsync();
+		await Task.Yield();
+		NavigationManager.NavigateTo("/Login", true);
+	}
+}

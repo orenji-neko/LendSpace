@@ -11,6 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddControllers();
+
+builder.Services.AddHttpClient();
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlite("Data Source=database.db");
@@ -21,12 +25,18 @@ builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
     options.SignIn.RequireConfirmedAccount = false;
 })
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddRoles<IdentityRole>();
+    .AddRoles<IdentityRole>()
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
 
 builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("AdminPolicy", policy =>
+    .AddPolicy("UserOnly", policy =>
     {
-        policy.RequireClaim("role", "Admin");
+        policy.RequireRole("User");
+    })
+    .AddPolicy("AdminOnly", policy =>
+    {
+        policy.RequireRole("Admin");
     });
 
 builder.Services.ConfigureApplicationCookie(options =>
@@ -38,12 +48,17 @@ builder.Services.ConfigureApplicationCookie(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    // Development Environment
+}
+else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
 
 app.UseAuthentication();
 app.UseAuthorization();

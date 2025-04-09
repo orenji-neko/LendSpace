@@ -1,0 +1,36 @@
+﻿@inherits ComponentBase
+
+<div class="w-fit" @onmouseover="() => OnMouseHover()" @onmouseleave="() => OnMouseLeave()" >
+	@DropdownButton
+	@if (Show)
+	{
+		<div class="w-fit fixed bg-white border-1 border-gray-100 shadow rounded-md">
+			@DropdownItems
+		</div>
+	}
+</div>
+
+@code {
+	[Parameter]
+	public required RenderFragment DropdownButton { get; set; }
+	[Parameter]
+	public RenderFragment? DropdownItems { get; set; }
+
+	private bool Show { get; set; }
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		Show = false;
+	}
+
+	private void OnMouseHover()
+	{
+		Show = true;
+	}
+
+	private void OnMouseLeave()
+	{
+		Show = false;
+	}
+}

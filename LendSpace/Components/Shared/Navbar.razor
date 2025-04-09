@@ -2,6 +2,9 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ApplicationDbContext Context
 @inject UserManager<UserModel> UserManager
+@inject SignInManager<UserModel> SignInManager
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
 
 <nav class="bg-white shadow-md py-4 sticky top-0 z-10">
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -53,14 +56,26 @@
 					<NavLink href="/User/Billing" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
 						<span class="oi oi-plus mr-1"></span> Billing
 					</NavLink>
-					<Dropdown TItem="string" Items="@(["Profile", "Logout"])" @rendermode="RenderMode.InteractiveServer">
-						<button class="flex items-center space-x-2 focus:outline-none">
-							<img src="/image/user.png" alt="User" class="w-8 h-8 rounded-full border-2 border-gray-300 group-hover:border-emerald-400 transition-colors">
-							<span class="font-medium text-gray-700 hidden md:inline-flex">@(currentUser != null ? currentUser!.FirstName : "User")</span>
-							<svg class="w-4 h-4 text-gray-600 transition-transform duration-200 group-hover:rotate-180" fill="currentColor" viewBox="0 0 20 20">
-								<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-							</svg>
-						</button>
+					<Dropdown>
+						<DropdownButton>
+							<button class="flex items-center space-x-2 focus:outline-none">
+								<img src="/image/user.png" alt="User" class="w-8 h-8 rounded-full border-2 border-gray-300 group-hover:border-emerald-400 transition-colors">
+								<span class="font-medium text-gray-700 hidden md:inline-flex">@(currentUser != null ? currentUser!.FirstName : "User")</span>
+								<svg class="w-4 h-4 text-gray-600 transition-transform duration-200 group-hover:rotate-180" fill="currentColor" viewBox="0 0 20 20">
+									<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+								</svg>
+							</button>
+						</DropdownButton>
+						<DropdownItems>
+							<div class="flex flex-col w-[100px]">
+								<NavLink href="/User/Profile" class="text-center hover:bg-gray-200 px-3 py-2 text-sm font-medium">
+									Profile	
+								</NavLink>
+								<button @onclick="Logout" class="text-center hover:bg-gray-200 px-3 py-2 text-sm font-medium">
+									Logout
+								</button>
+							</div>
+						</DropdownItems>
 					</Dropdown>
 				}
 				else
@@ -137,8 +152,10 @@
 		collapseNavMenu = !collapseNavMenu;
 	}
 
-	private void HandleClick()
+	private async Task Logout()
 	{
-		Console.WriteLine("Test123");
+		currentUser = null;
+		NavigationManager.NavigateTo("/Logout");
+		StateHasChanged();
 	}
-}
+}	

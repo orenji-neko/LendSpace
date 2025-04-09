@@ -5,6 +5,8 @@ VisualStudioVersion = 17.13.35828.75
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LendSpace", "LendSpace\LendSpace.csproj", "{29BE3D03-FD61-419B-9DF2-7811A9F6E5EF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LendSpace.Client", "LendSpace.Client\LendSpace.Client.csproj", "{DF802ABC-D9ED-62EF-1BEA-792ACC0A084A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{29BE3D03-FD61-419B-9DF2-7811A9F6E5EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29BE3D03-FD61-419B-9DF2-7811A9F6E5EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29BE3D03-FD61-419B-9DF2-7811A9F6E5EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF802ABC-D9ED-62EF-1BEA-792ACC0A084A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF802ABC-D9ED-62EF-1BEA-792ACC0A084A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF802ABC-D9ED-62EF-1BEA-792ACC0A084A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF802ABC-D9ED-62EF-1BEA-792ACC0A084A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,10 +1,13 @@
 ﻿@page "/User"
 @rendermode InteractiveServer
-@attribute [Authorize]
+@attribute [Authorize(Policy = "UserOnly")]
 
 @using LendSpace.Models
 @using Microsoft.EntityFrameworkCore
+
 @inject ApplicationDbContext Context
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<UserModel> UserManager
 
 <PageTitle>Dashboard</PageTitle>
 
@@ -174,9 +177,8 @@
 	private async Task LoadData()
 	{
 		// Load user data
-		User = await Context.Users
-			.Include(u => u.Billings)
-			.FirstOrDefaultAsync(u => u.UserName == "current_user");
+		var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+		User = await UserManager.GetUserAsync(principal);
 
 		// Load counts
 		unpaidBillsCount = await Context.Billing.CountAsync(b => !b.IsPaid);
