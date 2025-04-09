@@ -136,8 +136,8 @@ namespace LendSpace.Data
                 },
                 ]);
 
-            // Billing Seeding for user@email.com
-            builder.Entity<BillingModel>().HasData([
+            builder.Entity<BillingModel>().HasData(new BillingModel[]
+            {
                 new BillingModel
                 {
                     Id = "test-billing-0001",
@@ -155,8 +155,80 @@ namespace LendSpace.Data
                     Amount = 150.00,
                     UserId = "test-user-0001",
                     IssuedAt = new DateOnly(2025, 4, 2)
+                },
+                new BillingModel
+                {
+                    Id = "test-billing-0003",
+                    Name = "Water",
+                    IsPaid = false,
+                    Amount = 50.00,
+                    UserId = "test-user-0001",
+                    IssuedAt = new DateOnly(2025, 4, 2)
+                },
+                new BillingModel
+                {
+                    Id = "test-billing-0004",
+                    Name = "Internet",
+                    IsPaid = false,
+                    Amount = 70.00,
+                    UserId = "test-user-0001",
+                    IssuedAt = new DateOnly(2025, 4, 2)
+                },
+                new BillingModel
+                {
+                    Id = "test-billing-0005",
+                    Name = "Gas",
+                    IsPaid = false,
+                    Amount = 100.00,
+                    UserId = "test-user-0001",
+                    IssuedAt = new DateOnly(2025, 4, 2)
+                },
+                new BillingModel
+                {
+                    Id = "test-billing-0006",
+                    Name = "Cable TV",
+                    IsPaid = false,
+                    Amount = 80.00,
+                    UserId = "test-user-0001",
+                    IssuedAt = new DateOnly(2025, 4, 2)
+                },
+                new BillingModel
+                {
+                    Id = "test-billing-0007",
+                    Name = "Garbage Collection",
+                    IsPaid = false,
+                    Amount = 30.00,
+                    UserId = "test-user-0001",
+                    IssuedAt = new DateOnly(2025, 4, 2)
+                },
+                new BillingModel
+                {
+                    Id = "test-billing-0008",
+                    Name = "Maintenance Fee",
+                    IsPaid = false,
+                    Amount = 125.00,
+                    UserId = "test-user-0001",
+                    IssuedAt = new DateOnly(2025, 4, 2)
+                },
+                new BillingModel
+                {
+                    Id = "test-billing-0009",
+                    Name = "Security Fee",
+                    IsPaid = false,
+                    Amount = 60.00,
+                    UserId = "test-user-0001",
+                    IssuedAt = new DateOnly(2025, 4, 2)
+                },
+                new BillingModel
+                {
+                    Id = "test-billing-0010",
+                    Name = "Property Tax",
+                    IsPaid = false,
+                    Amount = 500.00,
+                    UserId = "test-user-0001",
+                    IssuedAt = new DateOnly(2025, 4, 2)
                 }
-                ]);
+            });
 
             // Event Seeding
             builder.Entity<EventModel>().HasData([

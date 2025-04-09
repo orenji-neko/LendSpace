@@ -23,7 +23,7 @@
 			<div class="flex-1">
 				<Card>
 					<p class="text-sm text-gray-500 mb-1">Unpaid bills</p>
-					<p class="text-2xl font-bold text-red-600">@billings!.Count()</p>
+					<p class="text-2xl font-bold text-red-600">@unpaidCount</p>
 				</Card>
 			</div>
 		</div>
@@ -35,7 +35,7 @@
 		<div class="flex flex-row justify-between">
 			<div class="flex flex-row items-center p-2 gap-x-2">
 				<p>Page Size: </p>
-				<Selection Label="Select" T="int" DefaultValue="10" Options="@pageSizeOptions" OnChangeOption="OnChangePagesize" />
+				<Selection Label="Select" T="int" DefaultValue="pageSize" Options="@pageSizeOptions" OnChangeOption="OnChangePagesize" />
 			</div>
 		</div>
 		<div class="bg-white rounded-lg shadow overflow-x-scroll">
@@ -66,7 +66,7 @@
 			</table>
 		</div>
 		<div class="p-2 flex flex-row justify-center">
-			<Pagination TotalPages="10" />
+			<Pagination TotalPages="totalPages" OnPageChanged="OnChangePageNo" />
 		</div>
 	</div>
 </div>
@@ -75,21 +75,40 @@
 
 	private UserModel? currentUser { get; set; }
 	private IEnumerable<BillingModel>? billings { get; set; }
-	private double balance { get; set; }
 
-	private int[] pageSizeOptions = [10, 20, 50, 100];
+	private double balance { get; set; }
+	private int unpaidCount { get; set; }
+
+	private int[] pageSizeOptions = [ 5, 10, 20, 50, 100];
+	private int totalPages { get; set; }
 	private int pageSize { get; set; }
+	private int currentPage { get; set; }
 
 	protected override async Task OnInitializedAsync()
 	{
 		var userPrincipal = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 		currentUser ??= await UserManager.GetUserAsync(userPrincipal.User);
 
-		billings ??= Context.Billing
-		.Where(b => b.UserId == currentUser!.Id)
-		.ToArray();
+		currentPage = 1;
+		pageSize = 5;
 
-		balance = billings.Aggregate<BillingModel, double>(0, (balance, billing) => balance + billing.Amount);
+		LoadBillings();
+	}
+
+	private void LoadBillings()
+	{
+		// pagination bullshit
+		int totalBillings = Context.Billing.Count();
+		totalPages = (int)Math.Ceiling(totalBillings / (double)pageSize);
+
+		billings = Context.Billing
+			.Where(b => b.UserId == currentUser!.Id)
+			.Skip((currentPage - 1) * pageSize)
+			.Take(pageSize)
+			.ToArray();
+
+		balance = Context.Billing.Sum(b => b.Amount);
+		unpaidCount = Context.Billing.Where(b => b.IsPaid == false).Count();
 	}
 
 	private string StatusColor(bool isPaid)
@@ -99,6 +118,14 @@
 
 	private void OnChangePagesize(int size)
 	{
+		Console.WriteLine(size);
 		pageSize = size;
+		LoadBillings();
+	}
+
+	private void OnChangePageNo(int page)
+	{
+		currentPage = page;
+		LoadBillings();
 	}
 }

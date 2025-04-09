@@ -35,27 +35,13 @@
 </div>
 
 @code {
-    /// <summary>
-    /// Total number of pages.
-    /// </summary>
     [Parameter]
     public required int TotalPages { get; set; } = 1;
-
-    /// <summary>
-    /// The current page (supports two-way binding).
-    /// </summary>
     [Parameter]
-    public int CurrentPage { get; set; } = 1;
+    public EventCallback<int> OnPageChanged { get; set; }
 
-    /// <summary>
-    /// When CurrentPage is updated, notify parent components.
-    /// </summary>
-    [Parameter]
-    public EventCallback<int> CurrentPageChanged { get; set; }
+    private int CurrentPage { get; set; } = 1;
 
-    /// <summary>
-    /// Set the page, ensuring the value is within valid bounds.
-    /// </summary>
     private async Task SetPage(int page)
     {
         if (page < 1)
@@ -70,14 +56,11 @@
         if (CurrentPage != page)
         {
             CurrentPage = page;
-            await CurrentPageChanged.InvokeAsync(page);
+            await OnPageChanged.InvokeAsync(page);
             StateHasChanged();
         }
     }
 
-    /// <summary>
-    /// Navigates to the previous page if available.
-    /// </summary>
     private async Task PrevPage()
     {
         if (CurrentPage > 1)
@@ -86,9 +69,6 @@
         }
     }
 
-    /// <summary>
-    /// Navigates to the next page if available.
-    /// </summary>
     private async Task NextPage()
     {
         if (CurrentPage < TotalPages)
@@ -97,10 +77,6 @@
         }
     }
 
-    /// <summary>
-    /// Computes a sliding window of page numbers to display.
-    /// Always returns only 5 page numbers (or fewer if TotalPages is less than 5).
-    /// </summary>
     private IEnumerable<int> DisplayedPages()
     {
         int maxButtons = 5;

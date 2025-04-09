@@ -47,5 +47,6 @@
 	private void OnClickOption(T option)
 	{
 		selectedOption = option;
+		OnChangeOption.InvokeAsync(option);
 	}
 }
