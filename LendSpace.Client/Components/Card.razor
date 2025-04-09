@@ -1,0 +1,10 @@
+﻿@inherits ComponentBase
+
+<div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+	@ChildContent
+</div>
+
+@code {
+	[Parameter]
+	public RenderFragment? ChildContent { get; set; }
+}

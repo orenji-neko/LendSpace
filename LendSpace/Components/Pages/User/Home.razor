@@ -21,7 +21,7 @@
 	<!-- Stats Grid -->
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 		<!-- Unpaid Bills Card -->
-		<div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+		<Card>
 			<div class="flex items-center justify-between">
 				<div>
 					<p class="text-sm text-gray-500 mb-1">Unpaid Bills</p>
@@ -33,10 +33,10 @@
 					</svg>
 				</div>
 			</div>
-		</div>
+		</Card>
 
 		<!-- Upcoming Events Card -->
-		<div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+		<Card>
 			<div class="flex items-center justify-between">
 				<div>
 					<p class="text-sm text-gray-500 mb-1">Upcoming Events</p>
@@ -48,10 +48,10 @@
 					</svg>
 				</div>
 			</div>
-		</div>
+		</Card>
 
 		<!-- Available Facilities Card -->
-		<div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+		<Card>
 			<div class="flex items-center justify-between">
 				<div>
 					<p class="text-sm text-gray-500 mb-1">Available Facilities</p>
@@ -63,10 +63,10 @@
 					</svg>
 				</div>
 			</div>
-		</div>
+		</Card>
 
 		<!-- Recent Announcements Card -->
-		<div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+		<Card>
 			<div class="flex items-center justify-between">
 				<div>
 					<p class="text-sm text-gray-500 mb-1">New Announcements</p>
@@ -78,7 +78,7 @@
 					</svg>
 				</div>
 			</div>
-		</div>
+		</Card>
 	</div>
 
 	<!-- Main Content -->
@@ -86,12 +86,12 @@
 		<!-- Left Column -->
 		<div class="space-y-6">
 			<!-- Bills Chart -->
-			<div class="bg-white p-6 rounded-xl shadow-sm">
+			<Card>
 				<h3 class="text-lg font-semibold mb-4">Billing Overview</h3>
-			</div>
+			</Card>
 
 			<!-- Recent Announcements -->
-			<div class="bg-white p-6 rounded-xl shadow-sm">
+			<Card>
 				<h3 class="text-lg font-semibold mb-4">Recent Announcements</h3>
 				<div class="space-y-4">
 					@foreach (var announcement in recentAnnouncements)
@@ -107,13 +107,13 @@
 						</div>
 					}
 				</div>
-			</div>
+			</Card>
 		</div>
 
 		<!-- Right Column -->
 		<div class="space-y-6">
 			<!-- Upcoming Events -->
-			<div class="bg-white p-6 rounded-xl shadow-sm">
+			<Card>
 				<h3 class="text-lg font-semibold mb-4">Upcoming Events</h3>
 				<div class="space-y-4">
 					@foreach (var eventItem in upcomingEvents)
@@ -129,10 +129,10 @@
 						</div>
 					}
 				</div>
-			</div>
+			</Card>
 
 			<!-- Recent Bills -->
-			<div class="bg-white p-6 rounded-xl shadow-sm">
+			<Card>
 				<h3 class="text-lg font-semibold mb-4">Recent Bills</h3>
 				<div class="space-y-4">
 					@foreach (var bill in recentBills)
@@ -154,7 +154,7 @@
 						</div>
 					}
 				</div>
-			</div>
+			</Card>
 		</div>
 	</div>
 </div>

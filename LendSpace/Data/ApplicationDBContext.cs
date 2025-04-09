@@ -149,7 +149,7 @@ namespace LendSpace.Data
                     Id = "test-event-0002",
                     Name = "Test Event 1",
                     Description = "Test Event Description",
-                    StartedAt = new DateOnly(2025, 4, 6)
+                    StartedAt = new DateOnly(2025, 4, 15)
                 },
                 ]);
 
