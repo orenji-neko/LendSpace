@@ -1,6 +1,6 @@
 ﻿@page "/User/Announcement"
 @rendermode InteractiveServer
-@attribute [Authorize]
+@attribute [Authorize(Policy = "UserOnly")]
 
 @using LendSpace.Models
 @using Microsoft.EntityFrameworkCore

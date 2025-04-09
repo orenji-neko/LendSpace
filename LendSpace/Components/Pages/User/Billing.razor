@@ -1,5 +1,5 @@
 ﻿@page "/User/Billing"
-@attribute [Authorize]
+@attribute [Authorize(Policy = "UserOnly")]
 
 @inject ApplicationDbContext Context
 @inject AuthenticationStateProvider AuthenticationStateProvider
