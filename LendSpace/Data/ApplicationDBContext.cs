@@ -85,6 +85,29 @@ namespace LendSpace.Data
                     UserId = user.Id,
                 });
 
+            // Creating user
+            // User account
+            var admin = new UserModel
+            {
+                Id = "test-admin-0001",
+                Email = "admin@email.com",
+                NormalizedEmail = "ADMIN@EMAIL.COM",
+                UserName = "admin@email.com",
+                NormalizedUserName = "ADMIN@EMAIL.COM",
+                LastName = "Doe",
+                FirstName = "John",
+                MidInitial = "A",
+                Address = "123 Admin St."
+            };
+            user.PasswordHash = hasher.HashPassword(admin, "password");
+            builder.Entity<UserModel>().HasData(admin);
+            builder.Entity<IdentityUserRole<string>>().HasData(
+                new IdentityUserRole<string>
+                {
+                    RoleId = adminRole.Id,
+                    UserId = admin.Id,
+                });
+
             // Facility seeding
             builder.Entity<FacilityModel>().HasData([
                 new FacilityModel
