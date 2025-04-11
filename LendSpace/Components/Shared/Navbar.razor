@@ -5,157 +5,214 @@
 @inject SignInManager<UserModel> SignInManager
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
+@implements IDisposable
 
-<nav class="bg-white shadow-md py-4 sticky top-0 z-10">
-	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-		<div class="flex items-center justify-between h-16">
-			<!-- Brand/Logo -->
-			<div class="flex-shrink-0">
-				<a href="/" class="text-xl font-semibold">LendSpace</a>
-			</div>
+@if (!IsLoginPage())
+{
+    <nav class="bg-white shadow-md py-4 sticky top-0 z-10">
+        <!-- Header -->
+        <div class="bg-white/95 h-[72px] fixed w-full left-0 top-0 shadow-sm z-10 py-5">
+            <div class="bg-transparent h-[72px] mx-[80px]">
+                <div class="bg-transparent h-10 py-4 flex items-center justify-between">
+                    <!-- Logo -->
+                    <div class="flex items-center">
+                        <div class="flex items-center justify-center w-[18px] h-6 mr-[6px]">
+                            <img class="w-[18px] h-6" src="/image/frame-0.png" />
+                        </div>
+                        <div class="text-gray-800 text-left font-bold font-poppins text-[24px] leading-[24px]">
+                            Lend<span class="text-emerald-500">Space</span>
+                        </div>
+                    </div>
 
-			<!-- Mobile Menu Button -->
-			<div class="flex md:hidden">
-				<!-- Update the mobile menu button to show proper icons -->
-				<button @onclick="ToggleNavMenu" type="button"
-				class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none">
-					<span class="sr-only">Open main menu</span>
-					<!-- Hamburger Icon -->
-					<svg class="h-6 w-6 @(collapseNavMenu ? "block" : "hidden")"
-					xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-					</svg>
-					<!-- Close Icon -->
-					<svg class="h-6 w-6 @(collapseNavMenu ? "hidden" : "block")"
-					xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-					</svg>
-				</button>
-			</div>
+                    <!-- Desktop Menu -->
+                    <div class="hidden md:flex items-center space-x-[57px]">
+                        @if (currentUser != null)
+                        {
+                            <NavLink href="/User" class="text-gray-600 text-left font-normal font-poppins text-[16px] leading-[16px] hover:text-gray-800 w-[102px] h-[23px]">
+                                Home
+                            </NavLink>
+                            <NavLink href="/User/Announcement" class="text-gray-600 text-left font-normal font-poppins text-[16px] leading-[16px] hover:text-gray-800 w-[102px] h-[23px]">
+                                Announcements
+                            </NavLink>
+                            <NavLink href="/User/Forum" class="text-gray-600 text-left font-normal font-poppins text-[16px] leading-[16px] hover:text-gray-800 w-[60px] h-[23px]">
+                                Forums
+                            </NavLink>
+                            <NavLink href="/User/Facility" class="text-gray-600 text-left font-normal font-poppins text-[16px] leading-[16px] hover:text-gray-800 w-[72px] h-[23px]">
+                                Facilities
+                            </NavLink>
+                            <NavLink href="/User/Event" class="text-gray-600 text-left font-normal font-poppins text-[16px] leading-[16px] hover:text-gray-800 w-[66px] h-[23px]">
+                                Events
+                            </NavLink>
 
-			<!-- Desktop Menu -->
-			<div class="hidden md:flex md:items-center md:space-x-4">
-				<!-- If logged in -->
-				@if (currentUser != null)
-				{
-					<NavLink href="/User" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-home mr-1"></span> Home
-					</NavLink>
-					<NavLink href="/User/Announcement" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-home mr-1"></span> Announcements
-					</NavLink>
-					<NavLink href="/User/Forum" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-home mr-1"></span> Forums
-					</NavLink>
-					<NavLink href="/User/Facility" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-plus mr-1"></span> Facilities
-					</NavLink>
-					<NavLink href="/User/Event" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-home mr-1"></span> Events
-					</NavLink>
-					<NavLink href="/User/Billing" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-plus mr-1"></span> Billing
-					</NavLink>
-					<Dropdown>
-						<DropdownButton>
-							<button class="flex items-center space-x-2 focus:outline-none">
-								<img src="/image/user.png" alt="User" class="w-8 h-8 rounded-full border-2 border-gray-300 group-hover:border-emerald-400 transition-colors">
-								<span class="font-medium text-gray-700 hidden md:inline-flex">@(currentUser != null ? currentUser!.FirstName : "User")</span>
-								<svg class="w-4 h-4 text-gray-600 transition-transform duration-200 group-hover:rotate-180" fill="currentColor" viewBox="0 0 20 20">
-									<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-								</svg>
-							</button>
-						</DropdownButton>
-						<DropdownItems>
-							<div class="flex flex-col w-[100px]">
-								<NavLink href="/User/Profile" class="text-center hover:bg-gray-200 px-3 py-2 text-sm font-medium">
-									Profile	
-								</NavLink>
-								<button @onclick="Logout" class="text-center hover:bg-gray-200 px-3 py-2 text-sm font-medium">
-									Logout
-								</button>
-							</div>
-						</DropdownItems>
-					</Dropdown>
-				}
-				else
-				{
-					<NavLink href="/" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-plus mr-1"></span> Home
-					</NavLink>
-					<NavLink href="/Login" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-plus mr-1"></span> Login
-					</NavLink>
-				}
-			</div>
-		</div>
+                            <Dropdown>
+                                <DropdownButton>
+                                    <button class="flex items-center space-x-2 focus:outline-none">
+                                        <img src="/image/user.png" alt="User" class="w-8 h-8 rounded-full border-2 border-gray-300 group-hover:border-emerald-400 transition-colors">
+                                        <span class="font-medium text-gray-700 hidden md:inline-flex font-poppins">@(currentUser != null ? currentUser!.FirstName : "User")</span>
+                                        <svg class="w-4 h-4 text-gray-600 transition-transform duration-200 group-hover:rotate-180" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </button>
+                                </DropdownButton>
+                                <DropdownItems>
+                                    <div class="flex flex-col w-[100px] bg-white shadow-md rounded-md overflow-hidden">
+                                        <NavLink href="/User/Profile" class="text-center hover:bg-gray-200 px-3 py-2 text-sm font-medium font-poppins">
+                                            Profile
+                                        </NavLink>
+                                        <button @onclick="Logout" class="text-center hover:bg-gray-200 px-3 py-2 text-sm font-medium font-poppins">
+                                            Logout
+                                        </button>
+                                    </div>
+                                </DropdownItems>
+                            </Dropdown>
+                        }
+                        else
+                        {
+                            <NavLink href="/" class="text-gray-600 text-left font-normal font-poppins text-[16px] leading-[16px] hover:text-gray-800 w-[102px] h-[23px]">
+                                How it Works
+                            </NavLink>
+                            <NavLink href="/" class="text-gray-600 text-left font-normal font-poppins text-[16px] leading-[16px] hover:text-gray-800 w-[60px] h-[23px]">
+                                Spaces
+                            </NavLink>
+                            <NavLink href="/" class="text-gray-600 text-left font-normal font-poppins text-[16px] leading-[16px] hover:text-gray-800 w-[72px] h-[23px]">
+                                About Us
+                            </NavLink>
+                            <NavLink href="/" class="text-gray-600 text-left font-normal font-poppins text-[16px] leading-[16px] hover:text-gray-800 w-[66px] h-[23px]">
+                                Contact
+                            </NavLink>
 
-		<!-- Mobile Menu -->
-		<div id="mobile-menu" class="md:hidden @(collapseNavMenu ? "hidden" : "block" ) ">
-			<div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-				@if (currentUser != null)
-				{
-					<NavLink href="/User" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-						<span class="oi oi-home mr-1"></span> Home
-					</NavLink>
-					<NavLink href="/User/Announcement" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-						<span class="oi oi-plus mr-1"></span> Announcements
-					</NavLink>
-					<NavLink href="/User/Forum" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-						<span class="oi oi-plus mr-1"></span> Forums
-					</NavLink>
-					<NavLink href="/User/Facility" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-						<span class="oi oi-plus mr-1"></span> Facilities
-					</NavLink>
-					<NavLink href="/User/Event" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-						<span class="oi oi-plus mr-1"></span> Events
-					</NavLink>
-					<NavLink href="/User/Billing" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-						<span class="oi oi-plus mr-1"></span> Billing
-					</NavLink>
-				}
-				else
-				{
-					<NavLink href="/" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-						<span class="oi oi-plus mr-1"></span> Home
-					</NavLink>
-					<NavLink href="/Login" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-						<span class="oi oi-plus mr-1"></span> Login
-					</NavLink>
-				}
-			</div>
-		</div>
-	</div>
-</nav>
+                            <div class="flex items-center space-x-[16px]">
+                                <NavLink href="/Login" @onclick="() => ForceNavigateToLogin()" class="bg-emerald-500 rounded-full w-[109.17px] h-10 flex items-center justify-center text-white text-center font-normal font-poppins text-[16px] hover:bg-emerald-600">
+                                    <span>Login</span>
+                                </NavLink>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Mobile Menu Button -->
+                    <div class="flex md:hidden">
+                        <button @onclick="ToggleNavMenu" type="button"
+                                class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none">
+                            <span class="sr-only">Open main menu</span>
+                            <!-- Hamburger Icon -->
+                            <svg class="h-6 w-6 @(collapseNavMenu ? "block" : "hidden")"
+                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                            <!-- Close Icon -->
+                            <svg class="h-6 w-6 @(collapseNavMenu ? "hidden" : "block")"
+                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden @(collapseNavMenu ? "hidden" : "block" ) bg-white shadow-md pt-[72px] fixed w-full z-10">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                @if (currentUser != null)
+                {
+                    <NavLink href="/User" class="text-gray-600 hover:bg-gray-200 block px-3 py-2 rounded-md text-base font-medium font-poppins">
+                        Home
+                    </NavLink>
+                    <NavLink href="/User/Announcement" class="text-gray-600 hover:bg-gray-200 block px-3 py-2 rounded-md text-base font-medium font-poppins">
+                        Announcements
+                    </NavLink>
+                    <NavLink href="/User/Forum" class="text-gray-600 hover:bg-gray-200 block px-3 py-2 rounded-md text-base font-medium font-poppins">
+                        Forums
+                    </NavLink>
+                    <NavLink href="/User/Facility" class="text-gray-600 hover:bg-gray-200 block px-3 py-2 rounded-md text-base font-medium font-poppins">
+                        Facilities
+                    </NavLink>
+                    <NavLink href="/User/Event" class="text-gray-600 hover:bg-gray-200 block px-3 py-2 rounded-md text-base font-medium font-poppins">
+                        Events
+                    </NavLink>
+                    <NavLink href="/User/Profile" class="text-gray-600 hover:bg-gray-200 block px-3 py-2 rounded-md text-base font-medium font-poppins">
+                        Profile
+                    </NavLink>
+                    <button @onclick="Logout" class="text-gray-600 hover:bg-gray-200 block px-3 py-2 rounded-md text-base font-medium font-poppins w-full text-left">
+                        Logout
+                    </button>
+                }
+                else
+                {
+                    <NavLink href="/" class="text-gray-600 hover:bg-gray-200 block px-3 py-2 rounded-md text-base font-medium font-poppins">
+                        How it Works
+                    </NavLink>
+                    <NavLink href="/" class="text-gray-600 hover:bg-gray-200 block px-3 py-2 rounded-md text-base font-medium font-poppins">
+                        Spaces
+                    </NavLink>
+                    <NavLink href="/" class="text-gray-600 hover:bg-gray-200 block px-3 py-2 rounded-md text-base font-medium font-poppins">
+                        About Us
+                    </NavLink>
+                    <NavLink href="/" class="text-gray-600 hover:bg-gray-200 block px-3 py-2 rounded-md text-base font-medium font-poppins">
+                        Contact
+                    </NavLink>
+                    <NavLink href="/Login" @onclick="() => ForceNavigateToLogin()" class="bg-emerald-500 text-white hover:bg-emerald-600 block px-3 pb-2 rounded-md text-base font-medium font-poppins text-center">
+                        Login
+                    </NavLink>
+                }
+            </div>
+        </div>
+    </nav>
+}
 
 @code {
-	private bool collapseNavMenu = true;
-	private UserModel? currentUser { get; set; }
+    private bool collapseNavMenu = true;
+    private UserModel? currentUser { get; set; }
 
-	protected override async Task OnInitializedAsync()
-	{
-		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-		var userPrincipal = authState.User;
+    protected override async Task OnInitializedAsync()
+    {
+        NavigationManager.LocationChanged += HandleLocationChanged;
 
-		if(userPrincipal.Identity != null && userPrincipal.Identity.IsAuthenticated)
-		{
-			currentUser = await UserManager.GetUserAsync(userPrincipal);
-		}
-		else
-		{
-			currentUser = null;
-		}
-	}
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userPrincipal = authState.User;
 
-	private void ToggleNavMenu()
-	{
-		collapseNavMenu = !collapseNavMenu;
-	}
+        if (userPrincipal.Identity != null && userPrincipal.Identity.IsAuthenticated)
+        {
+            currentUser = await UserManager.GetUserAsync(userPrincipal);
+        }
+        else
+        {
+            currentUser = null;
+        }
+    }
 
-	private async Task Logout()
-	{
-		currentUser = null;
-		NavigationManager.NavigateTo("/Logout");
-		StateHasChanged();
-	}
-}	
+    private bool IsLoginPage()
+    {
+        return NavigationManager.Uri.Contains("/Login", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void ForceNavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/Login", forceLoad: true);
+    }
+
+    private async void HandleLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        if (e.Location.Contains("/Login", StringComparison.OrdinalIgnoreCase))
+        {
+            NavigationManager.NavigateTo(e.Location, forceLoad: true);
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    private async Task Logout()
+    {
+        currentUser = null;
+        NavigationManager.NavigateTo("/Logout", forceLoad: true);
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= HandleLocationChanged;
+    }
+}
