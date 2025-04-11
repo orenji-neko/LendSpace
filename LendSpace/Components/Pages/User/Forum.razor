@@ -1,0 +1,15 @@
+﻿@page "/User/Forum"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = "UserOnly")]
+
+@using LendSpace.Models
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Context
+
+<div class="min-h-screen bg-gray-50 w-full p-8 pt-10">
+	Forum here
+</div>
+
+@code {
+
+}

@@ -5,137 +5,144 @@
 
 <PageTitle>Sign-In</PageTitle>
 
-<div class="h-full bg-gray-100 flex items-center justify-center">
-	<EditForm FormName="Login" Model="Model" OnValidSubmit="HandleValidSubmit" class="bg-white bg-opacity-90 backdrop-blur-sm p-8 rounded-xl shadow-lg w-full max-w-md relative transition-all duration-300 hover:shadow-xl">
-		<DataAnnotationsValidator />
-		<ValidationSummary class="mb-4" />
+<div class="h-screen flex items-center justify-center p-4 bg-gray-100">
+    <div class="bg-white/95 w-full max-w-[420px] sm:max-w-md md:max-w-lg shadow-lg rounded-md h-full" 
+        >
+        
+        <!-- Header Section -->
+        <div class="pt-6 sm:pt-8 px-4 sm:px-6 md:px-8">
+            <!-- Logo -->
+            <div class="flex justify-center">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 overflow-hidden">
+                    <img class="w-full h-full" src="/image/login(1).png" alt="Logo" />
+                </div>
+            </div>
+            <!-- Welcome Text -->
+            <h1 class="text-gray-800 text-center font-bold font-poppins text-xl sm:text-2xl md:text-3xl mt-3 sm:mt-4">
+                Welcome Back
+            </h1>
+            <!-- Subtext -->
+            <p class="text-gray-600 text-center font-normal font-poppins text-sm sm:text-base mt-2">
+                Please sign in to your account
+            </p>
+        </div>
 
-		<!-- Exit Button -->
-		<div class="absolute top-4 right-4">
-			<a href="/" class="text-gray-600 hover:text-red-500 transition-transform duration-200 hover:scale-110">
-				<i class="fas fa-times-circle text-3xl"></i>
-			</a>
-		</div>
+        <EditForm FormName="Login" Model="Model" OnValidSubmit="HandleValidSubmit" 
+                 class="px-4 sm:px-6 md:px-8 mt-6 sm:mt-8">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="mb-4" />
 
-		<!-- Logo -->
-		<div class="flex justify-center mb-8">
-			<img src="image/logo.png" alt="Company Logo" class="h-16 w-auto">
-		</div>
+            @if (!string.IsNullOrEmpty(loginError))
+            {
+                <div class="mb-4 sm:mb-6 p-3 bg-red-100 border-l-4 border-red-500 text-red-700 text-sm sm:text-base">
+                    <p>@loginError</p>
+                </div>
+            }
 
-		<!-- Display custom error message if login fails -->
-		@if (!string.IsNullOrEmpty(loginError))
-		{
-			<div class="mb-6 p-3 bg-red-100 border-l-4 border-red-500 text-red-700">
-				<p>@loginError</p>
-			</div>
-		}
+            <!-- Email Input -->
+            <div class="w-full mb-4 sm:mb-6">
+                <label class="block text-gray-700 text-left font-medium font-poppins text-xs sm:text-sm md:text-base mb-1">
+                    Email Address
+                </label>
+                <div class="relative">
+                    <InputText type="email" @bind-Value="Model!.Email"
+                               class="w-full h-10 sm:h-12 md:h-14 rounded-lg border border-gray-200 pl-10 sm:pl-12 pr-4 
+                                      text-gray-400 font-normal font-poppins text-sm sm:text-base"
+                               placeholder="Enter your email" />
+                    <div class="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4">
+                        <img class="w-full h-full" src="/image/login(2).png" alt="Email icon" />
+                    </div>
+                </div>
+                <ValidationMessage For="@(() => Model.Email)" class="text-red-500 text-xs mt-1 block" />
+            </div>
 
-		<div class="space-y-6">
-			<!-- Email/Username Field -->
-			<div>
-				<label for="email" class="block text-gray-700 font-medium mb-2">Email or username</label>
-				<div class="relative">
-					<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-						<i class="fas fa-user text-gray-400"></i>
-					</div>
-					<InputText id="email" @bind-Value="Model!.Email"
-							   class="w-full pl-10 pr-3 py-2 border-b-2 border-gray-300 focus:border-primary focus:outline-none transition-colors duration-200"
-							   placeholder="Enter your email or username" />
-				</div>
-				<ValidationMessage For="@(() => Model.Email)" class="text-red-500 text-sm mt-1 block" />
-			</div>
+            <!-- Password Input -->
+            <div class="w-full mb-4 sm:mb-6">
+                <label class="block text-gray-700 text-left font-medium font-poppins text-xs sm:text-sm md:text-base mb-1">
+                    Password
+                </label>
+                <div class="relative">
+                    <InputText type="password" @bind-Value="Model!.Password"
+                               class="w-full h-10 sm:h-12 md:h-14 rounded-lg border border-gray-200 pl-10 sm:pl-12 pr-4 
+                                      text-gray-400 font-normal font-poppins text-sm sm:text-base"
+                               placeholder="Enter your password" />
+                    <div class="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-3 h-3 sm:w-3.5 sm:h-4">
+                        <img class="w-full h-full" src="/image/login(3).png" alt="Password icon" />
+                    </div>
+                </div>
+                <ValidationMessage For="@(() => Model.Password)" class="text-red-500 text-xs mt-1 block" />
+            </div>
 
-			<!-- Password Field -->
-			<div>
-				<label for="password" class="block text-gray-700 font-medium mb-2">Password</label>
-				<div class="relative">
-					<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-						<i class="fas fa-lock text-gray-400"></i>
-					</div>
-					<InputText id="password" type="password" @bind-Value="Model!.Password"
-							   class="w-full pl-10 pr-3 py-2 border-b-2 border-gray-300 focus:border-primary focus:outline-none transition-colors duration-200"
-							   placeholder="Enter your password" />
-				</div>
-				<ValidationMessage For="@(() => Model.Password)" class="text-red-500 text-sm mt-1 block" />
-			</div>
+            <!-- Remember Me & Forgot Password -->
+            <div class="w-full mb-4 sm:mb-6 flex justify-between items-center">
+                <div class="flex items-center">
+                    <InputCheckbox @bind-Value="Model.RememberMe" 
+                                 class="w-3 h-3 sm:w-4 sm:h-4 rounded-sm border border-black mr-2" />
+                    <span class="text-gray-600 font-normal font-poppins text-xs sm:text-sm">
+                        Remember me
+                    </span>
+                </div>
+                <a href="#" class="text-emerald-600 font-normal font-poppins text-xs sm:text-sm hover:underline">
+                    Forgot password?
+                </a>
+            </div>
 
-			<!-- Remember Me & Forgot Password -->
-			<div class="flex items-center justify-between">
-				<div class="flex items-center">
-					<InputCheckbox id="rememberMe" @bind-Value="Model.RememberMe"
-								   class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" />
-					<label for="rememberMe" class="ml-2 block text-gray-700">Remember me</label>
-				</div>
-				<a href="#" class="text-sm text-gray-600 hover:text-gray-800 hover:underline transition-colors duration-200">
-					Forgot password?
-				</a>
-			</div>
+            <!-- Sign In Button -->
+            <button type="submit" 
+                    class="w-full h-10 sm:h-12 md:h-14 bg-emerald-600 hover:bg-emerald-700 rounded-lg flex items-center justify-center 
+                           transition-colors duration-200 mb-4 sm:mb-6">
+                <span class="text-white font-normal font-poppins text-sm sm:text-base">
+                    Sign In
+                </span>
+            </button>
+        </EditForm>
 
-			<!-- Action Buttons -->
-			<div class="flex space-x-4 pt-2">
-				<a href="/" class="w-1/2 flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200">
-					Cancel
-				</a>
-				<button type="submit" class="w-1/2 bg-green-500 hover:bg-green-300 text-white px-4 py-2 rounded-lg transition-colors duration-200 hover:shadow-md transform hover:-translate-y-0.5">
-					Login
-				</button>
-			</div>
-
-			<!-- Sign Up Link -->
-			<div class="text-center pt-4">
-				<p class="text-gray-600">
-					Don't have an account?
-					<a href="#" class="text-primary hover:text-primary-dark font-medium hover:underline transition-colors duration-200">
-						Sign up
-					</a>
-				</p>
-			</div>
-		</div>
-	</EditForm>
+        
+    </div>
 </div>
 
 @code {
-	[SupplyParameterFromForm]
-	private LoginModel? Model { get; set; }
+    [SupplyParameterFromForm]
+    private LoginModel? Model { get; set; }
 
-	protected override void OnInitialized()
-	{
-		if (Model == null)
-		{
-			Model = new LoginModel();
-		}
-	}
+    protected override void OnInitialized()
+    {
+        if (Model == null)
+        {
+            Model = new LoginModel();
+        }
+    }
 
-	// Used to display a general login error message (e.g., authentication failure).
-	private string loginError = string.Empty;
+    // Used to display a general login error message (e.g., authentication failure).
+    private string loginError = string.Empty;
 
-	private async Task HandleValidSubmit()
-	{
-		var result = await SignInManager.PasswordSignInAsync(
-			Model.Email, Model.Password, Model.RememberMe, lockoutOnFailure: false
-		);
+    private async Task HandleValidSubmit()
+    {
+        var result = await SignInManager.PasswordSignInAsync(
+          Model.Email, Model.Password, Model.RememberMe, lockoutOnFailure: false
+        );
 
-		if (!result.Succeeded)
-		{
-			loginError = "Invalid login attempt. Please check your credentials.";
-		}
-		else
-		{
-			Navigation.NavigateTo("/User", true);
-		}
-	}
+        if (!result.Succeeded)
+        {
+            loginError = "Invalid login attempt. Please check your credentials.";
+        }
+        else
+        {
+            Navigation.NavigateTo("/User", true);
+        }
+    }
 
-	public class LoginModel
-	{
-		[Required]
-		[EmailAddress]
-		public string? Email { get; set; }
+    public class LoginModel
+    {
+        [Required]
+        [EmailAddress]
+        public string? Email { get; set; }
 
-		[Required]
-		[DataType(DataType.Password)]
-		public string? Password { get; set; }
+        [Required]
+        [DataType(DataType.Password)]
+        public string? Password { get; set; }
 
-		[Display(Name = "Remember Me")]
-		public bool RememberMe { get; set; }
-	}
+        [Display(Name = "Remember Me")]
+        public bool RememberMe { get; set; }
+    }
 }
