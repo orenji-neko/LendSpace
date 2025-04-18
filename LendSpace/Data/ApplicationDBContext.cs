@@ -21,7 +21,7 @@ namespace LendSpace.Data
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-            optionsBuilder.EnableSensitiveDataLogging();
+            //optionsBuilder.EnableSensitiveDataLogging();
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -99,7 +99,7 @@ namespace LendSpace.Data
                 MidInitial = "A",
                 Address = "123 Admin St."
             };
-            user.PasswordHash = hasher.HashPassword(admin, "password");
+            admin.PasswordHash = hasher.HashPassword(admin, "password");
             builder.Entity<UserModel>().HasData(admin);
             builder.Entity<IdentityUserRole<string>>().HasData(
                 new IdentityUserRole<string>

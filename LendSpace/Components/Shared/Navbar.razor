@@ -36,7 +36,7 @@
 			<!-- Desktop Menu -->
 			<div class="hidden md:flex md:items-center md:space-x-4">
 				<!-- If logged in -->
-				@if (currentUser != null)
+				@if (currentUser != null && currentRole == "User")
 				{
 					<NavLink href="/User" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
 						<span class="oi oi-home mr-1"></span> Home
@@ -69,7 +69,49 @@
 						<DropdownItems>
 							<div class="flex flex-col w-[100px]">
 								<NavLink href="/User/Profile" class="text-center hover:bg-gray-200 px-3 py-2 text-sm font-medium">
-									Profile	
+									Profile
+								</NavLink>
+								<button @onclick="Logout" class="text-center hover:bg-gray-200 px-3 py-2 text-sm font-medium">
+									Logout
+								</button>
+							</div>
+						</DropdownItems>
+					</Dropdown>
+				}
+				else if (currentUser != null && currentRole == "Admin")
+				{
+					<NavLink href="/Admin" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+						<span class="oi oi-home mr-1"></span> Home
+					</NavLink>
+					<NavLink href="/Admin/Announcement" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+						<span class="oi oi-home mr-1"></span> Announcements
+					</NavLink>
+					<NavLink href="/Admin/Forum" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+						<span class="oi oi-home mr-1"></span> Forums
+					</NavLink>
+					<NavLink href="/Admin/Facility" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+						<span class="oi oi-plus mr-1"></span> Facilities
+					</NavLink>
+					<NavLink href="/Admin/Event" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+						<span class="oi oi-home mr-1"></span> Events
+					</NavLink>
+					<NavLink href="/Admin/Billing" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+						<span class="oi oi-plus mr-1"></span> Billing
+					</NavLink>
+					<Dropdown>
+						<DropdownButton>
+							<button class="flex items-center space-x-2 focus:outline-none">
+								<img src="/image/user.png" alt="User" class="w-8 h-8 rounded-full border-2 border-gray-300 group-hover:border-emerald-400 transition-colors">
+								<span class="font-medium text-gray-700 hidden md:inline-flex">@(currentUser != null ? currentUser!.FirstName : "User")</span>
+								<svg class="w-4 h-4 text-gray-600 transition-transform duration-200 group-hover:rotate-180" fill="currentColor" viewBox="0 0 20 20">
+									<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+								</svg>
+							</button>
+						</DropdownButton>
+						<DropdownItems>
+							<div class="flex flex-col w-[100px]">
+								<NavLink href="/User/Profile" class="text-center hover:bg-gray-200 px-3 py-2 text-sm font-medium">
+									Profile
 								</NavLink>
 								<button @onclick="Logout" class="text-center hover:bg-gray-200 px-3 py-2 text-sm font-medium">
 									Logout
@@ -131,15 +173,18 @@
 @code {
 	private bool collapseNavMenu = true;
 	private UserModel? currentUser { get; set; }
+	private string? currentRole { get; set; }
 
 	protected override async Task OnInitializedAsync()
 	{
 		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 		var userPrincipal = authState.User;
 
-		if(userPrincipal.Identity != null && userPrincipal.Identity.IsAuthenticated)
+		if (userPrincipal.Identity != null && userPrincipal.Identity.IsAuthenticated)
 		{
 			currentUser = await UserManager.GetUserAsync(userPrincipal);
+			var roles = await UserManager.GetRolesAsync(currentUser);
+			currentRole = roles.Contains("Admin") ? "Admin" : roles.Contains("Staff") ? "Staff" : "User";
 		}
 		else
 		{

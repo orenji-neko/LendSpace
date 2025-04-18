@@ -1,6 +1,8 @@
 ﻿@page "/Login"
 @inject ILogger<Login> Logger
 @inject SignInManager<UserModel> SignInManager
+@inject UserManager<UserModel> UserManager
+@inject AuthenticationStateProvider AuthenticationState
 @inject NavigationManager Navigation
 
 <PageTitle>Sign-In</PageTitle>
@@ -39,8 +41,8 @@
 						<i class="fas fa-user text-gray-400"></i>
 					</div>
 					<InputText id="email" @bind-Value="Model!.Email"
-							   class="w-full pl-10 pr-3 py-2 border-b-2 border-gray-300 focus:border-primary focus:outline-none transition-colors duration-200"
-							   placeholder="Enter your email or username" />
+					class="w-full pl-10 pr-3 py-2 border-b-2 border-gray-300 focus:border-primary focus:outline-none transition-colors duration-200"
+					placeholder="Enter your email or username" />
 				</div>
 				<ValidationMessage For="@(() => Model.Email)" class="text-red-500 text-sm mt-1 block" />
 			</div>
@@ -53,8 +55,8 @@
 						<i class="fas fa-lock text-gray-400"></i>
 					</div>
 					<InputText id="password" type="password" @bind-Value="Model!.Password"
-							   class="w-full pl-10 pr-3 py-2 border-b-2 border-gray-300 focus:border-primary focus:outline-none transition-colors duration-200"
-							   placeholder="Enter your password" />
+					class="w-full pl-10 pr-3 py-2 border-b-2 border-gray-300 focus:border-primary focus:outline-none transition-colors duration-200"
+					placeholder="Enter your password" />
 				</div>
 				<ValidationMessage For="@(() => Model.Password)" class="text-red-500 text-sm mt-1 block" />
 			</div>
@@ -63,7 +65,7 @@
 			<div class="flex items-center justify-between">
 				<div class="flex items-center">
 					<InputCheckbox id="rememberMe" @bind-Value="Model.RememberMe"
-								   class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" />
+					class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" />
 					<label for="rememberMe" class="ml-2 block text-gray-700">Remember me</label>
 				</div>
 				<a href="#" class="text-sm text-gray-600 hover:text-gray-800 hover:underline transition-colors duration-200">
@@ -111,6 +113,7 @@
 
 	private async Task HandleValidSubmit()
 	{
+		Console.WriteLine(Model.Email);
 		var result = await SignInManager.PasswordSignInAsync(
 			Model.Email, Model.Password, Model.RememberMe, lockoutOnFailure: false
 		);
@@ -121,7 +124,17 @@
 		}
 		else
 		{
-			Navigation.NavigateTo("/User", true);
+			var user = await UserManager.FindByEmailAsync(Model.Email);
+			var roles = await UserManager.GetRolesAsync(user);
+
+			if(roles.Contains("Admin"))
+			{
+				Navigation.NavigateTo("/Admin", true);
+			}
+			else
+			{
+				Navigation.NavigateTo("/User", true);
+			}
 		}
 	}
 
