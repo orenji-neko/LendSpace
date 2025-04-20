@@ -15,6 +15,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddHttpClient();
 
+
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlite("Data Source=database.db");
