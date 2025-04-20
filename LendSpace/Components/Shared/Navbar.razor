@@ -6,201 +6,334 @@
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 
-<nav class="bg-white shadow-md py-4 sticky top-0 z-10">
-	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-		<div class="flex items-center justify-between h-16">
-			<!-- Brand/Logo -->
-			<div class="flex-shrink-0">
-				<a href="/" class="text-xl font-semibold">LendSpace</a>
-			</div>
+<div class="bg-white/95 backdrop-blur-sm h-20 p-2 flex items-center justify-between shadow-sm fixed top-0 w-full z-50 border-b border-gray-100">
+    <!-- Logo Section -->
+    <div class="flex items-center">
+        <a href="/" class="flex items-center group">
+            <img src="/image/logo.png" alt="LendSpace Logo" class="logo w-auto h-10 ml-8 hover:scale-105 transition-transform duration-300 ease-out">
+            
+        </a>
+    </div>
 
-			<!-- Mobile Menu Button -->
-			<div class="flex md:hidden">
-				<!-- Update the mobile menu button to show proper icons -->
-				<button @onclick="ToggleNavMenu" type="button"
-				class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-white hover:bg-gray-700 focus:outline-none">
-					<span class="sr-only">Open main menu</span>
-					<!-- Hamburger Icon -->
-					<svg class="h-6 w-6 @(collapseNavMenu ? "block" : "hidden")"
-					xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-					</svg>
-					<!-- Close Icon -->
-					<svg class="h-6 w-6 @(collapseNavMenu ? "hidden" : "block")"
-					xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-					</svg>
-				</button>
-			</div>
+    <!-- Mobile Menu Button -->
+    <div class="md:hidden mr-4">
+        <button @onclick="ToggleNavMenu" type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-emerald-600 focus:outline-none">
+            <span class="sr-only">Open main menu</span>
+            <!-- Hamburger Icon -->
+            <svg class="h-6 w-6 @(collapseNavMenu ? "block" : "hidden")"
+                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <!-- Close Icon -->
+            <svg class="h-6 w-6 @(collapseNavMenu ? "hidden" : "block")"
+                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
 
-			<!-- Desktop Menu -->
-			<div class="hidden md:flex md:items-center md:space-x-4">
-				<!-- If logged in -->
-				@if (currentUser != null && currentRole == "User")
-				{
-					<NavLink href="/User" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-home mr-1"></span> Home
-					</NavLink>
-					<NavLink href="/User/Announcement" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-home mr-1"></span> Announcements
-					</NavLink>
-					<NavLink href="/User/Forum" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-home mr-1"></span> Forums
-					</NavLink>
-					<NavLink href="/User/Facility" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-plus mr-1"></span> Facilities
-					</NavLink>
-					<NavLink href="/User/Event" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-home mr-1"></span> Events
-					</NavLink>
-					<NavLink href="/User/Billing" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-plus mr-1"></span> Billing
-					</NavLink>
-					<Dropdown>
-						<DropdownButton>
-							<button class="flex items-center space-x-2 focus:outline-none">
-								<img src="/image/user.png" alt="User" class="w-8 h-8 rounded-full border-2 border-gray-300 group-hover:border-emerald-400 transition-colors">
-								<span class="font-medium text-gray-700 hidden md:inline-flex">@(currentUser != null ? currentUser!.FirstName : "User")</span>
-								<svg class="w-4 h-4 text-gray-600 transition-transform duration-200 group-hover:rotate-180" fill="currentColor" viewBox="0 0 20 20">
-									<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-								</svg>
-							</button>
-						</DropdownButton>
-						<DropdownItems>
-							<div class="flex flex-col w-[100px]">
-								<NavLink href="/User/Profile" class="text-center hover:bg-gray-200 px-3 py-2 text-sm font-medium">
-									Profile
-								</NavLink>
-								<button @onclick="Logout" class="text-center hover:bg-gray-200 px-3 py-2 text-sm font-medium">
-									Logout
-								</button>
-							</div>
-						</DropdownItems>
-					</Dropdown>
-				}
-				else if (currentUser != null && currentRole == "Admin")
-				{
-					<NavLink href="/Admin" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-home mr-1"></span> Home
-					</NavLink>
-					<NavLink href="/Admin/Announcement" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-home mr-1"></span> Announcements
-					</NavLink>
-					<NavLink href="/Admin/Forum" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-home mr-1"></span> Forums
-					</NavLink>
-					<NavLink href="/Admin/Facility" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-plus mr-1"></span> Facilities
-					</NavLink>
-					<NavLink href="/Admin/Event" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-home mr-1"></span> Events
-					</NavLink>
-					<NavLink href="/Admin/Billing" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-plus mr-1"></span> Billing
-					</NavLink>
-					<Dropdown>
-						<DropdownButton>
-							<button class="flex items-center space-x-2 focus:outline-none">
-								<img src="/image/user.png" alt="User" class="w-8 h-8 rounded-full border-2 border-gray-300 group-hover:border-emerald-400 transition-colors">
-								<span class="font-medium text-gray-700 hidden md:inline-flex">@(currentUser != null ? currentUser!.FirstName : "User")</span>
-								<svg class="w-4 h-4 text-gray-600 transition-transform duration-200 group-hover:rotate-180" fill="currentColor" viewBox="0 0 20 20">
-									<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-								</svg>
-							</button>
-						</DropdownButton>
-						<DropdownItems>
-							<div class="flex flex-col w-[100px]">
-								<NavLink href="/User/Profile" class="text-center hover:bg-gray-200 px-3 py-2 text-sm font-medium">
-									Profile
-								</NavLink>
-								<button @onclick="Logout" class="text-center hover:bg-gray-200 px-3 py-2 text-sm font-medium">
-									Logout
-								</button>
-							</div>
-						</DropdownItems>
-					</Dropdown>
-				}
-				else
-				{
-					<NavLink href="/" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-plus mr-1"></span> Home
-					</NavLink>
-					<NavLink href="/Login" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-						<span class="oi oi-plus mr-1"></span> Login
-					</NavLink>
-				}
-			</div>
-		</div>
+    <!-- Desktop Navigation Links -->
+    <ul class="hidden md:flex items-center justify-end mr-8 space-x-8">
+        @if (currentUser != null && currentRole == "User")
+        {
+            <li class="group relative">
+                <NavLink href="/User" class="flex items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                    <span data-feather="home" class="w-5 h-5 stroke-current"></span>
+                    <span class="font-medium">Home</span>
+                </NavLink>
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
+            </li>
+            <li class="group relative">
+                <NavLink href="/User/Announcement" class="flex items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                    <span data-feather="bell" class="w-5 h-5 stroke-current"></span>
+                    <span class="font-medium">Announcements</span>
+                </NavLink>
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
+            </li>
+            <li class="group relative">
+                <NavLink href="/User/Forum" class="flex items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                    <span data-feather="message-square" class="w-5 h-5 stroke-current"></span>
+                    <span class="font-medium">Forums</span>
+                </NavLink>
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
+            </li>
+            <li class="group relative">
+                <NavLink href="/User/Facility" class="flex items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                    <span data-feather="map-pin" class="w-5 h-5 stroke-current"></span>
+                    <span class="font-medium">Facilities</span>
+                </NavLink>
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
+            </li>
+            <li class="group relative">
+                <NavLink href="/User/Event" class="flex items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                    <span data-feather="calendar" class="w-5 h-5 stroke-current"></span>
+                    <span class="font-medium">Events</span>
+                </NavLink>
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
+            </li>
+            <li class="group relative">
+                <NavLink href="/User/Billing" class="flex items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                    <span data-feather="credit-card" class="w-5 h-5 stroke-current"></span>
+                    <span class="font-medium">Billing</span>
+                </NavLink>
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
+            </li>
+            <li class="ml-4">
+                <Dropdown>
+                    <DropdownButton>
+                        <button class="flex items-center border border-gray-200 rounded-full h-10 px-5 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group shadow-sm hover:shadow-emerald-100">
+                            <img src="/image/user.png" alt="User" class="w-auto h-5 opacity-80 group-hover:opacity-100 group-hover:brightness-0 group-hover:invert transition-all duration-300">
+                            <span class="text-center text-sm font-medium ml-2 text-gray-600 group-hover:text-white">@(currentUser != null ? currentUser!.FirstName : "User")</span>
+                        </button>
+                    </DropdownButton>
+                    <DropdownItems>
+                        <div class="flex flex-col w-40 bg-white shadow-lg rounded-md overflow-hidden border border-gray-100">
+                            <NavLink href="/User/Profile" class="text-gray-700 hover:bg-gray-100 px-4 py-3 text-sm font-medium flex items-center">
+                                <span data-feather="user" class="w-4 h-4 mr-2"></span> Profile
+                            </NavLink>
+                            <button @onclick="Logout" class="text-left text-gray-700 hover:bg-gray-100 px-4 py-3 text-sm font-medium flex items-center">
+                                <span data-feather="log-out" class="w-4 h-4 mr-2"></span> Logout
+                            </button>
+                        </div>
+                    </DropdownItems>
+                </Dropdown>
+            </li>
+        }
+        else if (currentUser != null && currentRole == "Admin")
+        {
+            <li class="group relative">
+                <NavLink href="/Admin" class="flex items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                    <span data-feather="home" class="w-5 h-5 stroke-current"></span>
+                    <span class="font-medium">Home</span>
+                </NavLink>
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
+            </li>
+            <li class="group relative">
+                <NavLink href="/Admin/Announcement" class="flex items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                    <span data-feather="bell" class="w-5 h-5 stroke-current"></span>
+                    <span class="font-medium">Announcements</span>
+                </NavLink>
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
+            </li>
+            <li class="group relative">
+                <NavLink href="/Admin/Forum" class="flex items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                    <span data-feather="message-square" class="w-5 h-5 stroke-current"></span>
+                    <span class="font-medium">Forums</span>
+                </NavLink>
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
+            </li>
+            <li class="group relative">
+                <NavLink href="/Admin/Facility" class="flex items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                    <span data-feather="map-pin" class="w-5 h-5 stroke-current"></span>
+                    <span class="font-medium">Facilities</span>
+                </NavLink>
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
+            </li>
+            <li class="group relative">
+                <NavLink href="/Admin/Event" class="flex items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                    <span data-feather="calendar" class="w-5 h-5 stroke-current"></span>
+                    <span class="font-medium">Events</span>
+                </NavLink>
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
+            </li>
+            <li class="group relative">
+                <NavLink href="/Admin/Billing" class="flex items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                    <span data-feather="credit-card" class="w-5 h-5 stroke-current"></span>
+                    <span class="font-medium">Billing</span>
+                </NavLink>
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
+            </li>
+            <li class="ml-4">
+                <Dropdown>
+                    <DropdownButton>
+                        <button class="flex items-center border border-gray-200 rounded-full h-10 px-5 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group shadow-sm hover:shadow-emerald-100">
+                            <img src="/image/user.png" alt="User" class="w-auto h-5 opacity-80 group-hover:opacity-100 group-hover:brightness-0 group-hover:invert transition-all duration-300">
+                            <span class="text-center text-sm font-medium ml-2 text-gray-600 group-hover:text-white">@(currentUser != null ? currentUser!.FirstName : "User")</span>
+                        </button>
+                    </DropdownButton>
+                    <DropdownItems>
+                        <div class="flex flex-col w-40 bg-white shadow-lg rounded-md overflow-hidden border border-gray-100">
+                            <NavLink href="/User/Profile" class="text-gray-700 hover:bg-gray-100 px-4 py-3 text-sm font-medium flex items-center">
+                                <span data-feather="user" class="w-4 h-4 mr-2"></span> Profile
+                            </NavLink>
+                            <button @onclick="Logout" class="text-left text-gray-700 hover:bg-gray-100 px-4 py-3 text-sm font-medium flex items-center">
+                                <span data-feather="log-out" class="w-4 h-4 mr-2"></span> Logout
+                            </button>
+                        </div>
+                    </DropdownItems>
+                </Dropdown>
+            </li>
+        }
+        else
+        {
+            <li class="group relative">
+                <NavLink href="/" class="flex items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 stroke-current">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <span class="font-medium">Home</span>
+                </NavLink>
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
+            </li>
+            <li class="group relative">
+                <a href="/spaces" class="flex items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                    <span data-feather="map-pin" class="w-5 h-5 stroke-current"></span>
+                    <span class="font-medium">Spaces</span>
+                </a>
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
+            </li>
+            <li class="group relative">
+                <a href="/events" class="flex items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                    <span data-feather="calendar" class="w-5 h-5 stroke-current"></span>
+                    <span class="font-medium">Events</span>
+                </a>
+                <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
+            </li>
+            <li class="ml-4">
+                <NavLink href="/Login" class="flex items-center border border-gray-200 rounded-full h-10 px-5 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group shadow-sm hover:shadow-emerald-100">
+                    <img src="/image/user.png" alt="User Icon" class="w-auto h-5 opacity-80 group-hover:opacity-100 group-hover:brightness-0 group-hover:invert transition-all duration-300">
+                    <span class="text-center text-sm font-medium ml-2 text-gray-600 group-hover:text-white">Login</span>
+                </NavLink>
+            </li>
+        }
+    </ul>
+</div>
 
-		<!-- Mobile Menu -->
-		<div id="mobile-menu" class="md:hidden @(collapseNavMenu ? "hidden" : "block" ) ">
-			<div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-				@if (currentUser != null)
-				{
-					<NavLink href="/User" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-						<span class="oi oi-home mr-1"></span> Home
-					</NavLink>
-					<NavLink href="/User/Announcement" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-						<span class="oi oi-plus mr-1"></span> Announcements
-					</NavLink>
-					<NavLink href="/User/Forum" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-						<span class="oi oi-plus mr-1"></span> Forums
-					</NavLink>
-					<NavLink href="/User/Facility" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-						<span class="oi oi-plus mr-1"></span> Facilities
-					</NavLink>
-					<NavLink href="/User/Event" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-						<span class="oi oi-plus mr-1"></span> Events
-					</NavLink>
-					<NavLink href="/User/Billing" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-						<span class="oi oi-plus mr-1"></span> Billing
-					</NavLink>
-				}
-				else
-				{
-					<NavLink href="/" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-						<span class="oi oi-plus mr-1"></span> Home
-					</NavLink>
-					<NavLink href="/Login" class="hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-						<span class="oi oi-plus mr-1"></span> Login
-					</NavLink>
-				}
-			</div>
-		</div>
-	</div>
-</nav>
+<!-- Mobile Menu -->
+<div id="mobile-menu" class="fixed top-20 left-0 w-full bg-white/95 backdrop-blur-sm shadow-md md:hidden @(collapseNavMenu ? "hidden" : "block")" style="z-index: 40;">
+    <div class="px-4 py-3 space-y-2">
+        @if (currentUser != null && currentRole == "User")
+        {
+            <NavLink href="/User" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="home" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Home</span>
+            </NavLink>
+            <NavLink href="/User/Announcement" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="bell" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Announcements</span>
+            </NavLink>
+            <NavLink href="/User/Forum" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="message-square" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Forums</span>
+            </NavLink>
+            <NavLink href="/User/Facility" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="map-pin" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Facilities</span>
+            </NavLink>
+            <NavLink href="/User/Event" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="calendar" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Events</span>
+            </NavLink>
+            <NavLink href="/User/Billing" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="credit-card" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Billing</span>
+            </NavLink>
+            <hr class="my-2 border-gray-100" />
+            <NavLink href="/User/Profile" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="user" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Profile</span>
+            </NavLink>
+            <button @onclick="Logout" class="w-full flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="log-out" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Logout</span>
+            </button>
+        }
+        else if (currentUser != null && currentRole == "Admin")
+        {
+            <NavLink href="/Admin" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="home" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Home</span>
+            </NavLink>
+            <NavLink href="/Admin/Announcement" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="bell" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Announcements</span>
+            </NavLink>
+            <NavLink href="/Admin/Forum" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="message-square" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Forums</span>
+            </NavLink>
+            <NavLink href="/Admin/Facility" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="map-pin" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Facilities</span>
+            </NavLink>
+            <NavLink href="/Admin/Event" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="calendar" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Events</span>
+            </NavLink>
+            <NavLink href="/Admin/Billing" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="credit-card" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Billing</span>
+            </NavLink>
+            <hr class="my-2 border-gray-100" />
+            <NavLink href="/User/Profile" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="user" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Profile</span>
+            </NavLink>
+            <button @onclick="Logout" class="w-full flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="log-out" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Logout</span>
+            </button>
+        }
+        else
+        {
+            <NavLink href="/" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="home" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Home</span>
+            </NavLink>
+            <NavLink href="/spaces" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="map-pin" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Spaces</span>
+            </NavLink>
+            <NavLink href="/events" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="calendar" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Events</span>
+            </NavLink>
+            <NavLink href="/Login" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                <span data-feather="log-in" class="w-5 h-5 stroke-current"></span>
+                <span class="font-medium">Login</span>
+            </NavLink>
+        }
+    </div>
+</div>
+
+<!-- Feather Icons Script -->
+<script src="https://unpkg.com/feather-icons"></script>
+<script>
+    feather.replace();
+</script>
 
 @code {
-	private bool collapseNavMenu = true;
-	private UserModel? currentUser { get; set; }
-	private string? currentRole { get; set; }
+    private bool collapseNavMenu = true;
+    private UserModel? currentUser { get; set; }
+    private string? currentRole { get; set; }
 
-	protected override async Task OnInitializedAsync()
-	{
-		var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-		var userPrincipal = authState.User;
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userPrincipal = authState.User;
 
-		if (userPrincipal.Identity != null && userPrincipal.Identity.IsAuthenticated)
-		{
-			currentUser = await UserManager.GetUserAsync(userPrincipal);
-			var roles = await UserManager.GetRolesAsync(currentUser);
-			currentRole = roles.Contains("Admin") ? "Admin" : roles.Contains("Staff") ? "Staff" : "User";
-		}
-		else
-		{
-			currentUser = null;
-		}
-	}
+        if (userPrincipal.Identity != null && userPrincipal.Identity.IsAuthenticated)
+        {
+            currentUser = await UserManager.GetUserAsync(userPrincipal);
+            var roles = await UserManager.GetRolesAsync(currentUser);
+            currentRole = roles.Contains("Admin") ? "Admin" : roles.Contains("Staff") ? "Staff" : "User";
+        }
+        else
+        {
+            currentUser = null;
+        }
+    }
 
-	private void ToggleNavMenu()
-	{
-		collapseNavMenu = !collapseNavMenu;
-	}
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
 
-	private async Task Logout()
-	{
-		currentUser = null;
-		NavigationManager.NavigateTo("/Logout");
-		StateHasChanged();
-	}
-}	
+    private async Task Logout()
+    {
+        currentUser = null;
+        NavigationManager.NavigateTo("/Logout");
+        StateHasChanged();
+    }
+}

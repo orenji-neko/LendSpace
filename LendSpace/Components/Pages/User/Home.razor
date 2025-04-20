@@ -11,196 +11,314 @@
 
 <PageTitle>Dashboard</PageTitle>
 
-<div class="min-h-screen bg-gray-50 p-6">
-	<!-- Header -->
-	<div class="mb-8">
-		<h1 class="text-3xl font-bold text-gray-900">Welcome Back, <span class="text-blue-600">@User?.FirstName</span></h1>
-		<p class="text-gray-500 mt-2">@DateTime.Now.ToString("dddd, MMMM dd, yyyy")</p>
-	</div>
+<div class="min-h-screen bg-gray-50 pt-20">
+    <!-- Hero Section with Image Background and Calendar Overlay -->
+    <div class="relative">
+        <!-- Full-width header image -->
+        <img src="https://images.unsplash.com/photo-1571624436279-b272aff752b5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1600&q=80"
+             alt="Conference facility"
+             class="w-full h-150 object-cover" />
 
-	<!-- Stats Grid -->
-	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-		<!-- Unpaid Bills Card -->
-		<Card>
-			<div class="flex items-center justify-between">
-				<div>
-					<p class="text-sm text-gray-500 mb-1">Unpaid Bills</p>
-					<p class="text-2xl font-bold text-red-600">@unpaidBillsCount</p>
-				</div>
-				<div class="p-3 bg-red-100 rounded-lg">
-					<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-					</svg>
-				</div>
-			</div>
-		</Card>
+        <!-- Dark overlay for better text visibility -->
+        <div class="absolute inset-0 bg-black/30 h-150"></div>
 
-		<!-- Upcoming Events Card -->
-		<Card>
-			<div class="flex items-center justify-between">
-				<div>
-					<p class="text-sm text-gray-500 mb-1">Upcoming Events</p>
-					<p class="text-2xl font-bold text-blue-600">@upcomingEventsCount</p>
-				</div>
-				<div class="p-3 bg-blue-100 rounded-lg">
-					<svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-					</svg>
-				</div>
-			</div>
-		</Card>
+        <!-- Content container -->
+        <div class="relative container mx-auto px-6">
+            <!-- Welcome text on left -->
+            <div class="text-black pt-5">
+                <h1 class="text-3xl font-bold">Welcome Back, <span class="text-green-300">@User?.FirstName</span></h1>
+                <p class="text-black mt-2">@DateTime.Now.ToString("dddd, MMMM dd, yyyy")</p>
+            </div>
 
-		<!-- Available Facilities Card -->
-		<Card>
-			<div class="flex items-center justify-between">
-				<div>
-					<p class="text-sm text-gray-500 mb-1">Available Facilities</p>
-					<p class="text-2xl font-bold text-green-600">@availableFacilitiesCount</p>
-				</div>
-				<div class="p-3 bg-green-100 rounded-lg">
-					<svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-					</svg>
-				</div>
-			</div>
-		</Card>
+            <!-- Calendar overlay on right -->
+            <div class="absolute right-6 -bottom-5 w-full max-w-md">
+                <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl overflow-hidden">
+                    <div class="bg-green-50 p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <button class="text-gray-700 hover:text-green-600 p-2 rounded-full hover:bg-green-100 transition-colors">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <h2 class="text-lg font-bold text-gray-800">April 2025</h2>
+                            <button class="text-gray-700 hover:text-green-600 p-2 rounded-full hover:bg-green-100 transition-colors">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
 
-		<!-- Recent Announcements Card -->
-		<Card>
-			<div class="flex items-center justify-between">
-				<div>
-					<p class="text-sm text-gray-500 mb-1">New Announcements</p>
-					<p class="text-2xl font-bold text-purple-600">@recentAnnouncementsCount</p>
-				</div>
-				<div class="p-3 bg-purple-100 rounded-lg">
-					<svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-					</svg>
-				</div>
-			</div>
-		</Card>
-	</div>
+                        <!-- Days of Week -->
+                        <div class="grid grid-cols-7 mb-2">
+                            <div class="text-center text-sm font-medium text-gray-500">S</div>
+                            <div class="text-center text-sm font-medium text-gray-500">M</div>
+                            <div class="text-center text-sm font-medium text-gray-500">T</div>
+                            <div class="text-center text-sm font-medium text-gray-500">W</div>
+                            <div class="text-center text-sm font-medium text-gray-500">T</div>
+                            <div class="text-center text-sm font-medium text-gray-500">F</div>
+                            <div class="text-center text-sm font-medium text-gray-500">S</div>
+                        </div>
 
-	<!-- Main Content -->
-	<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-		<!-- Left Column -->
-		<div class="space-y-6">
-			<!-- Bills Chart -->
-			<Card>
-				<h3 class="text-lg font-semibold mb-4">Billing Overview</h3>
-			</Card>
+                        <!-- Calendar Grid -->
+                        <div class="grid grid-cols-7 gap-1">
+                            <!-- Week 1 -->
+                            <div class="text-center py-2 text-gray-400">30</div>
+                            <div class="text-center py-2 text-gray-400">31</div>
+                            <div class="text-center py-2">1</div>
+                            <div class="text-center py-2">2</div>
+                            <div class="text-center py-2">3</div>
+                            <div class="text-center py-2">4</div>
+                            <div class="text-center py-2">5</div>
 
-			<!-- Recent Announcements -->
-			<Card>
-				<h3 class="text-lg font-semibold mb-4">Recent Announcements</h3>
-				<div class="space-y-4">
-					@foreach (var announcement in recentAnnouncements)
-					{
-						<div class="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-							<div class="flex justify-between items-start">
-								<div>
-									<h4 class="font-medium text-gray-900">@announcement.Heading</h4>
-									<p class="text-sm text-gray-500 mt-1">@announcement.PostedAt.ToString("MMM dd, yyyy")</p>
-								</div>
-								<span class="text-sm text-gray-500 line-clamp-2">@announcement.Body</span>
-							</div>
-						</div>
-					}
-				</div>
-			</Card>
-		</div>
+                            <!-- Week 2 -->
+                            <div class="text-center py-2">6</div>
+                            <div class="text-center py-2">7</div>
+                            <div class="text-center py-2">8</div>
+                            <div class="text-center py-2">9</div>
+                            <div class="text-center py-2">10</div>
+                            <div class="text-center py-2">11</div>
+                            <div class="text-center py-2">12</div>
 
-		<!-- Right Column -->
-		<div class="space-y-6">
-			<!-- Upcoming Events -->
-			<Card>
-				<h3 class="text-lg font-semibold mb-4">Upcoming Events</h3>
-				<div class="space-y-4">
-					@foreach (var eventItem in upcomingEvents)
-					{
-						<div class="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-							<div class="flex justify-between items-start">
-								<div>
-									<h4 class="font-medium text-gray-900">@eventItem.Name</h4>
-									<p class="text-sm text-gray-500 mt-1">@eventItem.StartedAt.ToString("MMM dd, yyyy")</p>
-								</div>
-								<span class="text-sm text-gray-500 line-clamp-2">@eventItem.Description</span>
-							</div>
-						</div>
-					}
-				</div>
-			</Card>
+                            <!-- Week 3 -->
+                            <div class="text-center py-2">13</div>
+                            <div class="text-center py-2">14</div>
+                            <div class="text-center py-2">15</div>
+                            <div class="text-center py-2">16</div>
+                            <div class="text-center py-2">17</div>
+                            <div class="text-center py-2">18</div>
+                            <div class="text-center py-2">19</div>
 
-			<!-- Recent Bills -->
-			<Card>
-				<h3 class="text-lg font-semibold mb-4">Recent Bills</h3>
-				<div class="space-y-4">
-					@foreach (var bill in recentBills)
-					{
-						<div class="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-							<div class="flex justify-between items-center">
-								<div>
-									<h4 class="font-medium text-gray-900">@bill.Name</h4>
-									<p class="text-sm text-gray-500">@bill.IssuedAt.ToString("MMM dd, yyyy")</p>
-								</div>
-								<div class="text-right">
-									<p class="font-medium @(bill.IsPaid ? "text-green-600" : "text-red-600")">₱@bill.Amount.ToString("N2")</p>
-									<div class="flex items-center gap-2 mt-1">
-										<div class="w-2 h-2 rounded-full @(bill.IsPaid ? "bg-green-500" : "bg-red-500")"></div>
-										<span class="text-sm">@(bill.IsPaid ? "Paid" : "Unpaid")</span>
-									</div>
-								</div>
-							</div>
-						</div>
-					}
-				</div>
-			</Card>
-		</div>
-	</div>
+                            <!-- Week 4 - with today highlighted -->
+                            <div class="text-center py-2 font-bold text-white bg-green-500 rounded-full w-8 h-8 flex items-center justify-center mx-auto">20</div>
+                            <div class="text-center py-2">21</div>
+                            <div class="text-center py-2">22</div>
+                            <div class="text-center py-2">23</div>
+                            <div class="text-center py-2">24</div>
+                            <div class="text-center py-2">25</div>
+                            <div class="text-center py-2">26</div>
+
+                            <!-- Week 5 -->
+                            <div class="text-center py-2">27</div>
+                            <div class="text-center py-2">28</div>
+                            <div class="text-center py-2">29</div>
+                            <div class="text-center py-2">30</div>
+                            <div class="text-center py-2 text-gray-400">1</div>
+                            <div class="text-center py-2 text-gray-400">2</div>
+                            <div class="text-center py-2 text-gray-400">3</div>
+                        </div>
+                    </div>
+
+                    <!-- Check-in/Check-out Form -->
+                    <div class="p-4 bg-white">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Check In</label>
+                                <div class="relative">
+                                    <input type="text" placeholder="Select date" class="w-full p-3 border border-gray-300 rounded-lg pl-10">
+                                    <i class="fas fa-calendar-alt absolute left-3 top-3.5 text-gray-400"></i>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Check Out</label>
+                                <div class="relative">
+                                    <input type="text" placeholder="Select date" class="w-full p-3 border border-gray-300 rounded-lg pl-10">
+                                    <i class="fas fa-calendar-alt absolute left-3 top-3.5 text-gray-400"></i>
+                                </div>
+                            </div>
+
+                            <button class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-6 rounded-lg transition-all">
+                                Check Availability
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-6 py-20">
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Unpaid Bills Card -->
+            <Card>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">Unpaid Bills</p>
+                        <p class="text-2xl font-bold text-red-600">@unpaidBillsCount</p>
+                    </div>
+                    <div class="p-3 bg-red-100 rounded-lg">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </Card>
+
+            <!-- Upcoming Events Card -->
+            <Card>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">Upcoming Events</p>
+                        <p class="text-2xl font-bold text-blue-600">@upcomingEventsCount</p>
+                    </div>
+                    <div class="p-3 bg-blue-100 rounded-lg">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                </div>
+            </Card>
+
+            <!-- Available Facilities Card -->
+            <Card>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">Available Facilities</p>
+                        <p class="text-2xl font-bold text-green-600">@availableFacilitiesCount</p>
+                    </div>
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                </div>
+            </Card>
+
+            <!-- Recent Announcements Card -->
+            <Card>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">New Announcements</p>
+                        <p class="text-2xl font-bold text-purple-600">@recentAnnouncementsCount</p>
+                    </div>
+                    <div class="p-3 bg-purple-100 rounded-lg">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                    </div>
+                </div>
+            </Card>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Bills Chart -->
+                <Card>
+                    <h3 class="text-lg font-semibold mb-4">Billing Overview</h3>
+                </Card>
+
+                <!-- Recent Announcements -->
+                <Card>
+                    <h3 class="text-lg font-semibold mb-4">Recent Announcements</h3>
+                    <div class="space-y-4">
+                        @foreach (var announcement in recentAnnouncements)
+                        {
+                            <div class="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900">@announcement.Heading</h4>
+                                        <p class="text-sm text-gray-500 mt-1">@announcement.PostedAt.ToString("MMM dd, yyyy")</p>
+                                    </div>
+                                    <span class="text-sm text-gray-500 line-clamp-2">@announcement.Body</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </Card>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-6">
+                <!-- Upcoming Events -->
+                <Card>
+                    <h3 class="text-lg font-semibold mb-4">Upcoming Events</h3>
+                    <div class="space-y-4">
+                        @foreach (var eventItem in upcomingEvents)
+                        {
+                            <div class="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900">@eventItem.Name</h4>
+                                        <p class="text-sm text-gray-500 mt-1">@eventItem.StartedAt.ToString("MMM dd, yyyy")</p>
+                                    </div>
+                                    <span class="text-sm text-gray-500 line-clamp-2">@eventItem.Description</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </Card>
+
+                <!-- Recent Bills -->
+                <Card>
+                    <h3 class="text-lg font-semibold mb-4">Recent Bills</h3>
+                    <div class="space-y-4">
+                        @foreach (var bill in recentBills)
+                        {
+                            <div class="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900">@bill.Name</h4>
+                                        <p class="text-sm text-gray-500">@bill.IssuedAt.ToString("MMM dd, yyyy")</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-medium @(bill.IsPaid ? "text-green-600" : "text-red-600")">₱@bill.Amount.ToString("N2")</p>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <div class="w-2 h-2 rounded-full @(bill.IsPaid ? "bg-green-500" : "bg-red-500")"></div>
+                                            <span class="text-sm">@(bill.IsPaid ? "Paid" : "Unpaid")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </Card>
+            </div>
+        </div>
+    </div>
 </div>
 
 @code {
-	private UserModel? User { get; set; }
-	private int unpaidBillsCount;
-	private int upcomingEventsCount;
-	private int availableFacilitiesCount;
-	private int recentAnnouncementsCount;
-	private List<BillingModel> recentBills = new();
-	private List<EventModel> upcomingEvents = new();
-	private List<AnnouncementModel> recentAnnouncements = new();
+    private UserModel? User { get; set; }
+    private int unpaidBillsCount;
+    private int upcomingEventsCount;
+    private int availableFacilitiesCount;
+    private int recentAnnouncementsCount;
+    private List<BillingModel> recentBills = new();
+    private List<EventModel> upcomingEvents = new();
+    private List<AnnouncementModel> recentAnnouncements = new();
 
-	protected override async Task OnInitializedAsync()
-	{
-		await LoadData();
-	}
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
 
-	private async Task LoadData()
-	{
-		// Load user data
-		var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
-		User = await UserManager.GetUserAsync(principal);
+    private async Task LoadData()
+    {
+        // Load user data
+        var principal = (await AuthenticationStateProvider.GetAuthenticationStateAsync()).User;
+        User = await UserManager.GetUserAsync(principal);
 
-		// Load counts
-		unpaidBillsCount = await Context.Billing.CountAsync(b => !b.IsPaid);
-		upcomingEventsCount = await Context.Events.CountAsync(e => e.StartedAt > DateOnly.FromDateTime(DateTime.Now));
-		availableFacilitiesCount = await Context.Facility.CountAsync(f => f.Available == true);
-		recentAnnouncementsCount = await Context.Announcements.CountAsync(a => a.PostedAt > DateOnly.FromDateTime(DateTime.Now.AddDays(-7)));
+        // Load counts
+        unpaidBillsCount = await Context.Billing.CountAsync(b => !b.IsPaid);
+        upcomingEventsCount = await Context.Events.CountAsync(e => e.StartedAt > DateOnly.FromDateTime(DateTime.Now));
+        availableFacilitiesCount = await Context.Facility.CountAsync(f => f.Available == true);
+        recentAnnouncementsCount = await Context.Announcements.CountAsync(a => a.PostedAt > DateOnly.FromDateTime(DateTime.Now.AddDays(-7)));
 
-		// Load recent data
-		recentBills = await Context.Billing
-			.OrderByDescending(b => b.IssuedAt)
-			.Take(5)
-			.ToListAsync();
+        // Load recent data
+        recentBills = await Context.Billing
+            .OrderByDescending(b => b.IssuedAt)
+            .Take(5)
+            .ToListAsync();
 
-		upcomingEvents = await Context.Events
-			.Where(e => e.StartedAt > DateOnly.FromDateTime(DateTime.Now))
-			.OrderBy(e => e.StartedAt)
-			.Take(5)
-			.ToListAsync();
+        upcomingEvents = await Context.Events
+            .Where(e => e.StartedAt > DateOnly.FromDateTime(DateTime.Now))
+            .OrderBy(e => e.StartedAt)
+            .Take(5)
+            .ToListAsync();
 
-		recentAnnouncements = await Context.Announcements
-			.OrderByDescending(a => a.PostedAt)
-			.Take(5)
-			.ToListAsync();
-	}
+        recentAnnouncements = await Context.Announcements
+            .OrderByDescending(a => a.PostedAt)
+            .Take(5)
+            .ToListAsync();
+    }
 }

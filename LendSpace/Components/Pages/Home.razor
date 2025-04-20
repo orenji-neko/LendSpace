@@ -2,4 +2,652 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
 
-<h1>Home Here</h1>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=PT+Sans+Narrow&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<body class="font-['PT_Sans_Narrow']  pt-21">
+    <!-- Hero Section -->
+    <section class="relative h-screen min-h-[650px] w-full overflow-hidden">
+        <!-- Background Image -->
+        <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80"
+             alt="Beautiful Home"
+             class="w-full h-full object-cover" />
+
+        <!-- Gradient Overlay -->
+        <div class="absolute inset-0 bg-gradient-to-r from-black/40 to-black/10"></div>
+
+        <!-- Content Container -->
+        <div class="absolute inset-0 flex items-center px-6 md:px-12 lg:px-16 max-w-7xl mx-auto">
+            <div class="w-full flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+                <!-- Left Text Section -->
+                <div class="w-full lg:w-3/5 text-white space-y-6 animate-fade-in">
+                    <div>
+                        <h1 class="text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight animate-slide-up">
+                            YOUR HOME,
+                            <br class="hidden sm:block" />
+                            <div class="text-3xl italic">
+                                YOUR <span class="text-green-400">STORY</span>
+                            </div>
+                            
+                        </h1>
+                    </div>
+
+                    <div class="bg-white/90 text-gray-800 p-4 md:p-6 rounded-lg shadow-lg max-w-xl animate-slide-up delay-200">
+                        <p class="text-base md:text-lg">
+                            From seamless facility reservations to booking the perfect home, we're here to make every chapter of your story unforgettable.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-4 pt-2 animate-slide-up delay-300">
+                        <button class="bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-6 rounded-3xl transition-all shadow-lg">
+                            Book Now
+                        </button>
+                        <button class="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border border-white/30 font-medium py-3 px-6 rounded-3xl transition-all">
+                            Explore Options
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Facilities Section -->
+    <section class="py-16 bg-white" data-aos="fade-up">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold mb-2">Our Premium Facilities</h2>
+                <p class="text-gray-600">Discover spaces designed for every occasion</p>
+                <div class="h-1 w-20 bg-green-500 mx-auto mt-4"></div>
+            </div>
+
+            <!-- Facility Filter Tabs -->
+            <div class="flex justify-center mb-10">
+                <div class="inline-flex rounded-full bg-gray-100 p-1">
+                    <button class="px-6 py-2 rounded-full bg-green-500 text-white shadow-md transition-all">
+                        All Facilities
+                    </button>
+                    <button class="px-6 py-2 rounded-full text-gray-600 hover:bg-gray-200 transition-all">
+                        Event Spaces
+                    </button>
+                    <button class="px-6 py-2 rounded-full text-gray-600 hover:bg-gray-200 transition-all">
+                        Sports
+                    </button>
+                    <button class="px-6 py-2 rounded-full text-gray-600 hover:bg-gray-200 transition-all">
+                        Recreation
+                    </button>
+                    <button class="px-6 py-2 rounded-full text-gray-600 hover:bg-gray-200 transition-all">
+                        Business
+                    </button>
+                </div>
+            </div>
+
+            <!-- Facilities Carousel -->
+            <div class="relative">
+                <!-- Carousel Container -->
+                <div class="facility-carousel flex overflow-x-auto snap-x snap-mandatory scroll-smooth py-4 space-x-6 px-4"
+                     style="scrollbar-width: none;">
+                    <!-- Hide scrollbar for Chrome/Safari -->
+                    <style>
+                        .facility-carousel::-webkit-scrollbar {
+                            display: none;
+                        }
+                    </style>
+
+                    <!-- Facility 1 - Grand Hall -->
+                    <div class="snap-start flex-shrink-0 w-72 bg-white shadow-xl h-96 flex flex-col transition-all hover:scale-105 hover:shadow-lg rounded-lg overflow-hidden">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=880&q=80"
+                                 alt="Grand Hall"
+                                 class="w-full h-48 object-cover">
+                            <div class="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded-full text-xs font-semibold">
+                                <i class="fas fa-users mr-1"></i> 150-200 pax
+                            </div>
+                        </div>
+                        <div class="p-4 flex-grow">
+                            <div class="flex justify-between items-start">
+                                <h2 class="font-semibold text-lg mb-2">Grand Hall</h2>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Available</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Stunning event space with floor-to-ceiling windows and elegant decor.</p>
+                            <div class="flex items-center text-sm text-gray-500 mb-3">
+                                <i class="fas fa-map-marker-alt mr-2"></i> Main Clubhouse
+                            </div>
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">A/V System</span>
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">Catering</span>
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">Parking</span>
+                            </div>
+                        </div>
+                        <button class="mx-4 mb-4 py-2 bg-green-500 rounded-md text-white hover:bg-green-600 transition-colors shadow-md">
+                            Book Now
+                        </button>
+                    </div>
+
+                    <!-- Facility 2 - Office Hall -->
+                    <div class="snap-start flex-shrink-0 w-72 bg-white shadow-xl h-96 flex flex-col transition-all hover:scale-105 hover:shadow-lg rounded-lg overflow-hidden">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
+                                 alt="Office Hall"
+                                 class="w-full h-48 object-cover">
+                            <div class="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded-full text-xs font-semibold">
+                                <i class="fas fa-users mr-1"></i> 20-30 pax
+                            </div>
+                        </div>
+                        <div class="p-4 flex-grow">
+                            <div class="flex justify-between items-start">
+                                <h2 class="font-semibold text-lg mb-2">Meeting Rooms</h2>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Available</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Professional meeting spaces with modern technology and comfortable seating.</p>
+                            <div class="flex items-center text-sm text-gray-500 mb-3">
+                                <i class="fas fa-map-marker-alt mr-2"></i> Business Center
+                            </div>
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">Projector</span>
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">WiFi</span>
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">Whiteboard</span>
+                            </div>
+                        </div>
+                        <button class="mx-4 mb-4 py-2 bg-green-500 rounded-md text-white hover:bg-green-600 transition-colors shadow-md">
+                            Book Now
+                        </button>
+                    </div>
+
+                    <!-- Facility 3 - Swimming Pool -->
+                    <div class="snap-start flex-shrink-0 w-72 bg-white shadow-xl h-96 flex flex-col transition-all hover:scale-105 hover:shadow-lg rounded-lg overflow-hidden">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
+                                 alt="Swimming Pool"
+                                 class="w-full h-48 object-cover">
+                            <div class="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded-full text-xs font-semibold">
+                                <i class="fas fa-users mr-1"></i> 50 pax
+                            </div>
+                        </div>
+                        <div class="p-4 flex-grow">
+                            <div class="flex justify-between items-start">
+                                <h2 class="font-semibold text-lg mb-2">Swimming Pool</h2>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Available</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Olympic-sized pool with dedicated lanes, leisure areas, and kids section.</p>
+                            <div class="flex items-center text-sm text-gray-500 mb-3">
+                                <i class="fas fa-map-marker-alt mr-2"></i> Recreation Area
+                            </div>
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">Lifeguard</span>
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">Changing Rooms</span>
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">Towels</span>
+                            </div>
+                        </div>
+                        <button class="mx-4 mb-4 py-2 bg-green-500 rounded-md text-white hover:bg-green-600 transition-colors shadow-md">
+                            Book Now
+                        </button>
+                    </div>
+
+                    <!-- Facility 4 - Tennis Court -->
+                    <div class="snap-start flex-shrink-0 w-72 bg-white shadow-xl h-96 flex flex-col transition-all hover:scale-105 hover:shadow-lg rounded-lg overflow-hidden">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
+                                 alt="Tennis Court"
+                                 class="w-full h-48 object-cover">
+                            <div class="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded-full text-xs font-semibold">
+                                <i class="fas fa-users mr-1"></i> 4-6 pax
+                            </div>
+                        </div>
+                        <div class="p-4 flex-grow">
+                            <div class="flex justify-between items-start">
+                                <h2 class="font-semibold text-lg mb-2">Tennis Court</h2>
+                                <span class="bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs">Limited Slots</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Professional-grade courts with lighting for evening play and equipment rental.</p>
+                            <div class="flex items-center text-sm text-gray-500 mb-3">
+                                <i class="fas fa-map-marker-alt mr-2"></i> Sports Complex
+                            </div>
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">Equipment</span>
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">Floodlights</span>
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">Coaching</span>
+                            </div>
+                        </div>
+                        <button class="mx-4 mb-4 py-2 bg-green-500 rounded-md text-white hover:bg-green-600 transition-colors shadow-md">
+                            Book Now
+                        </button>
+                    </div>
+
+                    <!-- Facility 5 - BBQ Pit -->
+                    <div class="snap-start flex-shrink-0 w-72 bg-white shadow-xl h-96 flex flex-col transition-all hover:scale-105 hover:shadow-lg rounded-lg overflow-hidden">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1600891964092-4316c288032e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
+                                 alt="BBQ Pit"
+                                 class="w-full h-48 object-cover">
+                            <div class="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded-full text-xs font-semibold">
+                                <i class="fas fa-users mr-1"></i> 10-15 pax
+                            </div>
+                        </div>
+                        <div class="p-4 flex-grow">
+                            <div class="flex justify-between items-start">
+                                <h2 class="font-semibold text-lg mb-2">BBQ Pavilion</h2>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Available</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Outdoor BBQ area with seating, grilling equipment, and scenic views.</p>
+                            <div class="flex items-center text-sm text-gray-500 mb-3">
+                                <i class="fas fa-map-marker-alt mr-2"></i> Garden Area
+                            </div>
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">Grill</span>
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">Utensils</span>
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">Shelter</span>
+                            </div>
+                        </div>
+                        <button class="mx-4 mb-4 py-2 bg-green-500 rounded-md text-white hover:bg-green-600 transition-colors shadow-md">
+                            Book Now
+                        </button>
+                    </div>
+
+                    <!-- Facility 6 - Gym -->
+                    <div class="snap-start flex-shrink-0 w-72 bg-white shadow-xl h-96 flex flex-col transition-all hover:scale-105 hover:shadow-lg rounded-lg overflow-hidden">
+                        <div class="relative">
+                            <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
+                                 alt="Gym"
+                                 class="w-full h-48 object-cover">
+                            <div class="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded-full text-xs font-semibold">
+                                <i class="fas fa-users mr-1"></i> 15 pax
+                            </div>
+                        </div>
+                        <div class="p-4 flex-grow">
+                            <div class="flex justify-between items-start">
+                                <h2 class="font-semibold text-lg mb-2">Fitness Center</h2>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Available</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Fully equipped gym with cardio and weight training equipment.</p>
+                            <div class="flex items-center text-sm text-gray-500 mb-3">
+                                <i class="fas fa-map-marker-alt mr-2"></i> Clubhouse
+                            </div>
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">24/7 Access</span>
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">Trainer</span>
+                                <span class="bg-gray-100 px-2 py-1 rounded-full text-xs">Showers</span>
+                            </div>
+                        </div>
+                        <button class="mx-4 mb-4 py-2 bg-green-500 rounded-md text-white hover:bg-green-600 transition-colors shadow-md">
+                            Book Now
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Carousel Navigation -->
+                <button class="carousel-prev absolute left-0 top-1/2 -translate-y-1/2 -ml-6 bg-white rounded-full p-3 shadow-md hover:bg-gray-100 transition-colors z-10">
+                    <i class="fas fa-chevron-left text-gray-600"></i>
+                </button>
+                <button class="carousel-next absolute right-0 top-1/2 -translate-y-1/2 -mr-6 bg-white rounded-full p-3 shadow-md hover:bg-gray-100 transition-colors z-10">
+                    <i class="fas fa-chevron-right text-gray-600"></i>
+                </button>
+            </div>
+
+            <!-- Carousel Indicators -->
+            <div class="flex justify-center mt-6 space-x-2">
+                <button class="indicator h-2 w-8 bg-green-500 rounded-full"></button>
+                <button class="indicator h-2 w-2 bg-gray-300 rounded-full"></button>
+                <button class="indicator h-2 w-2 bg-gray-300 rounded-full"></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community Events Section -->
+    <section class="bg-gray-100 py-16 px-4" data-aos="fade-up">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold mb-2">Community Events</h2>
+                <p class="text-gray-600">Stay connected with upcoming activities and gatherings</p>
+                <div class="h-1 w-20 bg-green-500 mx-auto mt-4"></div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-8 justify-between items-center">
+                <!-- Left Content -->
+                <div class="lg:w-2/3 bg-white shadow-lg rounded-xl overflow-hidden transition-transform hover:scale-[1.02]">
+                    <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
+                         alt="Community Event"
+                         class="w-full h-64 lg:h-96 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">Upcoming Community Gathering</h3>
+                        <span class="text-sm text-gray-700">
+                            Welcome to our vibrant community dedicated to creating a safe, beautiful living environment.
+                            Join us for our monthly community gathering where we'll discuss upcoming improvements and celebrate recent achievements.
+                        </span>
+                        <div class="flex justify-end mt-4">
+                            <button class="px-6 py-2 bg-green-500 rounded-md text-white hover:bg-green-600 transition-colors shadow-md flex items-center justify-center w-auto">
+                                See More <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Content -->
+                <div class="lg:w-2/3 bg-white shadow-lg rounded-xl overflow-hidden transition-transform hover:scale-[1.02]">
+                    <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
+                         alt="Community Event"
+                         class="w-full h-64 lg:h-96 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">Upcoming Community Gathering</h3>
+                        <span class="text-sm text-gray-700">
+                            Welcome to our vibrant community dedicated to creating a safe, beautiful living environment.
+                            Join us for our monthly community gathering where we'll discuss upcoming improvements and celebrate recent achievements.
+                        </span>
+                        <div class="flex justify-end mt-4">
+                            <button class="px-6 py-2 bg-green-500 rounded-md text-white hover:bg-green-600 transition-colors shadow-md flex items-center justify-center w-auto">
+                                See More <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-16 bg-white px-4" data-aos="fade-up">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold mb-2">What Our Residents Say</h2>
+                <p class="text-gray-600">Hear from our happy community members</p>
+                <div class="h-1 w-20 bg-green-500 mx-auto mt-4"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-500 mr-3">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">Sarah J.</h4>
+                            <div class="flex text-amber-400 text-sm">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-3">
+                        "The community events are always so well organized. My family loves it here!"
+                    </p>
+                </div>
+
+                <div class="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-500 mr-3">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">Michael C.</h4>
+                            <div class="flex text-amber-400 text-sm">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-3">
+                        "Booking facilities is incredibly easy. The process is seamless!"
+                    </p>
+                </div>
+
+                <div class="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-500 mr-3">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">The R. Family</h4>
+                            <div class="flex text-amber-400 text-sm">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-3">
+                        "We hosted our daughter's birthday party here and it was perfect!"
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call-to-Action Section -->
+    <section class="bg-green-500 text-white py-16" data-aos="fade-up">
+        <div class="text-center max-w-3xl mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-4">Ready to Join Our Community?</h2>
+            <p class="text-lg mb-8">
+                Discover the perfect home and enjoy access to premium facilities and vibrant community events.
+            </p>
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button class="px-8 py-3 bg-white text-green-700 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-md">
+                    Explore Properties
+                </button>
+                <button class="px-8 py-3 border-2 border-white rounded-lg font-semibold hover:bg-white hover:text-green-700 transition-colors">
+                    Contact Us
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <partial name="_Footer" />
+
+    <style>
+        html {
+            scroll-behavior: smooth;
+            overflow-y: scroll;
+            overflow-x: hidden;
+            font-family: 'PT Sans Narrow', sans-serif;
+        }
+
+            html::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            html::-webkit-scrollbar-track {
+                background: #f0f0f0;
+            }
+
+            html::-webkit-scrollbar-thumb {
+                background-color: #888;
+                border-radius: 4px;
+                border: 2px solid #f0f0f0;
+            }
+
+                html::-webkit-scrollbar-thumb:hover {
+                    background-color: #555;
+                }
+
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.6s ease-out forwards;
+        }
+
+        .delay-100 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-200 {
+            animation-delay: 0.2s;
+        }
+
+        .delay-300 {
+            animation-delay: 0.3s;
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        @@keyframes fadeIn {
+            from
+
+        {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.6s ease-out forwards;
+        }
+
+        @@keyframes slideUp {
+            from
+
+        {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        }
+
+        .delay-100 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-200 {
+            animation-delay: 0.2s;
+        }
+
+        .delay-300 {
+            animation-delay: 0.3s;
+        }
+
+        .animate-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @@keyframes pulse {
+            0%
+
+        {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+
+        100% {
+            opacity: 1;
+        }
+
+        }
+
+        @@keyframes bounce {
+            0%, 100%
+
+        {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-5px);
+        }
+
+        }
+
+        .animate-bounce {
+            animation: bounce 1s infinite;
+        }
+    </style>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const carousel = document.querySelector('.facility-carousel');
+            const prevBtn = document.querySelector('.carousel-prev');
+            const nextBtn = document.querySelector('.carousel-next');
+            const indicators = document.querySelectorAll('.indicator');
+
+            let currentIndex = 0;
+            const itemWidth = 288; // 72rem * 4 (w-72 + gap-6)
+            const visibleItems = 3;
+
+            function updateCarousel() {
+                carousel.scrollTo({
+                    left: currentIndex * itemWidth,
+                    behavior: 'smooth'
+                });
+
+                // Update indicators
+                indicators.forEach((indicator, index) => {
+                    if (index === Math.floor(currentIndex / visibleItems)) {
+                        indicator.classList.remove('bg-gray-300', 'w-2');
+                        indicator.classList.add('bg-[#81c784]', 'w-8');
+                    } else {
+                        indicator.classList.remove('bg-[#81c784]', 'w-8');
+                        indicator.classList.add('bg-gray-300', 'w-2');
+                    }
+                });
+            }
+
+            prevBtn.addEventListener('click', () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateCarousel();
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                if (currentIndex < carousel.children.length - visibleItems) {
+                    currentIndex++;
+                    updateCarousel();
+                }
+            });
+
+            // Optional: Handle swipe gestures for touch devices
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            carousel.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, {passive: true});
+
+            carousel.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, {passive: true});
+
+            function handleSwipe() {
+                if (touchEndX < touchStartX - 50 && currentIndex < carousel.children.length - visibleItems) {
+                    currentIndex++;
+                    updateCarousel();
+                }
+
+                if (touchEndX > touchStartX + 50 && currentIndex > 0) {
+                    currentIndex--;
+                    updateCarousel();
+                }
+            }
+        });
+        AOS.init({
+            duration: 800,
+            once: false, // Changed from true to false
+            mirror: true, // Allows animations to play again when scrolling back up
+            offset: 50, // Adjust when animations trigger (in pixels from element bottom)
+            easing: 'ease-in-out', // Smoother animation
+            anchorPlacement: 'top-bottom' // Default trigger point
+        });
+
+        // Refresh AOS when the page loads to ensure all animations are ready
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.refresh();
+        });
+
+        // Optional: Refresh AOS on resize to handle responsive changes
+        window.addEventListener('resize', function() {
+            AOS.refresh();
+        });
+    </script>
+
+</body>
