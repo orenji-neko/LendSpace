@@ -5,90 +5,447 @@
 @using LendSpace.Models
 @using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext Context
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-<PageTitle>Events</PageTitle>
+<PageTitle>Community</PageTitle>
+<div class="text-center">
+    <h2 class="text-3xl font-bold mb-2 mt-25">Community</h2>
+    <p class="text-gray-600">Talk with the people in the community and be notified by our Event and Announcements!</p>
+    <div class="h-1 w-20 bg-green-500 mx-auto mt-4"></div>
+</div>
 
-<div class="min-h-screen w-full bg-gray-100 p-8">
-	<header class="mb-8">
-		<div class="max-w-4xl mx-auto">
-			<h1 class="text-3xl font-bold text-gray-800 mb-2">Announcements</h1>
+<div class="flex flex-row p-20 w-full justify-center items-center px-5 gap-x-5">
 
-			<div class="relative mt-4">
-				<input type="text"
-					   class="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
-					   placeholder="Search events by name or description..."
-					   @bind="searchTerm"
-					   @bind:event="oninput" />
-				<svg class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-				</svg>
-			</div>
-		</div>
-	</header>
+    <!-- Community Posting Here -->
+    <div class="h-full w-200 shadow-lg p-5 overflow-y-auto bg-white">
+        <h1 class="text-3xl font-bold mb-6 text-green-500">Community Feed</h1>
 
-	<div class="max-w-4xl mx-auto">
-		@if (announcements == null)
-		{
-			<div class="text-center py-8">
-				<div class="animate-pulse space-y-4">
-					<div class="h-4 bg-gray-200 rounded w-1/4 mx-auto"></div>
-				</div>
-			</div>
-		}
-		else if (!FilteredAnnouncements.Any())
-		{
-			<div class="text-center py-8 text-gray-500">
-				@if (string.IsNullOrWhiteSpace(searchTerm))
-				{
-					<span>No announcements found</span>
-				}
-				else
-				{
-					<span>No announcements found matching <strong>"@searchTerm"</strong></span>
-				}
-			</div>
-		}
-		else
-		{
-			<div class="space-y-4">
-				@foreach (var announcement in FilteredAnnouncements)
-				{
-					<Card>
-						<div class="flex justify-between items-start">
-							<div class="flex-1">
-								<h3 class="text-xl font-semibold text-gray-800 mb-1">@announcement.Heading</h3>
-								<div class="flex items-center space-x-2 text-sm text-blue-600 font-medium">
-									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-									</svg>
-									<time>@announcement.PostedAt</time>
-								</div>
-							</div>
-						</div>
-						<p class="mt-3 text-gray-600 line-clamp-2">@announcement.Body</p>
-					</Card>
-				}
-			</div>
-		}
-	</div>
+        <!-- User Post 1 - Conference Room Review -->
+        <div class="bg-white rounded-lg shadow mb-6 overflow-hidden">
+            <div class="flex items-center justify-between p-4">
+                <div class="flex items-center">
+                    <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200"
+                         alt="Jessica Moore" class="w-10 h-10 rounded-full mr-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Jessica Moore</h3>
+                        <p class="text-gray-500 text-sm">jessicam • 32 min ago</p>
+                    </div>
+                </div>
+                <button class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+            </div>
+
+            <div class="px-4 pb-3">
+                <p class="text-gray-800 mb-3">
+                    Just booked the Grand Conference Room for our quarterly meeting. The booking process was so smooth! Love how I could see 360° views of the room before booking. Has anyone used their AV equipment before?
+                </p>
+                <div class="flex items-center space-x-2 text-yellow-400">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star-half-alt"></i>
+                    <span class="text-gray-600 text-sm ml-1">4.5/5</span>
+                </div>
+            </div>
+
+            <div class="w-full overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=300&fit=crop"
+                     alt="Conference Room" class="w-full h-auto object-cover">
+            </div>
+
+            <div class="px-4 py-3 flex items-center justify-between border-t border-gray-100">
+                <div class="flex items-center space-x-6">
+                    <button class="flex items-center space-x-1 text-gray-500 hover:text-red-500">
+                        <i class="far fa-heart"></i>
+                        <span>24</span>
+                    </button>
+                    <button class="flex items-center space-x-1 text-gray-500 hover:text-blue-500">
+                        <i class="far fa-comment"></i>
+                        <span>8</span>
+                    </button>
+                    <button class="flex items-center space-x-1 text-gray-500 hover:text-green-500">
+                        <i class="far fa-share-square"></i>
+                        <span>3</span>
+                    </button>
+                </div>
+                <button class="text-gray-500 hover:text-yellow-500">
+                    <i class="far fa-bookmark"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- User Post 2 - Booking Tip -->
+        <div class="bg-white rounded-lg shadow mb-6 overflow-hidden">
+            <div class="flex items-center justify-between p-4">
+                <div class="flex items-center">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200"
+                         alt="Michael Chang" class="w-10 h-10 rounded-full mr-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Michael Chang</h3>
+                        <p class="text-gray-500 text-sm">m_chang • 2h ago</p>
+                    </div>
+                </div>
+                <button class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+            </div>
+
+            <div class="px-4 pb-3">
+                <p class="text-gray-800 mb-3">
+                    Pro tip for everyone: If you need to book the rooftop garden for summer events, do it at least 3 months in advance! I just secured mine for July and there were only 2 weekends left available. The early bird gets the perfect venue! 🌿🎉
+                </p>
+            </div>
+
+            <div class="px-4 py-3 flex items-center justify-between border-t border-gray-100">
+                <div class="flex items-center space-x-6">
+                    <button class="flex items-center space-x-1 text-gray-500 hover:text-blue-500">
+                        <i class="far fa-thumbs-up"></i>
+                        <span>47</span>
+                    </button>
+                    <button class="flex items-center space-x-1 text-gray-500 hover:text-blue-500">
+                        <i class="far fa-comment"></i>
+                        <span>12</span>
+                    </button>
+                    <button class="flex items-center space-x-1 text-gray-500 hover:text-green-500">
+                        <i class="far fa-share-square"></i>
+                        <span>5</span>
+                    </button>
+                </div>
+                <button class="text-gray-500 hover:text-yellow-500">
+                    <i class="far fa-bookmark"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- User Post 3 - Review with Photos -->
+        <div class="bg-white rounded-lg shadow mb-6 overflow-hidden">
+            <div class="flex items-center justify-between p-4">
+                <div class="flex items-center">
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200"
+                         alt="Sarah Johnson" class="w-10 h-10 rounded-full mr-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Sarah Johnson</h3>
+                        <p class="text-gray-500 text-sm">sarahj • 5h ago</p>
+                    </div>
+                </div>
+                <button class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+            </div>
+
+            <div class="px-4 pb-3">
+                <p class="text-gray-800 mb-3">
+                    Just wrapped up our team retreat at the Mountain View meeting space. Absolutely stunning views and the staff was incredibly accommodating with our last-minute AV requests. Would definitely book again! Here are some photos from our event.
+                </p>
+                <div class="flex items-center space-x-2 text-yellow-400">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <span class="text-gray-600 text-sm ml-1">5/5</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-1">
+                <img src="https://images.unsplash.com/photo-1571624436279-b272aff752b5?w=300&h=200&fit=crop"
+                     alt="Meeting Space 1" class="w-full h-40 object-cover">
+
+                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=300&h=200&fit=crop"
+                     alt="Meeting Space 2" class="w-full h-40 object-cover">
+            </div>
+
+            <div class="px-4 py-3 flex items-center justify-between border-t border-gray-100">
+                <div class="flex items-center space-x-6">
+                    <button class="flex items-center space-x-1 text-gray-500 hover:text-red-500">
+                        <i class="far fa-heart"></i>
+                        <span>89</span>
+                    </button>
+                    <button class="flex items-center space-x-1 text-gray-500 hover:text-blue-500">
+                        <i class="far fa-comment"></i>
+                        <span>21</span>
+                    </button>
+                    <button class="flex items-center space-x-1 text-gray-500 hover:text-green-500">
+                        <i class="far fa-share-square"></i>
+                        <span>7</span>
+                    </button>
+                </div>
+                <button class="text-gray-500 hover:text-yellow-500">
+                    <i class="far fa-bookmark"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- User Post 4 - Question -->
+        <div class="bg-white rounded-lg shadow mb-6 overflow-hidden">
+            <div class="flex items-center justify-between p-4">
+                <div class="flex items-center">
+                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200"
+                         alt="David Kim" class="w-10 h-10 rounded-full mr-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-900">David Kim</h3>
+                        <p class="text-gray-500 text-sm">david_k • 8h ago</p>
+                    </div>
+                </div>
+                <div class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs">
+                    Question
+                </div>
+            </div>
+
+            <div class="px-4 pb-3">
+                <p class="text-gray-800 mb-3">
+                    Has anyone booked the Innovation Lab for a design thinking workshop? Looking for feedback on the space and if the movable whiteboards are actually useful. Planning a workshop for 15 people next month.
+                </p>
+            </div>
+
+            <div class="px-4 py-3 flex items-center justify-between border-t border-gray-100">
+                <div class="flex items-center space-x-6">
+                    <button class="flex items-center space-x-1 text-gray-500 hover:text-blue-500">
+                        <i class="far fa-thumbs-up"></i>
+                        <span>12</span>
+                    </button>
+                    <button class="flex items-center space-x-1 text-gray-500 hover:text-blue-500">
+                        <i class="far fa-comment"></i>
+                        <span>16</span>
+                    </button>
+                    <button class="flex items-center space-x-1 text-gray-500 hover:text-green-500">
+                        <i class="far fa-share-square"></i>
+                        <span>2</span>
+                    </button>
+                </div>
+                <div class="text-sm text-blue-600 font-medium">
+                    4 answers
+                </div>
+            </div>
+        </div>
+
+        <!-- User Post 5 - Featured Review -->
+        <div class="bg-white rounded-lg shadow mb-6 overflow-hidden border-l-4 border-yellow-400">
+            <div class="flex items-center justify-between p-4">
+                <div class="flex items-center">
+                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200"
+                         alt="David Kim" class="w-10 h-10 rounded-full mr-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Emily Chen</h3>
+                        <p class="text-gray-500 text-sm">emilycdesigns • 1d ago</p>
+                    </div>
+                </div>
+                <div class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">
+                    Featured
+                </div>
+            </div>
+
+            <div class="px-4 pb-3">
+                <p class="text-gray-800 mb-3">
+                    I've been using this platform for all our company's booking needs for the past 6 months, and it's been a game-changer! The calendar integration saves so much time, and being able to see real photos of the spaces helps us choose the perfect venue for each meeting type.
+                </p>
+                <div class="flex items-center space-x-2 text-yellow-400 mb-2">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <span class="text-gray-600 text-sm ml-1">5/5</span>
+                </div>
+                <p class="text-gray-600 text-sm italic">
+                    "The best facility booking platform I've ever used. Worth every penny of the premium subscription!"
+                </p>
+            </div>
+
+            <div class="w-full overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=300&fit=crop"
+                     alt="App Screenshot" class="w-full h-auto object-cover">
+            </div>
+
+            <div class="px-4 py-3 flex items-center justify-between border-t border-gray-100">
+                <div class="flex items-center space-x-6">
+                    <button class="flex items-center space-x-1 text-gray-500 hover:text-red-500">
+                        <i class="far fa-heart"></i>
+                        <span>156</span>
+                    </button>
+                    <button class="flex items-center space-x-1 text-gray-500 hover:text-blue-500">
+                        <i class="far fa-comment"></i>
+                        <span>32</span>
+                    </button>
+                    <button class="flex items-center space-x-1 text-gray-500 hover:text-green-500">
+                        <i class="far fa-share-square"></i>
+                        <span>18</span>
+                    </button>
+                </div>
+                <button class="text-gray-500 hover:text-yellow-500">
+                    <i class="far fa-bookmark"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcements & Event Column Here -->
+    <div class="flex-col h-full w-120 shadow-lg p-5">
+
+        <header class="mb-8">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-lg font-bold text-gray-800 mb-2">Announcements</h1>
+
+                <div class="relative mt-4">
+                    <input type="text"
+                           class="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                           placeholder="Search events by name or description..."
+                           @bind="searchAnnouncement"
+                           @bind:event="oninput" />
+                    <svg class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+            </div>
+        </header>
+
+        <div class="max-w-4xl mx-auto">
+            @if (announcements == null)
+            {
+                <div class="text-center py-8">
+                    <div class="animate-pulse space-y-4">
+                        <div class="h-4 bg-gray-200 rounded w-1/4 mx-auto"></div>
+                    </div>
+                </div>
+            }
+            else if (!FilteredAnnouncements.Any())
+            {
+                <div class="text-center py-8 text-gray-500">
+                    @if (string.IsNullOrWhiteSpace(searchAnnouncement))
+                    {
+                        <span>No announcements found</span>
+                    }
+                    else
+                    {
+                        <span>No announcements found matching <strong>"@searchAnnouncement"</strong></span>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="space-y-4">
+                    @foreach (var announcement in FilteredAnnouncements)
+                    {
+                        <Card>
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-semibold text-gray-800 mb-1">@announcement.Heading</h3>
+                                    <div class="flex items-center space-x-2 text-sm text-blue-600 font-medium">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <time>@announcement.PostedAt</time>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="mt-3 text-gray-600 line-clamp-2">@announcement.Body</p>
+                        </Card>
+                    }
+                </div>
+            }
+        </div>
+
+
+
+        <header class="mb-8">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-lg font-bold text-gray-800 my-2">Events</h1>
+
+                <div class="relative mt-4">
+                    <input type="text"
+                           class="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                           placeholder="Search events by name or description..."
+                           @bind="searchEvent"
+                           @bind:event="oninput" />
+                    <svg class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+            </div>
+        </header>
+
+        <div class="max-w-4xl mx-auto">
+            @if (events == null)
+            {
+                <div class="text-center py-8">
+                    <div class="animate-pulse space-y-4">
+                        <div class="h-4 bg-gray-200 rounded w-1/4 mx-auto"></div>
+                    </div>
+                </div>
+            }
+            else if (!FilteredEvents.Any())
+            {
+                <div class="text-center py-8 text-gray-500">
+                    @if (string.IsNullOrWhiteSpace(searchEvent))
+                    {
+                        <span>No upcoming events found</span>
+                    }
+                    else
+                    {
+                        <span>No events found matching <strong>"@searchEvent"</strong></span>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="space-y-4">
+                    @foreach (var eventItem in FilteredEvents)
+                    {
+                        <Card>
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-semibold text-gray-800 mb-1">@eventItem.Name</h3>
+                                    <div class="flex items-center space-x-2 text-sm text-blue-600 font-medium">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <time>@eventItem.StartedAt</time>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="mt-3 text-gray-600 line-clamp-2">@eventItem.Description</p>
+                        </Card>
+                    }
+                </div>
+            }
+        </div>
+
+    </div>
 </div>
 
 @code {
-	private List<AnnouncementModel>? announcements;
-	private string searchTerm = string.Empty;
+    private List<AnnouncementModel>? announcements;
+    private List<EventModel>? events;
+    private string searchAnnouncement = string.Empty;
+    private string searchEvent = string.Empty;
 
-	private List<AnnouncementModel> FilteredAnnouncements =>
-		announcements?
-			.Where(e =>
-				(e.Heading?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false))
-			.OrderBy(e => e.PostedAt)
-			.ToList()
-		?? new List<AnnouncementModel>();
+    private List<AnnouncementModel> FilteredAnnouncements =>
+        announcements?
+            .Where(e =>
+                (e.Heading?.Contains(searchAnnouncement, StringComparison.OrdinalIgnoreCase) ?? false))
+            .OrderBy(e => e.PostedAt)
+            .ToList()
+        ?? new List<AnnouncementModel>();
 
-	protected override async Task OnInitializedAsync()
-	{
-		announcements = await Context.Announcements
-			.OrderBy(e => e.PostedAt)
-			.ToListAsync();
-	}
+    private List<EventModel> FilteredEvents =>
+        events?
+            .Where(e =>
+                (e.Name?.Contains(searchEvent, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (e.Description?.Contains(searchEvent, StringComparison.OrdinalIgnoreCase) ?? false))
+            .OrderBy(e => e.StartedAt)
+            .ToList()
+        ?? new List<EventModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        announcements = await Context.Announcements
+            .OrderBy(e => e.PostedAt)
+            .ToListAsync();
+        events = await Context.Events
+            .OrderBy(e => e.StartedAt)
+            .ToListAsync();
+    }
+
 }
