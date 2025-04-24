@@ -5,13 +5,43 @@
 @inject ApplicationDbContext Context
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<UserModel> UserManager
+<style>
+	body {
+		background-color: whitesmoke;
+	}
 
-<div class="min-h-screen bg-gray-50 w-full p-8">
+	html {
+		scroll-behavior: smooth;
+		overflow-y: scroll;
+		overflow-x: hidden;
+		font-family: 'PT Sans Narrow', sans-serif;
+	}
+
+		html::-webkit-scrollbar {
+			width: 8px;
+		}
+
+		html::-webkit-scrollbar-track {
+			background: #f0f0f0;
+		}
+
+		html::-webkit-scrollbar-thumb {
+			background-color: #888;
+			border-radius: 4px;
+			border: 2px solid #f0f0f0;
+		}
+
+			html::-webkit-scrollbar-thumb:hover {
+				background-color: #555;
+			}
+</style>
+<div class="text-center mb-2">
+	<h2 class="text-3xl font-bold mb-2 mt-25">List of Billings</h2>
+	<p class="text-gray-600">Manage your billing records</p>
+	<div class="h-1 w-20 bg-green-500 mx-auto mt-4"></div>
+</div>
+<div class="min-h-screen w-full px-8">
 	<div class="max-w-6xl mx-auto">
-		<div class="mb-8">
-			<h1 class="text-3xl font-bold text-gray-800">List of Billings</h1>
-			<p class="text-gray-600">Manage your billing records</p>
-		</div>
 
 		<div class="flex flex-col md:flex-row justify-between gap-2 my-2">
 			<div class="flex-1">

@@ -84,9 +84,9 @@
             <li class="ml-4">
                 <Dropdown>
                     <DropdownButton>
-                        <button class="flex items-center border border-gray-200 rounded-full h-10 px-5 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group shadow-sm hover:shadow-emerald-100">
-                            <img src="/image/user.png" alt="User" class="w-auto h-5 opacity-80 group-hover:opacity-100 group-hover:brightness-0 group-hover:invert transition-all duration-300">
-                            <span class="text-center text-sm font-medium ml-2 text-gray-600 group-hover:text-white">@(currentUser != null ? currentUser!.FirstName : "User")</span>
+                        <button class="flex items-center border border-emerald-500 bg-emerald-500 rounded-full h-10 px-5 shadow-sm">
+                            <img src="/image/user.png" alt="User" class="w-auto h-5 invert">
+                            <span class="text-center text-sm font-medium ml-2 text-white">@(currentUser != null ? currentUser!.FirstName : "User")</span>
                         </button>
                     </DropdownButton>
                     <DropdownItems>
@@ -238,10 +238,10 @@
                 </a>
                 <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
             </li>
-            <li class="ml-4">
-                <NavLink href="/Login" class="flex items-center border border-gray-200 rounded-full h-10 px-5 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group shadow-sm hover:shadow-emerald-100">
-                    <img src="/image/user.png" alt="User Icon" class="w-auto h-5 opacity-80 group-hover:opacity-100 group-hover:brightness-0 group-hover:invert transition-all duration-300">
-                    <span class="text-center text-sm font-medium ml-2 text-gray-600 group-hover:text-white">Login</span>
+            <li class="ml-4 ">
+                <NavLink href="/Login" class="bg-emerald-500 flex items-center border border-gray-200 rounded-full h-10 px-5 shadow-sm">
+                    <img src="/image/user.png" alt="User Icon" class="w-auto h-5 invert">
+                    <span class="text-white text-center text-sm font-medium ml-2">Login</span>
                 </NavLink>
             </li>
         }
