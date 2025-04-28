@@ -22,7 +22,14 @@
 						<div class="fixed inset-0 bg-gray-500 opacity-75"></div>
 						<div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full relative z-20">
 							<div class="p-6">
-								<h2 class="text-2xl font-bold mb-4">Add Billing</h2>
+								@if(edit)
+								{
+									<h2 class="text-2xl font-bold mb-4">Edit Billing</h2>
+								}
+								else
+								{
+									<h2 class="text-2xl font-bold mb-4">Add Billing</h2>
+								}
 								<EditForm Model="billingModel" OnValidSubmit="Confirm">
 									<DataAnnotationsValidator />
 									<ValidationSummary />
@@ -67,21 +74,26 @@
 			{
 				@foreach (var billing in billings)
 				{
-					<div class="bg-white shadow-lg rounded-lg overflow-hidden mb-6 hover:shadow-2xl transition-shadow duration-300">
-						<div class="p-6">
-							<div class="flex items-center justify-between">
-								<h2 class="text-xl font-semibold text-gray-800">@billing.Name</h2>
-								<span class="px-3 py-1 text-sm font-semibold text-white rounded-full @(billing.IsPaid ? "bg-green-500" : "bg-red-500")">
+					<div class="bg-white shadow rounded-lg overflow-hidden mb-6 hover:shadow-md transition-shadow">
+						<div class="p-4">
+							<div class="flex justify-between items-center">
+								<h2 class="text-lg font-medium text-gray-800">@billing.Name</h2>
+								<span class="px-2 py-1 text-xs font-bold text-white rounded @(billing.IsPaid ? "bg-green-500" : "bg-red-500")">
 									@(billing.IsPaid ? "Paid" : "Unpaid")
 								</span>
 							</div>
-							<p class="mt-2 text-gray-600">@billing.Amount.ToString("C")</p>
-							<p class="mt-2 text-gray-600">User: @billing.User!.FirstName</p>
-							<p class="mt-1 text-sm text-gray-500">Issued On: @billing.IssuedAt.ToString("d")</p>
+							<div class="mt-2">
+								<p class="text-gray-600">₱@billing.Amount.ToString("N2")</p>
+								<p class="text-gray-600">User: @billing.User!.FirstName</p>
+								<p class="text-sm text-gray-500">Issued On: @billing.IssuedAt.ToString("d")</p>
+							</div>
 						</div>
-						<div class="bg-gray-50 p-4 flex justify-end border-t">
-							<button class="px-4 py-2 text-sm font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md" @onclick="() => EditBilling(billing.Id)">
+						<div class="p-3 flex flex-row gap-4">
+							<button class="text-emerald-600 text-sm font-medium hover:text-emerald-800" @onclick="() => EditBilling(billing.Id)">
 								Edit
+							</button>
+							<button class="text-red-600 text-sm font-medium hover:text-red-800" @onclick="() => DeleteBilling(billing.Id)">
+								Delete
 							</button>
 						</div>
 					</div>
@@ -107,9 +119,27 @@
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
-		// Eagerly load billing records with related User
-		billings = Context.Billing.Include(b => b.User).ToArray();
+		FetchData();
+	}
+
+	private void FetchData()
+	{
+		billings = Context.Billing
+			.OrderByDescending(e => e.IssuedAt)
+			.Include(b => b.User)
+			.ToArray();
 		users = Context.Users.ToArray();
+	}
+
+	private async Task DeleteBilling(string id)
+	{
+		var billingToDelete = await Context.Billing.FindAsync(id);
+		if (billingToDelete != null)
+		{
+			Context.Billing.Remove(billingToDelete);
+			await Context.SaveChangesAsync();
+			FetchData();
+		}
 	}
 
 	private void AddBilling()
@@ -164,6 +194,7 @@
 			billings = Context.Billing.Include(b => b.User).ToArray();
 		}
 		// Close the modal after saving
+		FetchData();
 		showModal = false;
 	}
 }

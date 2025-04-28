@@ -8,6 +8,7 @@
     --color-red-500: oklch(0.637 0.237 25.331);
     --color-red-600: oklch(0.577 0.245 27.325);
     --color-red-700: oklch(0.505 0.213 27.518);
+    --color-red-800: oklch(0.444 0.177 26.899);
     --color-amber-100: oklch(0.962 0.059 95.617);
     --color-amber-400: oklch(0.828 0.189 84.429);
     --color-amber-800: oklch(0.473 0.137 46.201);
@@ -1452,6 +1453,13 @@
       }
     }
   }
+  .hover\:text-emerald-800 {
+    &:hover {
+      @media (hover: hover) {
+        color: var(--color-emerald-800);
+      }
+    }
+  }
   .hover\:text-gray-700 {
     &:hover {
       @media (hover: hover) {
@@ -1491,6 +1499,13 @@
     &:hover {
       @media (hover: hover) {
         color: var(--color-red-500);
+      }
+    }
+  }
+  .hover\:text-red-800 {
+    &:hover {
+      @media (hover: hover) {
+        color: var(--color-red-800);
       }
     }
   }
