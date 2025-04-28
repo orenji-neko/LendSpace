@@ -17,8 +17,4 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\LendSpace.Client\LendSpace.Client.csproj" />
-  </ItemGroup>
-
 </Project>

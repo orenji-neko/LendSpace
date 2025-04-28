@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LendSpace.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250409164343_seeding-users-1")]
-    partial class seedingusers1
+    [Migration("20250427135248_init-v2")]
+    partial class initv2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -95,6 +95,78 @@ namespace LendSpace.Migrations
                             IsPaid = false,
                             IssuedAt = new DateOnly(2025, 4, 2),
                             Name = "Electricity",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0003",
+                            Amount = 50.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Water",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0004",
+                            Amount = 70.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Internet",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0005",
+                            Amount = 100.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Gas",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0006",
+                            Amount = 80.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Cable TV",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0007",
+                            Amount = 30.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Garbage Collection",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0008",
+                            Amount = 125.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Maintenance Fee",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0009",
+                            Amount = 60.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Security Fee",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0010",
+                            Amount = 500.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Property Tax",
                             UserId = "test-user-0001"
                         });
                 });
@@ -272,7 +344,7 @@ namespace LendSpace.Migrations
                             Id = "test-user-0001",
                             AccessFailedCount = 0,
                             Address = "123 User St.",
-                            ConcurrencyStamp = "476eded3-03d0-4cea-a386-2f3f6fa4eeef",
+                            ConcurrencyStamp = "ea4355eb-f185-47c6-ab5d-502fe4e8ad3c",
                             Email = "user@email.com",
                             EmailConfirmed = false,
                             FirstName = "John",
@@ -281,9 +353,9 @@ namespace LendSpace.Migrations
                             MidInitial = "A",
                             NormalizedEmail = "USER@EMAIL.COM",
                             NormalizedUserName = "USER@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEI1vFiUGdIxwmjy3xr0EYtW8Ktqljf+mcwnMxxTZWTAWgp591guscClDVnOrYeNsPA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEDSZnRQOxbczuakmpAUA8skLa1JJK4zXztpSWQhxdNa3yoozQqVGwyOetOXgUTx85Q==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "6e08f4c2-7152-4824-8534-b02f6e9bd14a",
+                            SecurityStamp = "65578b75-a952-4b88-b6b0-de6dbf2150b1",
                             TwoFactorEnabled = false,
                             UserName = "user@email.com"
                         },
@@ -292,7 +364,7 @@ namespace LendSpace.Migrations
                             Id = "test-admin-0001",
                             AccessFailedCount = 0,
                             Address = "123 Admin St.",
-                            ConcurrencyStamp = "8264cc25-4bb7-4600-906c-590c6713424c",
+                            ConcurrencyStamp = "c357b207-8d1d-4c25-b2c0-a3e1d185f0fa",
                             Email = "admin@email.com",
                             EmailConfirmed = false,
                             FirstName = "John",
@@ -301,8 +373,9 @@ namespace LendSpace.Migrations
                             MidInitial = "A",
                             NormalizedEmail = "ADMIN@EMAIL.COM",
                             NormalizedUserName = "ADMIN@EMAIL.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEEBwb7Ttogzgi84tSjVUDhjFRtBMZQyqz9NaZyuB/yPkDCe5lCO3hMFc4L5UI7wkw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "1304b637-b2b4-4020-a706-5faf54641da3",
+                            SecurityStamp = "6865f4e2-28ac-409e-b32e-3080744bb5cc",
                             TwoFactorEnabled = false,
                             UserName = "admin@email.com"
                         });

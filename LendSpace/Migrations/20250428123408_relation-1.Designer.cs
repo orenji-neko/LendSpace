@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LendSpace.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250405133152_init")]
-    partial class init
+    [Migration("20250428123408_relation-1")]
+    partial class relation1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,7 +20,37 @@ namespace LendSpace.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
 
-            modelBuilder.Entity("LendSpace.Models.Billing", b =>
+            modelBuilder.Entity("LendSpace.Models.AnnouncementModel", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Heading")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("PostedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Announcements");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "test-announcement-0001",
+                            Body = "Details can be found here",
+                            Heading = "Announcement",
+                            PostedAt = new DateOnly(2025, 4, 6)
+                        });
+                });
+
+            modelBuilder.Entity("LendSpace.Models.BillingModel", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
@@ -57,19 +87,10 @@ namespace LendSpace.Migrations
                             IssuedAt = new DateOnly(2025, 4, 2),
                             Name = "Rent",
                             UserId = "test-user-0001"
-                        },
-                        new
-                        {
-                            Id = "test-billing-0002",
-                            Amount = 150.0,
-                            IsPaid = false,
-                            IssuedAt = new DateOnly(2025, 4, 2),
-                            Name = "Electricity",
-                            UserId = "test-user-0001"
                         });
                 });
 
-            modelBuilder.Entity("LendSpace.Models.Event", b =>
+            modelBuilder.Entity("LendSpace.Models.EventModel", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
@@ -88,9 +109,25 @@ namespace LendSpace.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Events");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "test-event-0001",
+                            Description = "Home Owners Association Anniversary",
+                            Name = "Anniversary",
+                            StartedAt = new DateOnly(2025, 4, 6)
+                        },
+                        new
+                        {
+                            Id = "test-event-0002",
+                            Description = "Test Event Description",
+                            Name = "Test Event 1",
+                            StartedAt = new DateOnly(2025, 4, 15)
+                        });
                 });
 
-            modelBuilder.Entity("LendSpace.Models.Facility", b =>
+            modelBuilder.Entity("LendSpace.Models.FacilityModel", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
@@ -141,7 +178,7 @@ namespace LendSpace.Migrations
                         });
                 });
 
-            modelBuilder.Entity("LendSpace.Models.User", b =>
+            modelBuilder.Entity("LendSpace.Models.UserModel", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
@@ -226,7 +263,7 @@ namespace LendSpace.Migrations
                             Id = "test-user-0001",
                             AccessFailedCount = 0,
                             Address = "123 User St.",
-                            ConcurrencyStamp = "89827eae-889a-44cb-ad4a-cc1f0d6a3709",
+                            ConcurrencyStamp = "5a941f0a-fbd1-427c-aaef-47d84be2a310",
                             Email = "user@email.com",
                             EmailConfirmed = false,
                             FirstName = "John",
@@ -235,11 +272,31 @@ namespace LendSpace.Migrations
                             MidInitial = "A",
                             NormalizedEmail = "USER@EMAIL.COM",
                             NormalizedUserName = "USER@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEE1f/+iqbqixEZGC5gHNr1d6ElLDs1A+JO7YaZnNEkcRkNqlr5ynm7XHATeDrkLHjg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEKe3OuS7f2EPGT2SnkFcKBh+BssmKtLBTh8CwTrv+cOkJWU7bF3rDMkaWVGjD4tLtA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "967ff6b8-da69-49e2-8692-878799a37268",
+                            SecurityStamp = "c56f11c0-75ad-4f25-b28f-9ea67b1fc630",
                             TwoFactorEnabled = false,
                             UserName = "user@email.com"
+                        },
+                        new
+                        {
+                            Id = "test-admin-0001",
+                            AccessFailedCount = 0,
+                            Address = "123 Admin St.",
+                            ConcurrencyStamp = "267f3bfd-b707-4045-9768-61b43648a73f",
+                            Email = "admin@email.com",
+                            EmailConfirmed = false,
+                            FirstName = "John",
+                            LastName = "Doe",
+                            LockoutEnabled = false,
+                            MidInitial = "A",
+                            NormalizedEmail = "ADMIN@EMAIL.COM",
+                            NormalizedUserName = "ADMIN@EMAIL.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAELS8FhOIe3QnI98LeBMhLQQg+9tGc7VENL/aRGSbzegcBtyYIrfsNw/mCYn3PiyIrQ==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "136c6bf4-75d2-4588-b65e-dc9ddd61ab04",
+                            TwoFactorEnabled = false,
+                            UserName = "admin@email.com"
                         });
                 });
 
@@ -370,6 +427,11 @@ namespace LendSpace.Migrations
                         {
                             UserId = "test-user-0001",
                             RoleId = "role-user-0001"
+                        },
+                        new
+                        {
+                            UserId = "test-admin-0001",
+                            RoleId = "role-admin-0001"
                         });
                 });
 
@@ -392,9 +454,9 @@ namespace LendSpace.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("LendSpace.Models.Billing", b =>
+            modelBuilder.Entity("LendSpace.Models.BillingModel", b =>
                 {
-                    b.HasOne("LendSpace.Models.User", "User")
+                    b.HasOne("LendSpace.Models.UserModel", "User")
                         .WithMany("Billings")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -414,7 +476,7 @@ namespace LendSpace.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("LendSpace.Models.User", null)
+                    b.HasOne("LendSpace.Models.UserModel", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -423,7 +485,7 @@ namespace LendSpace.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("LendSpace.Models.User", null)
+                    b.HasOne("LendSpace.Models.UserModel", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -438,7 +500,7 @@ namespace LendSpace.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("LendSpace.Models.User", null)
+                    b.HasOne("LendSpace.Models.UserModel", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -447,14 +509,14 @@ namespace LendSpace.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("LendSpace.Models.User", null)
+                    b.HasOne("LendSpace.Models.UserModel", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("LendSpace.Models.User", b =>
+            modelBuilder.Entity("LendSpace.Models.UserModel", b =>
                 {
                     b.Navigation("Billings");
                 });

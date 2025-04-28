@@ -1,4 +1,202 @@
 ﻿@page "/Admin/Billing"
+@rendermode InteractiveServer
 @attribute [Authorize(Policy = "AdminOnly")]
 
+@inject ApplicationDbContext Context
+
 <PageTitle>Billing</PageTitle>
+
+<main class="w-full h-full p-4">
+	<div class="max-w-7xl mx-auto px-4 py-8">
+		<div class="">
+			<h1 class="text-3xl font-bold text-gray-900 mb-4">Billing</h1>
+			<div class="flex flex-row justify-end">
+				<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-6" @onclick="AddBilling">
+					Add Billing
+				</button>
+			</div>
+
+            @* Modal Overlay *@
+			@if (showModal)
+			{
+				<div class="fixed inset-0 z-10 overflow-y-auto">
+					<div class="flex items-center justify-center min-h-screen px-4">
+						<div class="fixed inset-0 bg-gray-500 opacity-75"></div>
+						<div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full relative z-20">
+							<div class="p-6">
+								@if(edit)
+								{
+									<h2 class="text-2xl font-bold mb-4">Edit Billing</h2>
+								}
+								else
+								{
+									<h2 class="text-2xl font-bold mb-4">Add Billing</h2>
+								}
+								<EditForm Model="billingModel" OnValidSubmit="Confirm">
+									<DataAnnotationsValidator />
+									<ValidationSummary />
+
+									<div class="mb-4">
+										<label class="block text-gray-700">Billing Name</label>
+										<InputText @bind-Value="billingModel!.Name" class="w-full border rounded p-2" />
+									</div>
+									<div class="mb-4">
+										<label class="block text-gray-700">Amount</label>
+										<InputNumber @bind-Value="billingModel!.Amount" class="w-full border rounded p-2" />
+									</div>
+									<div class="mb-4 flex items-center">
+										<InputCheckbox @bind-Value="billingModel!.IsPaid" class="mr-2" />
+										<label class="text-gray-700">Is Paid</label>
+									</div>
+									<div class="mb-4">
+										<label class="block text-gray-700">User</label>
+										<select class="w-full border rounded p-2" @bind="billingModel.UserId">
+											<option disabled value="">Select a user</option>
+											@foreach (var user in users!)
+											{
+												<option value="@user.Id">@user.FirstName @user.LastName</option>
+											}
+										</select>
+									</div>
+									<div class="flex justify-end space-x-2">
+										<button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save</button>
+										<button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" @onclick="Close">
+											Cancel
+										</button>
+									</div>
+								</EditForm>
+							</div>
+						</div>
+					</div>
+				</div>
+			}
+
+			@* Billing Records List *@
+			@if (billings != null && billings.Any())
+			{
+				@foreach (var billing in billings)
+				{
+					<div class="bg-white shadow rounded-lg overflow-hidden mb-6 hover:shadow-md transition-shadow">
+						<div class="p-4">
+							<div class="flex justify-between items-center">
+								<h2 class="text-lg font-medium text-gray-800">@billing.Name</h2>
+								<span class="px-2 py-1 text-xs font-bold text-white rounded @(billing.IsPaid ? "bg-green-500" : "bg-red-500")">
+									@(billing.IsPaid ? "Paid" : "Unpaid")
+								</span>
+							</div>
+							<div class="mt-2">
+								<p class="text-gray-600">₱@billing.Amount.ToString("N2")</p>
+								<p class="text-gray-600">User: @billing.User!.FirstName</p>
+								<p class="text-sm text-gray-500">Issued On: @billing.IssuedAt.ToString("d")</p>
+							</div>
+						</div>
+						<div class="p-3 flex flex-row gap-4">
+							<button class="text-emerald-600 text-sm font-medium hover:text-emerald-800" @onclick="() => EditBilling(billing.Id)">
+								Edit
+							</button>
+							<button class="text-red-600 text-sm font-medium hover:text-red-800" @onclick="() => DeleteBilling(billing.Id)">
+								Delete
+							</button>
+						</div>
+					</div>
+				}
+			}
+			else
+			{
+				<p class="text-gray-600">No billing records found.</p>
+			}
+		</div>
+	</div>
+</main>
+
+@code {
+	private BillingModel[]? billings;
+	private UserModel[]? users;
+	private BillingModel? billingModel { get; set; }
+	private bool edit = false;
+
+	// Toggle to control modal visibility.
+	private bool showModal = false;
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		FetchData();
+	}
+
+	private void FetchData()
+	{
+		billings = Context.Billing
+			.OrderByDescending(e => e.IssuedAt)
+			.Include(b => b.User)
+			.ToArray();
+		users = Context.Users.ToArray();
+	}
+
+	private async Task DeleteBilling(string id)
+	{
+		var billingToDelete = await Context.Billing.FindAsync(id);
+		if (billingToDelete != null)
+		{
+			Context.Billing.Remove(billingToDelete);
+			await Context.SaveChangesAsync();
+			FetchData();
+		}
+	}
+
+	private void AddBilling()
+	{
+		edit = false;
+		// Reset the BillingModel to clear previous form data.
+		billingModel = new BillingModel
+			{
+				Id = Guid.NewGuid().ToString(),
+				Name = string.Empty,
+				Amount = 0,
+				IsPaid = false,
+				IssuedAt = DateOnly.FromDateTime(DateTime.Today),
+				UserId = string.Empty
+			};
+		showModal = true;
+	}
+
+	private void EditBilling(string id)
+	{
+		edit = true;
+		billingModel = Context.Billing.Find(id);
+		if (billingModel == null)
+		{
+			return;
+		}
+
+		showModal = true;
+	}
+
+	private void Close()
+	{
+		edit = false;
+		showModal = false;
+	}
+
+	private void Confirm()
+	{
+		if (billingModel == null)
+			return;
+
+		if (edit)
+		{
+			Context.Billing.Update(billingModel);
+			Context.SaveChanges();
+		}
+		else
+		{
+			Context.Billing.Add(billingModel);
+			Context.SaveChanges();
+
+			billings = Context.Billing.Include(b => b.User).ToArray();
+		}
+		// Close the modal after saving
+		FetchData();
+		showModal = false;
+	}
+}
