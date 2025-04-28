@@ -21,21 +21,25 @@ namespace LendSpace.Data
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-            //optionsBuilder.EnableSensitiveDataLogging();
+            optionsBuilder.EnableSensitiveDataLogging();
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            /**
-             * User[One] <-> Billing[Many]
-             */
+            // Configure the one-to-many relationship between UserModel and BillingModel
             builder.Entity<UserModel>()
-                .HasMany(e => e.Billings)
-                .WithOne(e => e.User)
-                .HasForeignKey(e => e.UserId)
-                .IsRequired();
+                   .HasMany(u => u.Billings)
+                   .WithOne(b => b.User)
+                   .HasForeignKey(b => b.UserId)
+                   .IsRequired();
+            builder.Entity<BillingModel>()
+                   .HasOne(b => b.User)
+                   .WithMany(u => u.Billings)
+                   .HasForeignKey(b => b.UserId)
+                   .IsRequired();
+
 
             // seeding table operations. remove in production
             SeedTables(builder);
@@ -147,87 +151,6 @@ namespace LendSpace.Data
                     UserId = "test-user-0001",
                     IssuedAt = new DateOnly(2025, 4, 2)
                 },
-                new BillingModel
-                {
-                    Id = "test-billing-0002",
-                    Name = "Electricity",
-                    IsPaid = false,
-                    Amount = 150.00,
-                    UserId = "test-user-0001",
-                    IssuedAt = new DateOnly(2025, 4, 2)
-                },
-                new BillingModel
-                {
-                    Id = "test-billing-0003",
-                    Name = "Water",
-                    IsPaid = false,
-                    Amount = 50.00,
-                    UserId = "test-user-0001",
-                    IssuedAt = new DateOnly(2025, 4, 2)
-                },
-                new BillingModel
-                {
-                    Id = "test-billing-0004",
-                    Name = "Internet",
-                    IsPaid = false,
-                    Amount = 70.00,
-                    UserId = "test-user-0001",
-                    IssuedAt = new DateOnly(2025, 4, 2)
-                },
-                new BillingModel
-                {
-                    Id = "test-billing-0005",
-                    Name = "Gas",
-                    IsPaid = false,
-                    Amount = 100.00,
-                    UserId = "test-user-0001",
-                    IssuedAt = new DateOnly(2025, 4, 2)
-                },
-                new BillingModel
-                {
-                    Id = "test-billing-0006",
-                    Name = "Cable TV",
-                    IsPaid = false,
-                    Amount = 80.00,
-                    UserId = "test-user-0001",
-                    IssuedAt = new DateOnly(2025, 4, 2)
-                },
-                new BillingModel
-                {
-                    Id = "test-billing-0007",
-                    Name = "Garbage Collection",
-                    IsPaid = false,
-                    Amount = 30.00,
-                    UserId = "test-user-0001",
-                    IssuedAt = new DateOnly(2025, 4, 2)
-                },
-                new BillingModel
-                {
-                    Id = "test-billing-0008",
-                    Name = "Maintenance Fee",
-                    IsPaid = false,
-                    Amount = 125.00,
-                    UserId = "test-user-0001",
-                    IssuedAt = new DateOnly(2025, 4, 2)
-                },
-                new BillingModel
-                {
-                    Id = "test-billing-0009",
-                    Name = "Security Fee",
-                    IsPaid = false,
-                    Amount = 60.00,
-                    UserId = "test-user-0001",
-                    IssuedAt = new DateOnly(2025, 4, 2)
-                },
-                new BillingModel
-                {
-                    Id = "test-billing-0010",
-                    Name = "Property Tax",
-                    IsPaid = false,
-                    Amount = 500.00,
-                    UserId = "test-user-0001",
-                    IssuedAt = new DateOnly(2025, 4, 2)
-                }
             });
 
             // Event Seeding

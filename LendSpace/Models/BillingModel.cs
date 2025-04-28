@@ -16,7 +16,6 @@ namespace LendSpace.Models
         /**
          * The user who's required to pay the bill
          */
-        [Required]
         public UserModel? User { get; set; }
         [Required]
         public string? UserId { get; set; }

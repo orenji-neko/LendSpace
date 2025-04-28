@@ -1,4 +1,136 @@
 ﻿@page "/Admin/Billing"
+@rendermode InteractiveServer
 @attribute [Authorize(Policy = "AdminOnly")]
 
+@inject ApplicationDbContext Context
+
 <PageTitle>Billing</PageTitle>
+
+<main class="w-full h-full p-4">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="">
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Billing</h1>
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-6" @onclick="OpenModal">
+                Add Billing
+            </button>
+
+            @* Modal Overlay *@
+            @if (showModal)
+            {
+                <div class="fixed inset-0 z-10 overflow-y-auto">
+                    <div class="flex items-center justify-center min-h-screen px-4">
+                        <div class="fixed inset-0 bg-gray-500 opacity-75"></div>
+                        <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full relative z-20">
+                            <div class="p-6">
+                                <h2 class="text-2xl font-bold mb-4">Add Billing</h2>
+                                <EditForm Model="billingModel" OnValidSubmit="AddBilling">
+                                    <DataAnnotationsValidator />
+                                    <ValidationSummary />
+
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700">Billing Name</label>
+                                        <InputText @bind-Value="billingModel!.Name" class="w-full border rounded p-2" />
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700">Amount</label>
+                                        <InputNumber @bind-Value="billingModel!.Amount" class="w-full border rounded p-2" />
+                                    </div>
+                                    <div class="mb-4 flex items-center">
+                                        <InputCheckbox @bind-Value="billingModel!.IsPaid" class="mr-2" />
+                                        <label class="text-gray-700">Is Paid</label>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700">User</label>
+                                        <select class="w-full border rounded p-2" @bind="billingModel.UserId">
+                                            <option disabled value="">Select a user</option>
+                                            @foreach (var user in users!)
+                                            {
+                                                <option value="@user.Id">@user.FirstName @user.LastName</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="flex justify-end space-x-2">
+                                        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save</button>
+                                        <button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" @onclick="CloseModal">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </EditForm>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @* Billing Records List *@
+            @if (billings != null && billings.Any())
+            {
+                @foreach (var billing in billings)
+                {
+                    <div class="shadow-md p-6 flex flex-col mb-4">
+                        <h2 class="text-2xl font-semibold text-gray-900 px-2">@billing.Name</h2>
+                        <p class="px-2">@billing.Amount.ToString("C")</p>
+                        <p class="px-2">@billing.User!.FirstName</p>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-gray-600">No billing records found.</p>
+            }
+        </div>
+    </div>
+</main>
+
+@code {
+    private BillingModel[]? billings;
+    private UserModel[]? users;
+    private BillingModel? billingModel;
+
+    // Toggle to control modal visibility.
+    private bool showModal = false;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        // Eagerly load billing records with related User
+        billings = Context.Billing.Include(b => b.User).ToArray();
+        users = Context.Users.ToArray();
+    }
+
+    private void OpenModal()
+    {
+        // Reset the BillingModel to clear previous form data.
+        billingModel = new BillingModel
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = string.Empty,
+                Amount = 0,
+                IsPaid = false,
+                IssuedAt = DateOnly.FromDateTime(DateTime.Today),
+                UserId = string.Empty
+            };
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+    }
+
+    private void AddBilling()
+    {
+        if (billingModel == null)
+            return;
+
+        // Add the Billing record to the DbContext
+        Context.Billing.Add(billingModel);
+        Context.SaveChanges();
+
+        // Refresh the list of billings
+        billings = Context.Billing.Include(b => b.User).ToArray();
+
+        // Close the modal after saving
+        showModal = false;
+    }
+}
