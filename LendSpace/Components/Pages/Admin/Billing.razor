@@ -10,9 +10,11 @@
 	<div class="max-w-7xl mx-auto px-4 py-8">
 		<div class="">
 			<h1 class="text-3xl font-bold text-gray-900 mb-4">Billing</h1>
-			<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-6" @onclick="AddBilling">
-				Add Billing
-			</button>
+			<div class="flex flex-row justify-end">
+				<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-6" @onclick="AddBilling">
+					Add Billing
+				</button>
+			</div>
 
             @* Modal Overlay *@
 			@if (showModal)

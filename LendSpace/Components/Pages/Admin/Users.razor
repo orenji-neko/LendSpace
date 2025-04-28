@@ -1,4 +1,305 @@
-﻿@page "/Admin/Users"
+﻿@page "/Admin/User"
+@rendermode InteractiveServer
 @attribute [Authorize(Policy = "AdminOnly")]
 
+@inject ApplicationDbContext Context
+@inject UserManager<UserModel> UserManager
+
 <PageTitle>Users</PageTitle>
+
+<main class="w-full h-full p-4">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Users</h1>
+            <div class="flex flex-row justify-end">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-6" @onclick="Add">
+                    Add User Account
+                </button>
+            </div>
+
+            @* Modal Overlay for Add/Edit *@
+            @if (showModal)
+            {
+                <div class="fixed inset-0 z-10 overflow-y-auto">
+                    <div class="flex items-center justify-center min-h-screen px-4">
+                        <div class="fixed inset-0 bg-gray-500 opacity-75"></div>
+                        <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full relative z-20">
+                            <div class="p-6">
+                                @if (edit)
+                                {
+                                    <h2 class="text-2xl font-bold mb-4">Edit User</h2>
+                                }
+                                else
+                                {
+                                    <h2 class="text-2xl font-bold mb-4">Add User</h2>
+                                }
+                                <EditForm Model="model" OnValidSubmit="Confirm">
+                                    <DataAnnotationsValidator />
+                                    <ValidationSummary />
+
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700">Email</label>
+                                        <InputText @bind-Value="model!.Email" class="w-full border rounded p-2" />
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700">Password</label>
+                                        <!-- Use type="password" so the input behaves as a password field -->
+                                        <InputText type="password" @bind-Value="model!.Password" class="w-full border rounded p-2" />
+                                    </div>
+                                    <div class="flex flex-row gap-x-2">
+                                        <div>
+                                            <label class="block text-gray-700">Last Name</label>
+                                            <InputText @bind-Value="model!.LastName" class="w-full border rounded p-2" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-700">First Name</label>
+                                            <InputText @bind-Value="model!.FirstName" class="w-full border rounded p-2" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-700">Middle Initial</label>
+                                            <InputText @bind-Value="model!.MidInitial" class="w-full border rounded p-2" />
+                                        </div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700">Address</label>
+                                        <InputText @bind-Value="model!.Address" class="w-full border rounded p-2" />
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700">Roles</label>
+                                        <select class="w-full border rounded p-2" @bind="model.RoleId">
+                                            @foreach (var role in roles!)
+                                            {
+                                                <option value="@role.Id">@role.Name</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="flex justify-end space-x-2">
+                                        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save</button>
+                                        <button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" @onclick="Close">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </EditForm>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @* Users Records List *@
+            @if (users != null && users.Any())
+            {
+                @foreach (var user in users)
+                {
+                    <div class="bg-white shadow rounded-lg overflow-hidden mb-6 hover:shadow-md transition-shadow">
+                        <div class="p-4">
+                            <div class="flex justify-between items-center">
+                                <h2 class="text-lg font-medium text-gray-800">
+                                    @user.LastName, @user.FirstName @user.MidInitial.
+                                </h2>
+                            </div>
+                            <div class="mt-2">
+                                <p class="text-gray-600">Address: @user.Address</p>
+                            </div>
+                        </div>
+                        <div class="p-3 flex flex-row gap-4">
+                            <button class="text-emerald-600 text-sm font-medium hover:text-emerald-800" @onclick="() => Edit(user.Id)">
+                                Edit
+                            </button>
+                            <button class="text-red-600 text-sm font-medium hover:text-red-800" @onclick="() => Delete(user.Id)">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-gray-600">No user records found.</p>
+            }
+        </div>
+    </div>
+</main>
+
+@code {
+    private UserModel[]? users;
+    private UserBodyModel? model { get; set; }
+    private IdentityRole[]? roles { get; set; }
+    private bool edit = false;
+    private bool showModal = false; // Toggle for modal visibility
+
+    public class UserBodyModel
+    {
+        [Required] 
+        public string? Id { get; set; }
+        [Required, EmailAddress]
+        public string? Email { get; set; }
+        public string? Password { get; set; }
+        [Required]
+        public string? LastName { get; set; }
+        [Required]
+        public string? FirstName { get; set; }
+        [Required]
+        public string? MidInitial { get; set; }
+        [Required]
+        public string? Address { get; set; }
+        [Required]
+        public string? RoleId { get; set; }
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        FetchData();
+    }
+
+    private void FetchData()
+    {
+        users = Context.Users.ToArray();
+        roles = Context.Roles.ToArray();
+    }
+
+    private async Task Delete(string id)
+    {
+        var user = Context.Users.Find(id);
+        if (user == null)
+        {
+            return;
+        }
+        await UserManager.DeleteAsync(user);
+        FetchData();
+    }
+
+    private void Add()
+    {
+        edit = false;
+        // Reset the model for a new user.
+        model = new UserBodyModel
+            {
+                Id = Guid.NewGuid().ToString(),
+                Email = string.Empty,
+                Password = string.Empty,
+                Address = string.Empty,
+                LastName = string.Empty,
+                FirstName = string.Empty,
+                MidInitial = string.Empty,
+                RoleId = string.Empty,
+            };
+        showModal = true;
+    }
+
+    private void Edit(string id)
+    {
+        edit = true;
+        var user = Context.Users.Find(id);
+        var userRole = Context.UserRoles.FirstOrDefault(e => e.UserId.Equals(user!.Id));
+        if (user == null)
+        {
+            return;
+        }
+        // Populate the view model using existing user details.
+        model = new UserBodyModel
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Address = user.Address,
+                LastName = user.LastName,
+                FirstName = user.FirstName,
+                MidInitial = user.MidInitial,
+            // Leave the password empty so the admin can update it only if desired.
+                Password = string.Empty,
+                RoleId = userRole?.RoleId ?? string.Empty
+            };
+        showModal = true;
+    }
+
+    private void Close()
+    {
+        edit = false;
+        showModal = false;
+    }
+
+    private async Task Confirm()
+    {
+        if (model == null)
+            return;
+
+        // Look up the selected role from the preloaded roles.
+        var selectedRole = roles?.FirstOrDefault(r => r.Id == model.RoleId);
+        if (selectedRole == null)
+        {
+            // Optionally display an error message
+            return;
+        }
+
+        if (edit)
+        {
+            // Update an existing user.
+            var user = Context.Users.Find(model.Id);
+            if (user != null)
+            {
+                user.Email = model.Email;
+                user.NormalizedEmail = model.Email!.ToUpper();
+                user.LastName = model.LastName;
+                user.FirstName = model.FirstName;
+                user.MidInitial = model.MidInitial;
+                user.Address = model.Address;
+
+                // Update the password only if a new password is provided.
+                if (!string.IsNullOrWhiteSpace(model.Password))
+                {
+                    var hasher = new PasswordHasher<UserModel>();
+                    user.PasswordHash = hasher.HashPassword(user, model.Password);
+                }
+
+                // Remove any current roles so only one role remains.
+                var currentRoles = await UserManager.GetRolesAsync(user);
+                if (currentRoles.Any())
+                {
+                    await UserManager.RemoveFromRolesAsync(user, currentRoles);
+                }
+                var addRoleResult = await UserManager.AddToRoleAsync(user, selectedRole.Name!);
+                if (!addRoleResult.Succeeded)
+                {
+                    // Optionally, handle role assignment errors here.
+                }
+                var updateResult = await UserManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    // Optionally handle errors here.
+                }
+            }
+        }
+        else
+        {
+            // Create a new user.
+            var user = new UserModel
+                {
+                    Id = model.Id!,
+                    Email = model.Email,
+                    NormalizedEmail = model.Email!.ToUpper(),
+                    LastName = model.LastName,
+                    FirstName = model.FirstName,
+                    MidInitial = model.MidInitial,
+                    Address = model.Address
+                };
+            var hasher = new PasswordHasher<UserModel>();
+            user.PasswordHash = hasher.HashPassword(user, model.Password!);
+            var createResult = await UserManager.CreateAsync(user);
+            if (!createResult.Succeeded)
+            {
+                // Handle creation errors here.
+            }
+            else
+            {
+                var addRoleResult = await UserManager.AddToRoleAsync(user, selectedRole.Name!);
+                if (!addRoleResult.Succeeded)
+                {
+                    // Handle role assignment errors here.
+                }
+            }
+        }
+        FetchData();
+        showModal = false;
+    }
+}
