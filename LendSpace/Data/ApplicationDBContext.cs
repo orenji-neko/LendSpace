@@ -102,8 +102,15 @@ namespace LendSpace.Data
                 Name = "User",
                 NormalizedName = "USER"
             };
+            var staffRole = new IdentityRole
+            {
+                Id = "role-staff-0001",
+                Name = "Staff",
+                NormalizedName = "STAFF"
+            };
             builder.Entity<IdentityRole>().HasData(adminRole);
             builder.Entity<IdentityRole>().HasData(userRole);
+            builder.Entity<IdentityRole>().HasData(staffRole);
 
             // Creating user
             // User account
@@ -148,8 +155,8 @@ namespace LendSpace.Data
                     UserId = user2.Id,
                 });
 
-            // Creating user
-            // User account
+            // Creating admin
+            // Admin account
             var admin = new UserModel
             {
                 Id = "test-admin-0001",
@@ -169,6 +176,29 @@ namespace LendSpace.Data
                 {
                     RoleId = adminRole.Id,
                     UserId = admin.Id,
+                });
+
+            // Creating staff
+            // Staff account
+            var staff = new UserModel
+            {
+                Id = "test-staff-0001",
+                Email = "staff@email.com",
+                NormalizedEmail = "STAFF@EMAIL.COM",
+                UserName = "staff@email.com",
+                NormalizedUserName = "STAFF@EMAIL.COM",
+                LastName = "Smith",
+                FirstName = "Jane",
+                MidInitial = "B",
+                Address = "123 Staff St."
+            };
+            staff.PasswordHash = hasher.HashPassword(staff, "password");
+            builder.Entity<UserModel>().HasData(staff);
+            builder.Entity<IdentityUserRole<string>>().HasData(
+                new IdentityUserRole<string>
+                {
+                    RoleId = staffRole.Id,
+                    UserId = staff.Id,
                 });
 
             // Facility seeding
@@ -226,6 +256,4 @@ namespace LendSpace.Data
                 ]);
         }
     }
-
-
 }

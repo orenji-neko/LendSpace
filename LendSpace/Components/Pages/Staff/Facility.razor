@@ -1,0 +1,413 @@
+﻿@page "/Staff/Facility"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = "StaffOnly")]
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using LendSpace.Models
+@using LendSpace.Data
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Context
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<UserModel> UserManager
+@inject ApplicationDbContext DbContext
+
+<PageTitle>Staff Facilities Management</PageTitle>
+
+<div class="min-h-screen bg-green-50 p-4">
+    <div class="max-w-7xl mx-auto">
+        <div class="bg-white rounded-xl shadow-md overflow-hidden border border-green-100">
+            <!-- Card Header -->
+            <div class="bg-green-600 px-6 py-4">
+                <h1 class="text-2xl font-semibold text-white">Facilities Management</h1>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6">
+                <!-- Action Bar -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <button 
+                        class="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                        @onclick="OpenAddFacilityDialog">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Add New Facility
+                    </button>
+
+                    <div class="relative w-full md:w-64">
+                        <input 
+                            type="text" 
+                            class="w-full pl-4 pr-10 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500"
+                            placeholder="Search facilities..."
+                            @bind="searchTerm" 
+                            @bind:event="oninput" />
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                @if (isLoading)
+                {
+                    <div class="flex flex-col items-center justify-center py-12">
+                        <div class="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+                        <p class="mt-4 text-green-600">Loading facilities...</p>
+                    </div>
+                }
+                
+                
+                    <div class="overflow-x-auto rounded-lg border border-green-100">
+                        <table class="min-w-full divide-y divide-green-200">
+                            <thead class="bg-green-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-600 uppercase tracking-wider">Name</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-600 uppercase tracking-wider">Address</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-600 uppercase tracking-wider">Description</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-600 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-green-600 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-green-100">
+                            @foreach (var facility in FilteredFacilities)
+                            {
+                                <tr class="hover:bg-green-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@facility.Name</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@facility.Address</td>
+                                    <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">@facility.Description</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if (facility.Available)
+                                        {
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Available</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Unavailable</span>
+                                        }
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="flex justify-end space-x-2">
+                                            <button 
+                                                @onclick="() => OpenEditFacilityDialog(facility)"
+                                                class="text-green-600 hover:text-green-900 p-1 rounded-md hover:bg-green-100">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                                </svg>
+                                            </button>
+                                            <button 
+                                                @onclick="() => OpenDeleteFacilityDialog(facility)"
+                                                class="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-100">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                            <button 
+                                                @onclick="() => ToggleFacilityStatus(facility)"
+                                                class="text-gray-600 hover:text-gray-900 p-1 rounded-md hover:bg-gray-100">
+                                                @if (facility.Available)
+                                                {
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M5 9a7 7 0 0112.78 3.5 1 1 0 01-1.78.9A5 5 0 007 9a1 1 0 010-2zm0 2a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />
+                                                    </svg>
+                                                }
+                                                else
+                                                {
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M5 9a7 7 0 0112.78 3.5 1 1 0 01-1.78.9A5 5 0 007 9a1 1 0 010-2zm0 2a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />
+                                                    </svg>
+                                                }
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Facility Modal -->
+@if (showAddModal)
+{
+    <div class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-green-600 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <h3 class="text-lg leading-6 font-medium text-white">Add New Facility</h3>
+                    <button type="button" class="ml-2 p-1 text-green-200 hover:text-white" @onclick="() => showAddModal = false">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <EditForm Model="@newFacility" OnValidSubmit="AddFacility">
+                    <DataAnnotationsValidator />
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="mb-4">
+                            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                            <InputText id="name" @bind-Value="newFacility.Name" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+                            <ValidationMessage For="@(() => newFacility.Name)" class="text-red-500 text-xs" />
+                        </div>
+                        <div class="mb-4">
+                            <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
+                            <InputText id="address" @bind-Value="newFacility.Address" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+                            <ValidationMessage For="@(() => newFacility.Address)" class="text-red-500 text-xs" />
+                        </div>
+                        <div class="mb-4">
+                            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                            <InputTextArea id="description" @bind-Value="newFacility.Description" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" rows="3" />
+                            <ValidationMessage For="@(() => newFacility.Description)" class="text-red-500 text-xs" />
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <InputCheckbox id="available" @bind-Value="newFacility.Available" class="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded" />
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="available" class="font-medium text-gray-700">Available</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Save
+                        </button>
+                        <button type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" @onclick="() => showAddModal = false">
+                            Cancel
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Edit Facility Modal -->
+@if (showEditModal && selectedFacility != null)
+{
+    <div class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-green-600 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <h3 class="text-lg leading-6 font-medium text-white">Edit Facility</h3>
+                    <button type="button" class="ml-2 p-1 text-green-200 hover:text-white" @onclick="() => showEditModal = false">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <EditForm Model="@selectedFacility" OnValidSubmit="UpdateFacility">
+                    <DataAnnotationsValidator />
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="mb-4">
+                            <label for="editName" class="block text-sm font-medium text-gray-700">Name</label>
+                            <InputText id="editName" @bind-Value="selectedFacility.Name" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+                            <ValidationMessage For="@(() => selectedFacility.Name)" class="text-red-500 text-xs" />
+                        </div>
+                        <div class="mb-4">
+                            <label for="editAddress" class="block text-sm font-medium text-gray-700">Address</label>
+                            <InputText id="editAddress" @bind-Value="selectedFacility.Address" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+                            <ValidationMessage For="@(() => selectedFacility.Address)" class="text-red-500 text-xs" />
+                        </div>
+                        <div class="mb-4">
+                            <label for="editDescription" class="block text-sm font-medium text-gray-700">Description</label>
+                            <InputTextArea id="editDescription" @bind-Value="selectedFacility.Description" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" rows="3" />
+                            <ValidationMessage For="@(() => selectedFacility.Description)" class="text-red-500 text-xs" />
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <InputCheckbox id="editAvailable" @bind-Value="selectedFacility.Available" class="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded" />
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="editAvailable" class="font-medium text-gray-700">Available</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Update
+                        </button>
+                        <button type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" @onclick="() => showEditModal = false">
+                            Cancel
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Delete Confirmation Modal -->
+@if (showDeleteModal && selectedFacility != null)
+{
+    <div class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-red-600 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <h3 class="text-lg leading-6 font-medium text-white">Confirm Delete</h3>
+                    <button type="button" class="ml-2 p-1 text-red-200 hover:text-white" @onclick="() => showDeleteModal = false">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Facility</h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">
+                                    Are you sure you want to delete the facility "<strong>@selectedFacility.Name</strong>"?
+                                </p>
+                                <p class="text-sm text-red-500 mt-2">
+                                    This action cannot be undone.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm" @onclick="DeleteFacility">
+                        Delete
+                    </button>
+                    <button type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" @onclick="() => showDeleteModal = false">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<FacilityModel> facilities;
+    private FacilityModel newFacility = new FacilityModel();
+    private FacilityModel selectedFacility;
+    private bool isLoading = true;
+    private string searchTerm = "";
+
+    // Modal control
+    private bool showAddModal = false;
+    private bool showEditModal = false;
+    private bool showDeleteModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFacilities();
+    }
+
+    private async Task LoadFacilities()
+    {
+        isLoading = true;
+        facilities = await Task.FromResult(DbContext.Facility.ToList());
+        isLoading = false;
+    }
+
+    private IEnumerable<FacilityModel> FilteredFacilities =>
+        string.IsNullOrWhiteSpace(searchTerm)
+            ? facilities
+            : facilities.Where(f =>
+                f.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                f.Address.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                f.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+    private void OpenAddFacilityDialog()
+    {
+        newFacility = new FacilityModel
+            {
+                Id = Guid.NewGuid().ToString(),
+                Available = true
+            };
+        showAddModal = true;
+    }
+
+    private void OpenEditFacilityDialog(FacilityModel facility)
+    {
+        selectedFacility = new FacilityModel
+            {
+                Id = facility.Id,
+                Name = facility.Name,
+                Address = facility.Address,
+                Description = facility.Description,
+                Available = facility.Available
+            };
+        showEditModal = true;
+    }
+
+    private void OpenDeleteFacilityDialog(FacilityModel facility)
+    {
+        selectedFacility = facility;
+        showDeleteModal = true;
+    }
+
+    private async Task AddFacility()
+    {
+        DbContext.Facility.Add(newFacility);
+        await DbContext.SaveChangesAsync();
+        showAddModal = false;
+        await LoadFacilities();
+    }
+
+    private async Task UpdateFacility()
+    {
+        var facility = await DbContext.Facility.FindAsync(selectedFacility.Id);
+        if (facility != null)
+        {
+            facility.Name = selectedFacility.Name;
+            facility.Address = selectedFacility.Address;
+            facility.Description = selectedFacility.Description;
+            facility.Available = selectedFacility.Available;
+            await DbContext.SaveChangesAsync();
+        }
+        showEditModal = false;
+        await LoadFacilities();
+    }
+
+    private async Task DeleteFacility()
+    {
+        var facility = await DbContext.Facility.FindAsync(selectedFacility.Id);
+        if (facility != null)
+        {
+            DbContext.Facility.Remove(facility);
+            await DbContext.SaveChangesAsync();
+        }
+        showDeleteModal = false;
+        await LoadFacilities();
+    }
+
+    private async Task ToggleFacilityStatus(FacilityModel facility)
+    {
+        var facilityToUpdate = await DbContext.Facility.FindAsync(facility.Id);
+        if (facilityToUpdate != null)
+        {
+            facilityToUpdate.Available = !facilityToUpdate.Available;
+            await DbContext.SaveChangesAsync();
+            await LoadFacilities();
+        }
+    }
+}
