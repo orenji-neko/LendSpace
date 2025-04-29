@@ -1,0 +1,417 @@
+﻿@page "/Shared/Profile"
+@rendermode InteractiveServer
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ApplicationDbContext Context
+@inject UserManager<UserModel> UserManager
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject IWebHostEnvironment WebHostEnvironment
+@using System.IO
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Hosting
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components
+<style>
+    body {
+        background-color: whitesmoke;
+    }
+
+    html {
+        scroll-behavior: smooth;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        font-family: 'PT Sans Narrow', sans-serif;
+    }
+
+        html::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        html::-webkit-scrollbar-track {
+            background: #f0f0f0;
+        }
+
+        html::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 4px;
+            border: 2px solid #f0f0f0;
+        }
+
+            html::-webkit-scrollbar-thumb:hover {
+                background-color: #555;
+            }
+</style>
+<div class="container mx-auto px-4 pt-5 pb-12">
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+        <!-- Profile Header -->
+        <div class="bg-emerald-500 p-8 text-white">
+            <h1 class="text-2xl font-bold mb-2">My Profile</h1>
+            <p class="opacity-90">Manage your account information and settings</p>
+        </div>
+
+        @if (currentUser == null)
+        {
+            <div class="p-8">
+                <p class="text-gray-600">Loading user information...</p>
+            </div>
+        }
+        else
+        {
+            <!-- Profile Content -->
+            <div class="p-8">
+                <div class="flex flex-row md:flex-row gap-8">
+                    <!-- Profile Picture Section -->
+                    <div class="w-50 md:w-1/3 flex flex-col items-center">
+                        <div class="w-32 h-32 rounded-full bg-emerald-100 flex items-center justify-center mb-4 border-4 border-white shadow-md overflow-hidden">
+                            @if (string.IsNullOrEmpty(currentUser.ProfilePictureUrl))
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            }
+                            else
+                            {
+                                <img src="@currentUser.ProfilePictureUrl" alt="Profile picture" class="w-full h-full object-cover" @onerror="HandleImageError" />
+                            }
+                        </div>
+                        
+                        <!-- Hidden InputFile but accessible via click -->
+                        <InputFile id="profilePictureInput" OnChange="HandleFileSelection" class="hidden" accept="image/*" />
+
+                        <button class="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+                                @onclick="OpenFilePicker">
+                            Change Profile Picture
+                        </button>
+
+                        @if (fileSelected)
+                        {
+                            <div class="mt-2 text-sm text-gray-600">
+                                Selected: @selectedFile.Name
+                                <div class="flex space-x-2 mt-2">
+                                    <button class="px-2 py-1 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 text-xs" 
+                                            @onclick="@(() => { fileSelected = false; selectedFile = null; })">
+                                        Cancel
+                                    </button>
+                                    <button class="px-2 py-1 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 text-xs" 
+                                            @onclick="UploadProfilePicture">
+                                        Upload
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Profile Information Section -->
+                    <div class="w-100">
+                        <EditForm Model="@profileEdit" OnValidSubmit="SaveProfile" class="space-y-6">
+                            <DataAnnotationsValidator />
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                                    <InputText id="firstName" @bind-Value="profileEdit.FirstName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                                    <ValidationMessage For="@(() => profileEdit.FirstName)" class="text-red-500 text-sm" />
+                                </div>
+                                <div>
+                                    <label for="lastName" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                                    <InputText id="lastName" @bind-Value="profileEdit.LastName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                                    <ValidationMessage For="@(() => profileEdit.LastName)" class="text-red-500 text-sm" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                <InputText id="email" @bind-Value="profileEdit.Email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" disabled />
+                                <ValidationMessage For="@(() => profileEdit.Email)" class="text-red-500 text-sm" />
+                            </div>
+
+                            <div>
+                                <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                <InputText id="phoneNumber" @bind-Value="profileEdit.PhoneNumber" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                                <ValidationMessage For="@(() => profileEdit.PhoneNumber)" class="text-red-500 text-sm" />
+                            </div>
+
+                            <div>
+                                <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                <InputTextArea id="address" @bind-Value="profileEdit.Address" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" rows="3" />
+                                <ValidationMessage For="@(() => profileEdit.Address)" class="text-red-500 text-sm" />
+                            </div>
+
+                            <div class="flex justify-end pt-4">
+                                <button type="submit" class="px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                        <polyline points="7 3 7 8 15 8"></polyline>
+                                    </svg>
+                                    Save Changes
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
+                    <!-- Change Password Section -->
+                    <div class="w-auto border-l border-gray-100">
+                        <h2 class="text-xl font-semibold mb-6">Change Password</h2>
+                        <EditForm Model="@passwordEdit" OnValidSubmit="ChangePassword" class="space-y-6 max-w-md">
+                            <DataAnnotationsValidator />
+
+                            <div>
+                                <label for="currentPassword" class="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                                <InputText id="currentPassword" @bind-Value="passwordEdit.CurrentPassword" type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                                <ValidationMessage For="@(() => passwordEdit.CurrentPassword)" class="text-red-500 text-sm" />
+                            </div>
+
+                            <div>
+                                <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                                <InputText id="newPassword" @bind-Value="passwordEdit.NewPassword" type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                                <ValidationMessage For="@(() => passwordEdit.NewPassword)" class="text-red-500 text-sm" />
+                            </div>
+
+                            <div>
+                                <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                                <InputText id="confirmPassword" @bind-Value="passwordEdit.ConfirmPassword" type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                                <ValidationMessage For="@(() => passwordEdit.ConfirmPassword)" class="text-red-500 text-sm" />
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(passwordMessage))
+                            {
+                                <div class="@(passwordSuccess ? "bg-green-50 text-green-800 border-green-200" : "bg-red-50 text-red-800 border-red-200") border p-3 rounded-md text-sm">
+                                    @passwordMessage
+                                </div>
+                            }
+
+                            <div class="flex justify-start pt-4">
+                                <button type="submit" class="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    </svg>
+                                    Update Password
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private UserModel? currentUser;
+    private ProfileEditModel profileEdit = new();
+    private PasswordChangeModel passwordEdit = new();
+
+    private bool fileSelected = false;
+    private IBrowserFile? selectedFile;
+
+    private string passwordMessage = "";
+    private bool passwordSuccess = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserData();
+    }
+
+    private async Task OpenFilePicker()
+    {
+        try 
+        {
+            await JSRuntime.InvokeVoidAsync("eval", 
+                "document.getElementById('profilePictureInput').click()");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error opening file picker: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("console.error", ex.Message);
+        }
+    }
+
+    private async Task LoadUserData()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userPrincipal = authState.User;
+
+        if (userPrincipal.Identity != null && userPrincipal.Identity.IsAuthenticated)
+        {
+            currentUser = await UserManager.GetUserAsync(userPrincipal);
+            
+            if (currentUser != null)
+            {
+                // Map user data to edit model
+                profileEdit.FirstName = currentUser.FirstName;
+                profileEdit.LastName = currentUser.LastName;
+                profileEdit.Email = currentUser.Email;
+                profileEdit.PhoneNumber = currentUser.PhoneNumber;
+                profileEdit.Address = currentUser.Address;
+            }
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/Login");
+        }
+    }
+
+    private async Task SaveProfile()
+    {
+        if (currentUser != null)
+        {
+            // Update user model with form data
+            currentUser.FirstName = profileEdit.FirstName;
+            currentUser.LastName = profileEdit.LastName;
+            currentUser.PhoneNumber = profileEdit.PhoneNumber;
+            currentUser.Address = profileEdit.Address;
+
+            // Save changes to database
+            var result = await UserManager.UpdateAsync(currentUser);
+            
+            if (result.Succeeded)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Profile updated successfully!");
+            }
+            else
+            {
+                var errors = string.Join("\n", result.Errors.Select(e => e.Description));
+                await JSRuntime.InvokeVoidAsync("alert", $"Error updating profile: {errors}");
+            }
+        }
+    }
+
+    private async Task ChangePassword()
+    {
+        if (currentUser != null)
+        {
+            var result = await UserManager.ChangePasswordAsync(
+                currentUser, 
+                passwordEdit.CurrentPassword, 
+                passwordEdit.NewPassword
+            );
+
+            if (result.Succeeded)
+            {
+                passwordMessage = "Password changed successfully!";
+                passwordSuccess = true;
+                passwordEdit = new PasswordChangeModel();
+            }
+            else
+            {
+                passwordMessage = string.Join("\n", result.Errors.Select(e => e.Description));
+                passwordSuccess = false;
+            }
+        }
+    }
+
+    private void HandleFileSelection(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        fileSelected = true;
+        StateHasChanged();
+    }
+
+    private async void HandleImageError()
+    {
+        await JSRuntime.InvokeVoidAsync("console.log", $"Failed to load image: {currentUser?.ProfilePictureUrl}");
+    }
+
+    private async Task UploadProfilePicture()
+    {
+        if (selectedFile == null || currentUser == null)
+            return;
+
+        try
+        {
+            var wwwrootPath = WebHostEnvironment.WebRootPath;
+            if (string.IsNullOrEmpty(wwwrootPath))
+            {
+                wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            }
+
+            var uploadsPath = Path.Combine(wwwrootPath, "uploads");
+            if (!Directory.Exists(uploadsPath))
+            {
+                Directory.CreateDirectory(uploadsPath);
+            }
+
+            string fileExtension = Path.GetExtension(selectedFile.Name);
+            string fileName = $"profile-{currentUser.Id}-{DateTime.UtcNow.Ticks}{fileExtension}";
+            string filePath = Path.Combine(uploadsPath, fileName);
+
+            if (!selectedFile.ContentType.StartsWith("image/"))
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Please select an image file.");
+                return;
+            }
+
+            long maxFileSize = 5 * 1024 * 1024;
+            if (selectedFile.Size > maxFileSize)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "File size exceeds 5MB limit.");
+                return;
+            }
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                var uploadStream = selectedFile.OpenReadStream(maxFileSize);
+                await uploadStream.CopyToAsync(fileStream);
+                await uploadStream.DisposeAsync();
+            }
+
+            currentUser.ProfilePictureUrl = $"/uploads/{fileName}";
+            var result = await UserManager.UpdateAsync(currentUser);
+            
+            if (result.Succeeded)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Profile picture updated successfully!");
+                fileSelected = false;
+                selectedFile = null;
+                StateHasChanged();
+            }
+            else
+            {
+                var errors = string.Join("\n", result.Errors.Select(e => e.Description));
+                await JSRuntime.InvokeVoidAsync("alert", $"Error updating profile picture: {errors}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error uploading file: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("console.error", ex.ToString());
+        }
+    }
+
+    public class ProfileEditModel
+    {
+        [Required(ErrorMessage = "First name is required")]
+        [StringLength(100, ErrorMessage = "First name cannot exceed 100 characters")]
+        public string FirstName { get; set; } = "";
+
+        [Required(ErrorMessage = "Last name is required")]
+        [StringLength(100, ErrorMessage = "Last name cannot exceed 100 characters")]
+        public string LastName { get; set; } = "";
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email address")]
+        public string Email { get; set; } = "";
+
+        [Phone(ErrorMessage = "Invalid phone number")]
+        public string PhoneNumber { get; set; } = "";
+
+        public string Address { get; set; } = "";
+    }
+
+    public class PasswordChangeModel
+    {
+        [Required(ErrorMessage = "Current password is required")]
+        public string CurrentPassword { get; set; } = "";
+
+        [Required(ErrorMessage = "New password is required")]
+        [StringLength(100, ErrorMessage = "Password must be at least {2} characters long", MinimumLength = 6)]
+        public string NewPassword { get; set; } = "";
+
+        [Required(ErrorMessage = "Confirm password is required")]
+        [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match")]
+        public string ConfirmPassword { get; set; } = "";
+    }
+}

@@ -3,6 +3,7 @@ using System;
 using LendSpace.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LendSpace.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250428154646_AddProfilePictureUrl")]
+    partial class AddProfilePictureUrl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
@@ -35,7 +38,7 @@ namespace LendSpace.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Announcements", (string)null);
+                    b.ToTable("Announcements");
 
                     b.HasData(
                         new
@@ -73,7 +76,7 @@ namespace LendSpace.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Billing", (string)null);
+                    b.ToTable("Billing");
 
                     b.HasData(
                         new
@@ -83,6 +86,87 @@ namespace LendSpace.Migrations
                             IsPaid = false,
                             IssuedAt = new DateOnly(2025, 4, 2),
                             Name = "Rent",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0002",
+                            Amount = 150.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Electricity",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0003",
+                            Amount = 50.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Water",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0004",
+                            Amount = 70.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Internet",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0005",
+                            Amount = 100.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Gas",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0006",
+                            Amount = 80.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Cable TV",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0007",
+                            Amount = 30.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Garbage Collection",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0008",
+                            Amount = 125.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Maintenance Fee",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0009",
+                            Amount = 60.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Security Fee",
+                            UserId = "test-user-0001"
+                        },
+                        new
+                        {
+                            Id = "test-billing-0010",
+                            Amount = 500.0,
+                            IsPaid = false,
+                            IssuedAt = new DateOnly(2025, 4, 2),
+                            Name = "Property Tax",
                             UserId = "test-user-0001"
                         });
                 });
@@ -105,7 +189,7 @@ namespace LendSpace.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Events", (string)null);
+                    b.ToTable("Events");
 
                     b.HasData(
                         new
@@ -146,7 +230,7 @@ namespace LendSpace.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Facility", (string)null);
+                    b.ToTable("Facility");
 
                     b.HasData(
                         new
@@ -263,7 +347,7 @@ namespace LendSpace.Migrations
                             Id = "test-user-0001",
                             AccessFailedCount = 0,
                             Address = "123 User St.",
-                            ConcurrencyStamp = "5a941f0a-fbd1-427c-aaef-47d84be2a310",
+                            ConcurrencyStamp = "d833f5c9-2f47-4307-b3ee-35bdad7a2ea0",
                             Email = "user@email.com",
                             EmailConfirmed = false,
                             FirstName = "John",
@@ -272,9 +356,9 @@ namespace LendSpace.Migrations
                             MidInitial = "A",
                             NormalizedEmail = "USER@EMAIL.COM",
                             NormalizedUserName = "USER@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEKe3OuS7f2EPGT2SnkFcKBh+BssmKtLBTh8CwTrv+cOkJWU7bF3rDMkaWVGjD4tLtA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAECQXNdyPBDtjz+xD4PkNancOAl20P7tfsQXlK48DIbcgfwJBu1IGmclVH1kGTnGfzw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "c56f11c0-75ad-4f25-b28f-9ea67b1fc630",
+                            SecurityStamp = "10f25645-3352-4809-ad14-53ce6445c5e6",
                             TwoFactorEnabled = false,
                             UserName = "user@email.com"
                         },
@@ -283,7 +367,7 @@ namespace LendSpace.Migrations
                             Id = "test-admin-0001",
                             AccessFailedCount = 0,
                             Address = "123 Admin St.",
-                            ConcurrencyStamp = "267f3bfd-b707-4045-9768-61b43648a73f",
+                            ConcurrencyStamp = "7ec3d018-ba2c-4820-ad01-3e1283183662",
                             Email = "admin@email.com",
                             EmailConfirmed = false,
                             FirstName = "John",
@@ -292,9 +376,9 @@ namespace LendSpace.Migrations
                             MidInitial = "A",
                             NormalizedEmail = "ADMIN@EMAIL.COM",
                             NormalizedUserName = "ADMIN@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAELS8FhOIe3QnI98LeBMhLQQg+9tGc7VENL/aRGSbzegcBtyYIrfsNw/mCYn3PiyIrQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEH94515x7p6x5zkURYiPljA09KQQoCBXzQXj91BOud6qu4Hy8AATCOqTH7xK+jpipQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "136c6bf4-75d2-4588-b65e-dc9ddd61ab04",
+                            SecurityStamp = "94ba4d31-d0b5-45d4-8374-96607ff50b3c",
                             TwoFactorEnabled = false,
                             UserName = "admin@email.com"
                         });
