@@ -141,6 +141,10 @@
 			{
 				Navigation.NavigateTo("/Admin", true);
 			}
+			else if (roles.Contains("Staff"))
+			{
+				Navigation.NavigateTo("/Staff", true);
+			}
 			else
 			{
 				Navigation.NavigateTo("/User", true);
