@@ -56,6 +56,18 @@
                     </NavLink>
                     <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
                 </li>
+                <li class="group relative">
+                    <NavLink href="/Admin/User" class="flex items-center space-x-2 text-gray-600 hover:text-emerald-600 transition-colors duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 stroke-current">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        <span class="font-medium">Manage Users</span>
+                    </NavLink>
+                    <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
+                </li>
             }
             else
             {
@@ -102,7 +114,7 @@
                     <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-emerald-500 group-hover:w-4/5 transition-all duration-300 ease-out"></div>
                 </li>
             }
-            
+
             <li class="ml-4">
                 <div class="relative">
                     <button type="button" class="flex items-center text-gray-600 hover:text-blue-600 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded-full" @onclick="ToggleDropdown">
@@ -243,6 +255,15 @@
                     </svg>
                     <span class="font-medium">Billing</span>
                 </NavLink>
+                <NavLink href="/Admin/User" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 stroke-current">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span class="font-medium">Manage Users</span>
+                </NavLink>
             }
             else
             {
@@ -277,7 +298,7 @@
                     <span class="font-medium">Billing</span>
                 </NavLink>
             }
-            
+
             <hr class="my-2 border-gray-100" />
             <NavLink href="/Shared/Profile" class="flex items-center space-x-3 py-3 px-4 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors duration-200">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 stroke-current">
