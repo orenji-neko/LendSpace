@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LendSpace.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250429053354_AddCreatedDateToUser")]
-    partial class AddCreatedDateToUser
+    [Migration("20250429155154_init-v3")]
+    partial class initv3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -216,6 +216,42 @@ namespace LendSpace.Migrations
                         });
                 });
 
+            modelBuilder.Entity("LendSpace.Models.FacilityBookingModel", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("BookedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FacilityId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FacilityId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FacilityBookings");
+                });
+
             modelBuilder.Entity("LendSpace.Models.FacilityModel", b =>
                 {
                     b.Property<string>("Id")
@@ -358,8 +394,8 @@ namespace LendSpace.Migrations
                             Id = "test-user-0001",
                             AccessFailedCount = 0,
                             Address = "123 User St.",
-                            ConcurrencyStamp = "376faf40-379e-4372-a78d-dfca168fb00a",
-                            CreatedDate = new DateTime(2025, 4, 29, 5, 33, 52, 614, DateTimeKind.Utc).AddTicks(7404),
+                            ConcurrencyStamp = "a6540282-ee77-49de-8eb6-f3c249dfe807",
+                            CreatedDate = new DateTime(2025, 4, 29, 15, 51, 54, 184, DateTimeKind.Utc).AddTicks(7814),
                             Email = "user@email.com",
                             EmailConfirmed = false,
                             FirstName = "John",
@@ -368,9 +404,9 @@ namespace LendSpace.Migrations
                             MidInitial = "A",
                             NormalizedEmail = "USER@EMAIL.COM",
                             NormalizedUserName = "USER@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEECxnqKgqnbcLvv5WfNOqZrhbIc9dTNabGcHTpDAEYLL2Ie6wjbdNkL6JJRIVVJjVA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEKZbBm77NbLUKfDf1dI1WN+kLBXDmP4ZL7C9rrD5nam5DGCBKIYD3uwC9p5SLQY1PQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "c1574254-eb9a-4abd-9141-96e6965bbeda",
+                            SecurityStamp = "0c4de941-2cec-4819-b694-4b47a03479e8",
                             TwoFactorEnabled = false,
                             UserName = "user@email.com"
                         },
@@ -379,8 +415,8 @@ namespace LendSpace.Migrations
                             Id = "test-admin-0001",
                             AccessFailedCount = 0,
                             Address = "123 Admin St.",
-                            ConcurrencyStamp = "384ee4fa-cc16-40cc-a9b2-93daeaa6a5b7",
-                            CreatedDate = new DateTime(2025, 4, 29, 5, 33, 52, 737, DateTimeKind.Utc).AddTicks(9452),
+                            ConcurrencyStamp = "f29e8615-b409-4d70-9e4a-bcedd813d3cc",
+                            CreatedDate = new DateTime(2025, 4, 29, 15, 51, 54, 231, DateTimeKind.Utc).AddTicks(3124),
                             Email = "admin@email.com",
                             EmailConfirmed = false,
                             FirstName = "John",
@@ -389,9 +425,9 @@ namespace LendSpace.Migrations
                             MidInitial = "A",
                             NormalizedEmail = "ADMIN@EMAIL.COM",
                             NormalizedUserName = "ADMIN@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEHtHZqPDfyjcloF4/AbBoqhFKE/s99TZ8kjXaZixABByBsIO/sJDABe8q6/mk8/5Yw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAECswnV0gvKx1aBkEUt+aUQm3ddbAH4/jv0n2kU5LVWrzjBkJ5m4VThfg5xO9YgL5Jw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "366f1fbf-25ac-4fb9-bc47-f76b2cae8437",
+                            SecurityStamp = "44249fe2-8db8-4bde-bac3-dc47f7603b46",
                             TwoFactorEnabled = false,
                             UserName = "admin@email.com"
                         });
@@ -599,6 +635,25 @@ namespace LendSpace.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("LendSpace.Models.FacilityBookingModel", b =>
+                {
+                    b.HasOne("LendSpace.Models.FacilityModel", "Facility")
+                        .WithMany()
+                        .HasForeignKey("FacilityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LendSpace.Models.UserModel", "User")
+                        .WithMany("FacilityBookings")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Facility");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -663,6 +718,8 @@ namespace LendSpace.Migrations
             modelBuilder.Entity("LendSpace.Models.UserModel", b =>
                 {
                     b.Navigation("Billings");
+
+                    b.Navigation("FacilityBookings");
                 });
 #pragma warning restore 612, 618
         }

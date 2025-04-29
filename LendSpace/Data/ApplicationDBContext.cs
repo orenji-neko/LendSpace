@@ -8,13 +8,13 @@ namespace LendSpace.Data
 {
     public class ApplicationDbContext : IdentityDbContext<UserModel, IdentityRole, string>
     {
-        /**
-         * Auto-generated Tables.
-         */
         public DbSet<FacilityModel> Facility { get; set; }
+        public DbSet<FacilityBookingModel> FacilityBookings { get; set; }
+
         public DbSet<BillingModel> Billing { get; set; }
         public DbSet<EventModel> Events { get; set; }
         public DbSet<AnnouncementModel> Announcements { get; set; }
+
         public DbSet<CommunityPostModel> CommunityPosts { get; set; }
         public DbSet<CommunityCommentModel> CommunityComments { get; set; }
 
@@ -30,18 +30,55 @@ namespace LendSpace.Data
         {
             base.OnModelCreating(builder);
 
-            // Configure the one-to-many relationship between UserModel and BillingModel
+            // one-to-many between UserModel and BillingModel
             builder.Entity<UserModel>()
-                   .HasMany(u => u.Billings)
-                   .WithOne(b => b.User)
-                   .HasForeignKey(b => b.UserId)
-                   .IsRequired();
+                .HasMany(u => u.Billings)
+                .WithOne(b => b.User)
+                .HasForeignKey(b => b.UserId)
+                .IsRequired();
             builder.Entity<BillingModel>()
-                   .HasOne(b => b.User)
-                   .WithMany(u => u.Billings)
-                   .HasForeignKey(b => b.UserId)
-                   .IsRequired();
+                .HasOne(b => b.User)
+                .WithMany(u => u.Billings)
+                .HasForeignKey(b => b.UserId)
+                .IsRequired();
 
+            // one-to-many between UserModel and FacilityBookingModel
+            builder.Entity<UserModel>()
+                .HasMany(u => u.FacilityBookings)
+                .WithOne(b => b.User)
+                .HasForeignKey(b => b.UserId)
+                .IsRequired();
+            builder.Entity<FacilityBookingModel>()
+                .HasOne(fb => fb.User)
+                .WithMany(u => u.FacilityBookings)
+                .HasForeignKey(fb => fb.UserId)
+                .IsRequired();
+
+            // CommunityPostModel[one] - CommunityCommentModel[many]
+            builder.Entity<CommunityPostModel>()
+                .HasMany(p => p.Comments)
+                .WithOne(c => c.Post)
+                .HasForeignKey(c => c.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+            // CommunityPostModel[many]- UserModel[one] 
+            builder.Entity<CommunityPostModel>()
+                .HasOne(p => p.User)
+                .WithMany()
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            // CommunityCommentModel[many]- UserModel[one] 
+            builder.Entity<CommunityCommentModel>()
+                .HasOne(c => c.User)
+                .WithMany()
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            // CommunityCommentModel[one, parent] - CommunityCommentModel[many, child]
+            builder.Entity<CommunityCommentModel>()
+                .HasOne(c => c.ParentComment)
+                .WithMany(c => c.Replies)
+                .HasForeignKey(c => c.ParentCommentId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
 
             // seeding table operations. remove in production
             SeedTables(builder);
@@ -70,25 +107,45 @@ namespace LendSpace.Data
 
             // Creating user
             // User account
-            var user = new UserModel
+            var user1 = new UserModel
             {
                 Id = "test-user-0001",
-                Email = "user@email.com",
-                NormalizedEmail = "USER@EMAIL.COM",
-                UserName = "user@email.com",
-                NormalizedUserName = "USER@EMAIL.COM",
-                LastName = "Doe",
-                FirstName = "John",
-                MidInitial = "A",
-                Address = "123 User St."
+                Email = "user1@email.com",
+                NormalizedEmail = "USER1@EMAIL.COM",
+                UserName = "user1@email.com",
+                NormalizedUserName = "USER1@EMAIL.COM",
+                LastName = "Dal",
+                FirstName = "Ian John",
+                MidInitial = "L",
+                Address = "Cebu City"
             };
-            user.PasswordHash = hasher.HashPassword(user, "password");
-            builder.Entity<UserModel>().HasData(user);
+            user1.PasswordHash = hasher.HashPassword(user1, "password");
+            builder.Entity<UserModel>().HasData(user1);
             builder.Entity<IdentityUserRole<string>>().HasData(
                 new IdentityUserRole<string>
                 {
                     RoleId = userRole.Id,
-                    UserId = user.Id,
+                    UserId = user1.Id,
+                });
+            var user2 = new UserModel
+            {
+                Id = "test-user-0002",
+                Email = "user2@email.com",
+                NormalizedEmail = "USER2@EMAIL.COM",
+                UserName = "user2@email.com",
+                NormalizedUserName = "USER2@EMAIL.COM",
+                LastName = "Yancha",
+                FirstName = "Christian",
+                MidInitial = "D",
+                Address = "Basey, Samar"
+            };
+            user2.PasswordHash = hasher.HashPassword(user2, "password");
+            builder.Entity<UserModel>().HasData(user2);
+            builder.Entity<IdentityUserRole<string>>().HasData(
+                new IdentityUserRole<string>
+                {
+                    RoleId = userRole.Id,
+                    UserId = user2.Id,
                 });
 
             // Creating user
@@ -119,25 +176,9 @@ namespace LendSpace.Data
                 new FacilityModel
                 {
                     Id = "test-facility-0001",
-                    Name = "Facility Name",
-                    Description = "Tell me about this facility",
-                    Address = "Somewhere, i don't really know.",
-                    Available = true
-                },
-                new FacilityModel
-                {
-                    Id = "test-facility-0002",
-                    Name = "Facility Name",
-                    Description = "Tell me about this facility",
-                    Address = "Somewhere, i don't really know.",
-                    Available = true
-                },
-                new FacilityModel
-                {
-                    Id = "test-facility-0003",
-                    Name = "Facility Name",
-                    Description = "Tell me about this facility",
-                    Address = "Somewhere, i don't really know.",
+                    Name = "Swimming Pool",
+                    Description = "A big tub, with water!",
+                    Address = "Biringan City, Samar",
                     Available = true
                 },
                 ]);
@@ -183,33 +224,6 @@ namespace LendSpace.Data
                     PostedAt = new DateOnly(2025, 4, 6)
                 }
                 ]);
-            builder.Entity<CommunityPostModel>()
-                .HasMany(p => p.Comments)
-                .WithOne(c => c.Post)
-                .HasForeignKey(c => c.PostId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Configure the User relationship
-            builder.Entity<CommunityPostModel>()
-                .HasOne(p => p.User)
-                .WithMany()
-                .HasForeignKey(p => p.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Configure User relationship with CommunityCommentModel
-            builder.Entity<CommunityCommentModel>()
-                .HasOne(c => c.User)
-                .WithMany()
-                .HasForeignKey(c => c.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Configure nested comments (parent-child relationship)
-            builder.Entity<CommunityCommentModel>()
-                .HasOne(c => c.ParentComment)
-                .WithMany(c => c.Replies)
-                .HasForeignKey(c => c.ParentCommentId)
-                .OnDelete(DeleteBehavior.Restrict)
-                .IsRequired(false);
         }
     }
 

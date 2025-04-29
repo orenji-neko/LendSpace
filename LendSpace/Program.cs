@@ -1,6 +1,7 @@
 using LendSpace.Components;
 using LendSpace.Data;
 using LendSpace.Models;
+using LendSpace.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +47,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Login";
     options.AccessDeniedPath = "/AccessDenied";
 });
+
+// Other Services
+builder.Services.AddScoped<BookingService>();
 
 var app = builder.Build();
 

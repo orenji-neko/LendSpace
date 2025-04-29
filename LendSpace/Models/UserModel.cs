@@ -13,13 +13,12 @@ namespace LendSpace.Models
         public string? MidInitial { get; set; }
         [Required]
         public string? Address { get; set; }
-
-        // Add this new property
         public string? ProfilePictureUrl { get; set; }
-
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         [Required]
         public ICollection<BillingModel> Billings { get; } = new List<BillingModel>();
+        [Required]
+        public ICollection<FacilityBookingModel> FacilityBookings { get; } = new List<FacilityBookingModel>();
     }
 }

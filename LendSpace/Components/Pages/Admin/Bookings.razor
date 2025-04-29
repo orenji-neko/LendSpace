@@ -1,0 +1,265 @@
+﻿@page "/Admin/Booking"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = "AdminOnly")]
+
+@inject ApplicationDbContext Context
+@inject BookingService BookingService
+
+<PageTitle>Billing</PageTitle>
+
+<main class="w-full h-full p-4">
+	<div class="max-w-7xl mx-auto px-4 py-8">
+		<div class="">
+			<h1 class="text-3xl font-bold text-gray-900 mb-4">Bookings</h1>
+			<div class="flex flex-row justify-end">
+				<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-6" @onclick="OpenAdd">
+					Add Booking
+				</button>
+			</div>
+
+            @* Modal Overlay *@
+			@if (showModal)
+			{
+				<div class="fixed inset-0 z-10 overflow-y-auto">
+					<div class="flex items-center justify-center min-h-screen px-4">
+						<div class="fixed inset-0 bg-gray-500 opacity-75"></div>
+						<div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full relative z-20">
+							<div class="p-6">
+								@if (edit)
+								{
+									<h2 class="text-2xl font-bold mb-4">Edit Booking</h2>
+								}
+								else
+								{
+									<h2 class="text-2xl font-bold mb-4">Add Booking</h2>
+								}
+
+								@* Choose wether to book a facility or service *@
+								<div class="mb-4">
+									<label class="block text-gray-700">What to book?</label>
+									<select class="w-full border rounded p-2">
+										<option disabled value="@bookingOption">Select a booking option</option>
+										<option value="@BookingOption.Facility">Facility</option>
+										<option value="@BookingOption.Service">Service</option>
+									</select>
+								</div>
+
+								<EditForm Model="model" OnValidSubmit="Confirm">
+									<DataAnnotationsValidator />
+
+									<div class="mb-4">
+										<label class="block text-gray-700">Title</label>
+										<InputText @bind-Value="model!.Title" class="w-full border rounded p-2" />
+										<ValidationMessage For="() => model.Title" />
+									</div>
+									<div class="mb-4">
+										<label class="block text-gray-700">Description</label>
+										<InputText @bind-Value="model!.Description" class="w-full border rounded p-2" />
+										<ValidationMessage For="() => model.Description" />
+									</div>
+									<div class="mb-4">
+										<label class="block text-gray-700">Status</label>
+										<select class="w-full border rounded p-2" @bind="model.Status">
+											<option disabled value="">Select status</option>
+											<option value="@BookingStatus.Pending">Pending</option>
+											<option value="@BookingStatus.Approved">Approved</option>
+											<option value="@BookingStatus.Completed">Completed</option>
+											<option value="@BookingStatus.Cancelled">Cancelled</option>
+											<option value="@BookingStatus.Failed">Failed</option>
+										</select>
+										<ValidationMessage For="() => model.FacilityId" />
+									</div>
+									<div class="mb-4">
+										<label class="block text-gray-700">Facility</label>
+										<select class="w-full border rounded p-2" @bind="model.FacilityId">
+											<option disabled value="">Select a facility</option>
+											@foreach (var facility in facilities!)
+											{
+												<option value="@facility.Id">@facility.Name</option>
+											}
+										</select>
+										<ValidationMessage For="() => model.FacilityId" />
+									</div>
+									<div class="mb-4">
+										<label class="block text-gray-700">User</label>
+										<select class="w-full border rounded p-2" @bind="model.UserId">
+											<option disabled value="">Select a user</option>
+											@foreach (var user in users!)
+											{
+												<option value="@user.Id">@user.LastName, @user.FirstName</option>
+											}
+										</select>
+										<ValidationMessage For="() => model.UserId" />
+									</div>
+									<div class="flex justify-end space-x-2">
+										<button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save</button>
+										<button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" @onclick="Close">
+											Cancel
+										</button>
+									</div>
+								</EditForm>
+							</div>
+						</div>
+					</div>
+				</div>
+			}
+
+			@* Facility Bookings List *@
+			@if (facilityBookings != null && facilityBookings.Any())
+			{
+				@foreach (var booking in facilityBookings)
+				{
+					<div class="bg-white shadow rounded-lg overflow-hidden mb-6 hover:shadow-md transition-shadow">
+						<div class="p-4">
+							<div class="flex justify-between items-center">
+								<h2 class="text-lg font-medium text-gray-800">@booking.Title</h2>
+								@if (booking.Status == BookingStatus.Pending)
+								{
+									<span class="px-2 py-1 text-xs font-bold text-white rounded bg-yellow-500">
+										Pending
+									</span>
+								}
+								else if (booking.Status == BookingStatus.Approved)
+								{
+									<span class="px-2 py-1 text-xs font-bold text-white rounded bg-emerald-500">
+										Approved
+									</span>
+								}
+								else if (booking.Status == BookingStatus.Completed)
+								{
+									<span class="px-2 py-1 text-xs font-bold text-white rounded bg-blue-500">
+										Completed
+									</span>
+								}
+								else if (booking.Status == BookingStatus.Failed || booking.Status == BookingStatus.Cancelled)
+								{
+									<span class="px-2 py-1 text-xs font-bold text-white rounded bg-red-500">
+										@(booking.Status == @BookingStatus.Cancelled ? "Cancelled" : "Failed")
+									</span>
+								}
+							</div>
+							<div class="mt-2">
+								<p class="text-gray-600">@booking.Description</p>
+								<p class="text-gray-600">@booking.BookedAt.ToString("d")</p>
+							</div>
+						</div>
+						<div class="p-3 flex flex-row gap-4">
+							<button class="text-emerald-600 text-sm font-medium hover:text-emerald-800" @onclick="() => OpenEdit(booking.Id!)">
+								Edit
+							</button>
+							<button class="text-red-600 text-sm font-medium hover:text-red-800" @onclick="() => Delete(booking)">
+								Delete
+							</button>
+						</div>
+					</div>
+				}
+			}
+			else
+			{
+				<p class="text-gray-600">No billing records found.</p>
+			}
+		</div>
+	</div>
+</main>
+
+@code {
+	private UserModel[]? users;
+
+	private IEnumerable<FacilityModel>? facilities;
+	private IEnumerable<FacilityBookingModel>? facilityBookings;
+	private FacilityBookingModel? model { get; set; }
+	private bool edit = false;
+
+	private enum BookingOption
+	{
+		Facility,
+		Service
+	}
+
+	private BookingOption bookingOption { get; set; }
+
+	// Toggle to control modal visibility.
+	private bool showModal = false;
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		FetchData();
+	}
+
+	private void FetchData()
+	{
+		facilityBookings = BookingService.GetFacilityBookingsList();
+
+		facilities = Context.Facility.ToArray();
+		users = Context.Users.ToArray();
+	}
+
+	private void OpenAdd()
+	{
+		edit = false;
+
+		model = new FacilityBookingModel()
+			{
+				Id = Guid.NewGuid().ToString(),
+				Title = string.Empty,
+				Description = string.Empty,
+				BookedAt = DateOnly.FromDateTime(DateTime.Today),
+				Status = BookingStatus.Pending,
+				UserId = string.Empty,
+				FacilityId = string.Empty
+			};
+
+		showModal = true;
+	}
+
+	private void OpenEdit(string id)
+	{
+		var booking = BookingService.GetFacilityBooking(id);
+		if (booking == null)
+		{
+			return;
+		}
+
+		edit = true;
+		showModal = true;
+
+		model = new FacilityBookingModel()
+			{
+				Id = booking.Id,
+				Title = booking.Title,
+				Description = booking.Description,
+				BookedAt = booking.BookedAt,
+				Status = booking.Status,
+				UserId = booking.UserId,
+				FacilityId = booking.FacilityId
+			};
+	}
+
+	private async Task Confirm()
+	{
+		if (!edit)
+		{
+			await BookingService.AddFacilityBooking(model!);
+		}
+		else
+		{
+			await BookingService.EditFacilityBooking(model!);
+		}
+
+		Close();
+	}
+
+	private void Close()
+	{
+		edit = false;
+		showModal = false;
+		FetchData();
+	}
+
+	private async Task Delete(FacilityBookingModel booking)
+	{
+		await BookingService.DeleteFacilityBooking(booking);
+		FetchData();
+	}
+}

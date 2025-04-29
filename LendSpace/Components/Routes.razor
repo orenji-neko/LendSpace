@@ -1,9 +1,7 @@
 ﻿<CascadingAuthenticationState>
-    <Router AppAssembly="typeof(Program).Assembly">
-        <Found Context="routeData">
-            <LayoutView Layout="@typeof(Layout.MainLayout)">
-                <RouteView RouteData="@routeData" />
-            </LayoutView>
-        </Found>
-    </Router>
+	<Router AppAssembly="typeof(Program).Assembly">
+		<Found Context="routeData">
+			<RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+		</Found>
+	</Router>
 </CascadingAuthenticationState>

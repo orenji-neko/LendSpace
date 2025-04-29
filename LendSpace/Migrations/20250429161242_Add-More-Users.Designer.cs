@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LendSpace.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250428123408_relation-1")]
-    partial class relation1
+    [Migration("20250429161242_Add-More-Users")]
+    partial class AddMoreUsers
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -90,6 +90,95 @@ namespace LendSpace.Migrations
                         });
                 });
 
+            modelBuilder.Entity("LendSpace.Models.CommunityCommentModel", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("LikeCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ParentCommentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PostId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("PostedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentCommentId");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CommunityComments");
+                });
+
+            modelBuilder.Entity("LendSpace.Models.CommunityPostModel", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Category")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("CommentCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsFeatured")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("LikeCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("PostedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double?>("Rating")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("ShareCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CommunityPosts");
+                });
+
             modelBuilder.Entity("LendSpace.Models.EventModel", b =>
                 {
                     b.Property<string>("Id")
@@ -125,6 +214,42 @@ namespace LendSpace.Migrations
                             Name = "Test Event 1",
                             StartedAt = new DateOnly(2025, 4, 15)
                         });
+                });
+
+            modelBuilder.Entity("LendSpace.Models.FacilityBookingModel", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("BookedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FacilityId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FacilityId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FacilityBookings");
                 });
 
             modelBuilder.Entity("LendSpace.Models.FacilityModel", b =>
@@ -194,6 +319,9 @@ namespace LendSpace.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
@@ -236,6 +364,9 @@ namespace LendSpace.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("ProfilePictureUrl")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("TEXT");
 
@@ -262,28 +393,51 @@ namespace LendSpace.Migrations
                         {
                             Id = "test-user-0001",
                             AccessFailedCount = 0,
-                            Address = "123 User St.",
-                            ConcurrencyStamp = "5a941f0a-fbd1-427c-aaef-47d84be2a310",
-                            Email = "user@email.com",
+                            Address = "Cebu City",
+                            ConcurrencyStamp = "42ecf4b4-a8e9-483c-a84b-085c88696adc",
+                            CreatedDate = new DateTime(2025, 4, 29, 16, 12, 41, 315, DateTimeKind.Utc).AddTicks(9665),
+                            Email = "user1@email.com",
                             EmailConfirmed = false,
-                            FirstName = "John",
-                            LastName = "Doe",
+                            FirstName = "Ian John",
+                            LastName = "Dal",
                             LockoutEnabled = false,
-                            MidInitial = "A",
-                            NormalizedEmail = "USER@EMAIL.COM",
-                            NormalizedUserName = "USER@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEKe3OuS7f2EPGT2SnkFcKBh+BssmKtLBTh8CwTrv+cOkJWU7bF3rDMkaWVGjD4tLtA==",
+                            MidInitial = "L",
+                            NormalizedEmail = "USER1@EMAIL.COM",
+                            NormalizedUserName = "USER1@EMAIL.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEHZU1eEPTpb/TIwRxpB1u13O1E7ZT/tsjBt60R+wOiaejdXq9S650Fzuh7fJiRvDDQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "c56f11c0-75ad-4f25-b28f-9ea67b1fc630",
+                            SecurityStamp = "54433ab3-81b1-4af8-abbd-68bb1e485b97",
                             TwoFactorEnabled = false,
-                            UserName = "user@email.com"
+                            UserName = "user1@email.com"
+                        },
+                        new
+                        {
+                            Id = "test-user-0002",
+                            AccessFailedCount = 0,
+                            Address = "Basey, Samar",
+                            ConcurrencyStamp = "fb26ddd5-9073-4693-a185-9c7e400b76dd",
+                            CreatedDate = new DateTime(2025, 4, 29, 16, 12, 41, 369, DateTimeKind.Utc).AddTicks(1303),
+                            Email = "user2@email.com",
+                            EmailConfirmed = false,
+                            FirstName = "Christian",
+                            LastName = "Yancha",
+                            LockoutEnabled = false,
+                            MidInitial = "D",
+                            NormalizedEmail = "USER2@EMAIL.COM",
+                            NormalizedUserName = "USER2@EMAIL.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEF9WWZktHdu2NQAp4D8cSTgXJMflNjlgTIJdKJ+ra4sBhkjqrgCXrYDA37MG8oR+GQ==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "2fe51114-d28c-417a-b3db-84335163d2ee",
+                            TwoFactorEnabled = false,
+                            UserName = "user2@email.com"
                         },
                         new
                         {
                             Id = "test-admin-0001",
                             AccessFailedCount = 0,
                             Address = "123 Admin St.",
-                            ConcurrencyStamp = "267f3bfd-b707-4045-9768-61b43648a73f",
+                            ConcurrencyStamp = "57f975fd-9f00-4b4b-b731-b662ea28cea4",
+                            CreatedDate = new DateTime(2025, 4, 29, 16, 12, 41, 422, DateTimeKind.Utc).AddTicks(6345),
                             Email = "admin@email.com",
                             EmailConfirmed = false,
                             FirstName = "John",
@@ -292,9 +446,9 @@ namespace LendSpace.Migrations
                             MidInitial = "A",
                             NormalizedEmail = "ADMIN@EMAIL.COM",
                             NormalizedUserName = "ADMIN@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAELS8FhOIe3QnI98LeBMhLQQg+9tGc7VENL/aRGSbzegcBtyYIrfsNw/mCYn3PiyIrQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEIdyTV2sC4BqlA09JqbI/C5c7l2G9ViBrwMNfK/btjHve0JyoaiqfX6rgrk9GhiUTg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "136c6bf4-75d2-4588-b65e-dc9ddd61ab04",
+                            SecurityStamp = "b49b1726-b799-46c4-a3dd-a298e9abe56a",
                             TwoFactorEnabled = false,
                             UserName = "admin@email.com"
                         });
@@ -430,6 +584,11 @@ namespace LendSpace.Migrations
                         },
                         new
                         {
+                            UserId = "test-user-0002",
+                            RoleId = "role-user-0001"
+                        },
+                        new
+                        {
                             UserId = "test-admin-0001",
                             RoleId = "role-admin-0001"
                         });
@@ -461,6 +620,62 @@ namespace LendSpace.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LendSpace.Models.CommunityCommentModel", b =>
+                {
+                    b.HasOne("LendSpace.Models.CommunityCommentModel", "ParentComment")
+                        .WithMany("Replies")
+                        .HasForeignKey("ParentCommentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("LendSpace.Models.CommunityPostModel", "Post")
+                        .WithMany("Comments")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LendSpace.Models.UserModel", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ParentComment");
+
+                    b.Navigation("Post");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LendSpace.Models.CommunityPostModel", b =>
+                {
+                    b.HasOne("LendSpace.Models.UserModel", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LendSpace.Models.FacilityBookingModel", b =>
+                {
+                    b.HasOne("LendSpace.Models.FacilityModel", "Facility")
+                        .WithMany()
+                        .HasForeignKey("FacilityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LendSpace.Models.UserModel", "User")
+                        .WithMany("FacilityBookings")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Facility");
 
                     b.Navigation("User");
                 });
@@ -516,9 +731,21 @@ namespace LendSpace.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("LendSpace.Models.CommunityCommentModel", b =>
+                {
+                    b.Navigation("Replies");
+                });
+
+            modelBuilder.Entity("LendSpace.Models.CommunityPostModel", b =>
+                {
+                    b.Navigation("Comments");
+                });
+
             modelBuilder.Entity("LendSpace.Models.UserModel", b =>
                 {
                     b.Navigation("Billings");
+
+                    b.Navigation("FacilityBookings");
                 });
 #pragma warning restore 612, 618
         }

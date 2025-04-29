@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LendSpace.Migrations
 {
     /// <inheritdoc />
-    public partial class initv2 : Migration
+    public partial class initv3 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -50,6 +50,8 @@ namespace LendSpace.Migrations
                     LastName = table.Column<string>(type: "TEXT", nullable: false),
                     MidInitial = table.Column<string>(type: "TEXT", nullable: false),
                     Address = table.Column<string>(type: "TEXT", nullable: false),
+                    ProfilePictureUrl = table.Column<string>(type: "TEXT", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
@@ -227,6 +229,99 @@ namespace LendSpace.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "CommunityPosts",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    UserId = table.Column<string>(type: "TEXT", nullable: false),
+                    UserName = table.Column<string>(type: "TEXT", nullable: false),
+                    Content = table.Column<string>(type: "TEXT", nullable: false),
+                    PostedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    LikeCount = table.Column<int>(type: "INTEGER", nullable: false),
+                    CommentCount = table.Column<int>(type: "INTEGER", nullable: false),
+                    ShareCount = table.Column<int>(type: "INTEGER", nullable: false),
+                    IsFeatured = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Category = table.Column<string>(type: "TEXT", nullable: true),
+                    ImageUrl = table.Column<string>(type: "TEXT", nullable: true),
+                    Rating = table.Column<double>(type: "REAL", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CommunityPosts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CommunityPosts_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FacilityBookings",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    Title = table.Column<string>(type: "TEXT", nullable: false),
+                    Description = table.Column<string>(type: "TEXT", nullable: false),
+                    Status = table.Column<int>(type: "INTEGER", nullable: false),
+                    BookedAt = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    FacilityId = table.Column<string>(type: "TEXT", nullable: false),
+                    UserId = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FacilityBookings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FacilityBookings_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FacilityBookings_Facility_FacilityId",
+                        column: x => x.FacilityId,
+                        principalTable: "Facility",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CommunityComments",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    PostId = table.Column<string>(type: "TEXT", nullable: false),
+                    UserId = table.Column<string>(type: "TEXT", nullable: false),
+                    UserName = table.Column<string>(type: "TEXT", nullable: false),
+                    Content = table.Column<string>(type: "TEXT", nullable: false),
+                    PostedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    LikeCount = table.Column<int>(type: "INTEGER", nullable: false),
+                    ParentCommentId = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CommunityComments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CommunityComments_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_CommunityComments_CommunityComments_ParentCommentId",
+                        column: x => x.ParentCommentId,
+                        principalTable: "CommunityComments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_CommunityComments_CommunityPosts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "CommunityPosts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "Announcements",
                 columns: new[] { "Id", "Body", "Heading", "PostedAt" },
@@ -243,11 +338,11 @@ namespace LendSpace.Migrations
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "Address", "ConcurrencyStamp", "Email", "EmailConfirmed", "FirstName", "LastName", "LockoutEnabled", "LockoutEnd", "MidInitial", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                columns: new[] { "Id", "AccessFailedCount", "Address", "ConcurrencyStamp", "CreatedDate", "Email", "EmailConfirmed", "FirstName", "LastName", "LockoutEnabled", "LockoutEnd", "MidInitial", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfilePictureUrl", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { "test-admin-0001", 0, "123 Admin St.", "c357b207-8d1d-4c25-b2c0-a3e1d185f0fa", "admin@email.com", false, "John", "Doe", false, null, "A", "ADMIN@EMAIL.COM", "ADMIN@EMAIL.COM", "AQAAAAIAAYagAAAAEEEBwb7Ttogzgi84tSjVUDhjFRtBMZQyqz9NaZyuB/yPkDCe5lCO3hMFc4L5UI7wkw==", null, false, "6865f4e2-28ac-409e-b32e-3080744bb5cc", false, "admin@email.com" },
-                    { "test-user-0001", 0, "123 User St.", "ea4355eb-f185-47c6-ab5d-502fe4e8ad3c", "user@email.com", false, "John", "Doe", false, null, "A", "USER@EMAIL.COM", "USER@EMAIL.COM", "AQAAAAIAAYagAAAAEDSZnRQOxbczuakmpAUA8skLa1JJK4zXztpSWQhxdNa3yoozQqVGwyOetOXgUTx85Q==", null, false, "65578b75-a952-4b88-b6b0-de6dbf2150b1", false, "user@email.com" }
+                    { "test-admin-0001", 0, "123 Admin St.", "f29e8615-b409-4d70-9e4a-bcedd813d3cc", new DateTime(2025, 4, 29, 15, 51, 54, 231, DateTimeKind.Utc).AddTicks(3124), "admin@email.com", false, "John", "Doe", false, null, "A", "ADMIN@EMAIL.COM", "ADMIN@EMAIL.COM", "AQAAAAIAAYagAAAAECswnV0gvKx1aBkEUt+aUQm3ddbAH4/jv0n2kU5LVWrzjBkJ5m4VThfg5xO9YgL5Jw==", null, false, null, "44249fe2-8db8-4bde-bac3-dc47f7603b46", false, "admin@email.com" },
+                    { "test-user-0001", 0, "123 User St.", "a6540282-ee77-49de-8eb6-f3c249dfe807", new DateTime(2025, 4, 29, 15, 51, 54, 184, DateTimeKind.Utc).AddTicks(7814), "user@email.com", false, "John", "Doe", false, null, "A", "USER@EMAIL.COM", "USER@EMAIL.COM", "AQAAAAIAAYagAAAAEKZbBm77NbLUKfDf1dI1WN+kLBXDmP4ZL7C9rrD5nam5DGCBKIYD3uwC9p5SLQY1PQ==", null, false, null, "0c4de941-2cec-4819-b694-4b47a03479e8", false, "user@email.com" }
                 });
 
             migrationBuilder.InsertData(
@@ -281,19 +376,7 @@ namespace LendSpace.Migrations
             migrationBuilder.InsertData(
                 table: "Billing",
                 columns: new[] { "Id", "Amount", "IsPaid", "IssuedAt", "Name", "UserId" },
-                values: new object[,]
-                {
-                    { "test-billing-0001", 2000.0, false, new DateOnly(2025, 4, 2), "Rent", "test-user-0001" },
-                    { "test-billing-0002", 150.0, false, new DateOnly(2025, 4, 2), "Electricity", "test-user-0001" },
-                    { "test-billing-0003", 50.0, false, new DateOnly(2025, 4, 2), "Water", "test-user-0001" },
-                    { "test-billing-0004", 70.0, false, new DateOnly(2025, 4, 2), "Internet", "test-user-0001" },
-                    { "test-billing-0005", 100.0, false, new DateOnly(2025, 4, 2), "Gas", "test-user-0001" },
-                    { "test-billing-0006", 80.0, false, new DateOnly(2025, 4, 2), "Cable TV", "test-user-0001" },
-                    { "test-billing-0007", 30.0, false, new DateOnly(2025, 4, 2), "Garbage Collection", "test-user-0001" },
-                    { "test-billing-0008", 125.0, false, new DateOnly(2025, 4, 2), "Maintenance Fee", "test-user-0001" },
-                    { "test-billing-0009", 60.0, false, new DateOnly(2025, 4, 2), "Security Fee", "test-user-0001" },
-                    { "test-billing-0010", 500.0, false, new DateOnly(2025, 4, 2), "Property Tax", "test-user-0001" }
-                });
+                values: new object[] { "test-billing-0001", 2000.0, false, new DateOnly(2025, 4, 2), "Rent", "test-user-0001" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -336,6 +419,36 @@ namespace LendSpace.Migrations
                 name: "IX_Billing_UserId",
                 table: "Billing",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CommunityComments_ParentCommentId",
+                table: "CommunityComments",
+                column: "ParentCommentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CommunityComments_PostId",
+                table: "CommunityComments",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CommunityComments_UserId",
+                table: "CommunityComments",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CommunityPosts_UserId",
+                table: "CommunityPosts",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FacilityBookings_FacilityId",
+                table: "FacilityBookings",
+                column: "FacilityId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FacilityBookings_UserId",
+                table: "FacilityBookings",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -363,13 +476,22 @@ namespace LendSpace.Migrations
                 name: "Billing");
 
             migrationBuilder.DropTable(
+                name: "CommunityComments");
+
+            migrationBuilder.DropTable(
                 name: "Events");
 
             migrationBuilder.DropTable(
-                name: "Facility");
+                name: "FacilityBookings");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "CommunityPosts");
+
+            migrationBuilder.DropTable(
+                name: "Facility");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
