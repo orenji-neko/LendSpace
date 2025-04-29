@@ -3,6 +3,7 @@ using System;
 using LendSpace.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LendSpace.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250429032125_AddCommunityPosts")]
+    partial class AddCommunityPosts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
@@ -352,7 +355,7 @@ namespace LendSpace.Migrations
                             Id = "test-user-0001",
                             AccessFailedCount = 0,
                             Address = "123 User St.",
-                            ConcurrencyStamp = "a575169c-3359-4686-9c07-3c1e3e6f34c8",
+                            ConcurrencyStamp = "c0c692a1-57a0-4267-85ad-beebfc774d00",
                             Email = "user@email.com",
                             EmailConfirmed = false,
                             FirstName = "John",
@@ -361,9 +364,9 @@ namespace LendSpace.Migrations
                             MidInitial = "A",
                             NormalizedEmail = "USER@EMAIL.COM",
                             NormalizedUserName = "USER@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEFk+r17wIUgB7mhaNx6Or4zJHMZSF0iGuBU1Pn6GMS/PiEv6rEG7Fah/ulZmBfTD2g==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEDEQzqoK6LVVt75QHRoXS9TjR9Icty7UP6fl6wd2Yw8ZTaxEj9Woqh+8FsU27l0Bg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "edae971c-82b3-4d89-9e91-fd323be2f19f",
+                            SecurityStamp = "85b3eb0b-e70d-42b1-a505-076f92509c45",
                             TwoFactorEnabled = false,
                             UserName = "user@email.com"
                         },
@@ -372,7 +375,7 @@ namespace LendSpace.Migrations
                             Id = "test-admin-0001",
                             AccessFailedCount = 0,
                             Address = "123 Admin St.",
-                            ConcurrencyStamp = "f9fa0417-3a3c-4e26-bd2d-0d7dfd11dcbb",
+                            ConcurrencyStamp = "f201d1f2-fcac-4b71-a30c-987402412ff9",
                             Email = "admin@email.com",
                             EmailConfirmed = false,
                             FirstName = "John",
@@ -381,9 +384,9 @@ namespace LendSpace.Migrations
                             MidInitial = "A",
                             NormalizedEmail = "ADMIN@EMAIL.COM",
                             NormalizedUserName = "ADMIN@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEJtHVgrGVB7rHTmU51TUpT+67mZHh0fqwcKN4n3t9tIkO5cfuQ/mDof27udW314YrA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEGcEDJAnC++fdHe731f+S1njSnudF9c1w7gEP5yGrdUiRYlqS8r9sYISsCVgikcHKg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "18c44b13-5572-4b53-a63b-966b6b2efba9",
+                            SecurityStamp = "bf2e6961-c0b1-41e4-bba5-c017fddf2768",
                             TwoFactorEnabled = false,
                             UserName = "admin@email.com"
                         });
