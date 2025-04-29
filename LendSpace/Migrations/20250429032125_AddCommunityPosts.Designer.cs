@@ -3,6 +3,7 @@ using System;
 using LendSpace.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LendSpace.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250429032125_AddCommunityPosts")]
+    partial class AddCommunityPosts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
@@ -280,9 +283,6 @@ namespace LendSpace.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
@@ -355,8 +355,7 @@ namespace LendSpace.Migrations
                             Id = "test-user-0001",
                             AccessFailedCount = 0,
                             Address = "123 User St.",
-                            ConcurrencyStamp = "376faf40-379e-4372-a78d-dfca168fb00a",
-                            CreatedDate = new DateTime(2025, 4, 29, 5, 33, 52, 614, DateTimeKind.Utc).AddTicks(7404),
+                            ConcurrencyStamp = "c0c692a1-57a0-4267-85ad-beebfc774d00",
                             Email = "user@email.com",
                             EmailConfirmed = false,
                             FirstName = "John",
@@ -365,9 +364,9 @@ namespace LendSpace.Migrations
                             MidInitial = "A",
                             NormalizedEmail = "USER@EMAIL.COM",
                             NormalizedUserName = "USER@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEECxnqKgqnbcLvv5WfNOqZrhbIc9dTNabGcHTpDAEYLL2Ie6wjbdNkL6JJRIVVJjVA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEDEQzqoK6LVVt75QHRoXS9TjR9Icty7UP6fl6wd2Yw8ZTaxEj9Woqh+8FsU27l0Bg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "c1574254-eb9a-4abd-9141-96e6965bbeda",
+                            SecurityStamp = "85b3eb0b-e70d-42b1-a505-076f92509c45",
                             TwoFactorEnabled = false,
                             UserName = "user@email.com"
                         },
@@ -376,8 +375,7 @@ namespace LendSpace.Migrations
                             Id = "test-admin-0001",
                             AccessFailedCount = 0,
                             Address = "123 Admin St.",
-                            ConcurrencyStamp = "384ee4fa-cc16-40cc-a9b2-93daeaa6a5b7",
-                            CreatedDate = new DateTime(2025, 4, 29, 5, 33, 52, 737, DateTimeKind.Utc).AddTicks(9452),
+                            ConcurrencyStamp = "f201d1f2-fcac-4b71-a30c-987402412ff9",
                             Email = "admin@email.com",
                             EmailConfirmed = false,
                             FirstName = "John",
@@ -386,9 +384,9 @@ namespace LendSpace.Migrations
                             MidInitial = "A",
                             NormalizedEmail = "ADMIN@EMAIL.COM",
                             NormalizedUserName = "ADMIN@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEHtHZqPDfyjcloF4/AbBoqhFKE/s99TZ8kjXaZixABByBsIO/sJDABe8q6/mk8/5Yw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEGcEDJAnC++fdHe731f+S1njSnudF9c1w7gEP5yGrdUiRYlqS8r9sYISsCVgikcHKg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "366f1fbf-25ac-4fb9-bc47-f76b2cae8437",
+                            SecurityStamp = "bf2e6961-c0b1-41e4-bba5-c017fddf2768",
                             TwoFactorEnabled = false,
                             UserName = "admin@email.com"
                         });

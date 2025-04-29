@@ -1,6 +1,6 @@
-﻿@page "/User/Community"
+﻿@page "/Admin/Community"
 @rendermode InteractiveServer
-@attribute [Authorize(Policy = "UserOnly")]
+@attribute [Authorize(Policy = "AdminOnly")]
 @using System.Security.Claims
 @using LendSpace.Models
 @using Microsoft.EntityFrameworkCore

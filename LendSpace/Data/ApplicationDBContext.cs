@@ -15,6 +15,8 @@ namespace LendSpace.Data
         public DbSet<BillingModel> Billing { get; set; }
         public DbSet<EventModel> Events { get; set; }
         public DbSet<AnnouncementModel> Announcements { get; set; }
+        public DbSet<CommunityPostModel> CommunityPosts { get; set; }
+        public DbSet<CommunityCommentModel> CommunityComments { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
@@ -181,6 +183,33 @@ namespace LendSpace.Data
                     PostedAt = new DateOnly(2025, 4, 6)
                 }
                 ]);
+            builder.Entity<CommunityPostModel>()
+                .HasMany(p => p.Comments)
+                .WithOne(c => c.Post)
+                .HasForeignKey(c => c.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure the User relationship
+            builder.Entity<CommunityPostModel>()
+                .HasOne(p => p.User)
+                .WithMany()
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure User relationship with CommunityCommentModel
+            builder.Entity<CommunityCommentModel>()
+                .HasOne(c => c.User)
+                .WithMany()
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure nested comments (parent-child relationship)
+            builder.Entity<CommunityCommentModel>()
+                .HasOne(c => c.ParentComment)
+                .WithMany(c => c.Replies)
+                .HasForeignKey(c => c.ParentCommentId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
         }
     }
 
