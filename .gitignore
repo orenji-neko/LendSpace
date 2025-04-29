@@ -362,6 +362,10 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
+# EntityFramework
+Migrations/
+
 # Tailwind
 **/tailwindcss.exe
 /LendSpace/tailwindcss.exe
+/LendSpace/Migrations/ApplicationDbContextModelSnapshot.cs
