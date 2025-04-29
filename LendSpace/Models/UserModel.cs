@@ -17,6 +17,8 @@ namespace LendSpace.Models
         // Add this new property
         public string? ProfilePictureUrl { get; set; }
 
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+
         [Required]
         public ICollection<BillingModel> Billings { get; } = new List<BillingModel>();
     }

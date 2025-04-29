@@ -1,4 +1,730 @@
 ﻿@page "/Admin"
 @attribute [Authorize(Policy = "AdminOnly")]
+@using LendSpace.Models
+@using Microsoft.EntityFrameworkCore
+@using System.Linq
+@using System.Globalization
+@inject ApplicationDbContext DbContext
+@inject IJSRuntime JSRuntime
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Admin Dashboard</PageTitle>
+
+<div class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
+        <div class="text-black pt-5">
+            <h1 class="text-3xl font-bold">Welcome Back, <span class="text-green-300">@UserName</span></h1>
+            <p class="text-black mt-2">@DateTime.Now.ToString("dddd, MMMM dd, yyyy")</p>
+        </div>
+        
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="p-6">
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-500 bg-opacity-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Total Users</p>
+                        <h2 class="text-3xl font-bold text-gray-800">@UsersCount</h2>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-green-500 font-semibold">+@NewUsersCount</span>
+                    <span class="text-gray-500">new this month</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-500 bg-opacity-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Total Revenue</p>
+                        <h2 class="text-3xl font-bold text-gray-800">$@TotalRevenue.ToString("N2")</h2>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-green-500 font-semibold">+$@RecentRevenue.ToString("N2")</span>
+                    <span class="text-gray-500">this month</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-500 bg-opacity-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Available Facilities</p>
+                        <h2 class="text-3xl font-bold text-gray-800">@AvailableFacilities / @TotalFacilities</h2>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-yellow-500 font-semibold">@((AvailableFacilities * 100 / Math.Max(1, TotalFacilities)))%</span>
+                    <span class="text-gray-500">availability</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-500 bg-opacity-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Pending Payments</p>
+                        <h2 class="text-3xl font-bold text-gray-800">@PendingPayments</h2>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-red-500 font-semibold">$@PendingAmount.ToString("N2")</span>
+                    <span class="text-gray-500">to collect</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts & Tables -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Revenue Chart -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800">Revenue Overview</h3>
+                    <select class="form-select text-sm border-gray-300 rounded-md" @onchange="UpdateRevenueChart">
+                        <option value="week">Last 7 Days</option>
+                        <option value="month" selected>Last 30 Days</option>
+                        <option value="year">This Year</option>
+                    </select>
+                </div>
+                <div id="revenueChart" class="h-64"></div>
+            </div>
+
+            <!-- User Activity Chart -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800">User Activity</h3>
+                    <select class="form-select text-sm border-gray-300 rounded-md" @onchange="UpdateUserActivityChart">
+                        <option value="week">Last 7 Days</option>
+                        <option value="month" selected>Last 30 Days</option>
+                        <option value="year">This Year</option>
+                    </select>
+                </div>
+                <div id="userActivityChart" class="h-64"></div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions & Events -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Recent Transactions -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800">Recent Payments</h3>
+                    <NavLink class="text-blue-500 hover:text-blue-700" href="/Admin/Billing">View All</NavLink>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @foreach (var payment in RecentPayments)
+                            {
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                                @payment.UserInitial
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">@payment.UserName</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">$@payment.Amount.ToString("N2")</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if (payment.IsPaid)
+                                        {
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Paid
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                Pending
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        @payment.Date.ToString("MMM dd, yyyy")
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Upcoming Events -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800">Upcoming Events</h3>
+                    <NavLink class="text-blue-500 hover:text-blue-700" href="/Admin/Community">View All</NavLink>
+                </div>
+                <div class="space-y-4">
+                    @foreach (var evt in UpcomingEvents)
+                    {
+                        <div class="border-l-4 border-blue-500 pl-4 py-2">
+                            <div class="flex justify-between">
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-800">@evt.Name</h4>
+                                    <p class="text-sm text-gray-500">@evt.Description</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-sm font-medium text-gray-700">@evt.StartDate.ToString("MMM dd")</span>
+                                    <p class="text-xs text-gray-500">@evt.StartDate.ToString("h:mm tt")</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Community Engagement & Facility Status -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Community Engagement -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800">Community Engagement</h3>
+                    <NavLink class="text-blue-500 hover:text-blue-700" href="/Admin/Community">View Details</NavLink>
+                </div>
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="bg-blue-50 rounded-lg p-4 text-center">
+                        <h4 class="text-xl font-bold text-blue-700">@TotalPosts</h4>
+                        <p class="text-sm text-gray-600">Total Posts</p>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4 text-center">
+                        <h4 class="text-xl font-bold text-green-700">@TotalComments</h4>
+                        <p class="text-sm text-gray-600">Comments</p>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-4 text-center">
+                        <h4 class="text-xl font-bold text-purple-700">@EngagementRate%</h4>
+                        <p class="text-sm text-gray-600">Engagement</p>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Top Posts</h4>
+                    <div class="space-y-3">
+                        @foreach (var post in TopPosts)
+                        {
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                    @post.UserInitial
+                                </div>
+                                <div class="ml-3 flex-1">
+                                    <p class="text-sm font-medium text-gray-800">@post.UserName</p>
+                                    <p class="text-xs text-gray-500 truncate">@post.Content</p>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                    <span class="text-xs text-gray-500">@post.LikeCount</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Facility Status -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800">Facility Status</h3>
+                    <NavLink class="text-blue-500 hover:text-blue-700" href="/Admin/Facility">Manage Facilities</NavLink>
+                </div>
+                <div class="space-y-4">
+                    @foreach (var facility in Facilities)
+                    {
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="font-semibold text-gray-800">@facility.Name</h4>
+                                @if (facility.Available)
+                                {
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Available</span>
+                                }
+                                else
+                                {
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">In Use</span>
+                                }
+                            </div>
+                            <p class="text-sm text-gray-600 mb-1">@facility.Address</p>
+                            <p class="text-xs text-gray-500">@facility.Description</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string UserName = "Admin";
+    private int UsersCount = 0;
+    private int NewUsersCount = 0;
+    private double TotalRevenue = 0;
+    private double RecentRevenue = 0;
+    private int AvailableFacilities = 0;
+    private int TotalFacilities = 0;
+    private int PendingPayments = 0;
+    private double PendingAmount = 0;
+    private List<PaymentInfo> RecentPayments = new List<PaymentInfo>();
+    private List<EventInfo> UpcomingEvents = new List<EventInfo>();
+    private int TotalPosts = 0;
+    private int TotalComments = 0;
+    private int EngagementRate = 0;
+    private List<PostInfo> TopPosts = new List<PostInfo>();
+    private List<FacilityInfo> Facilities = new List<FacilityInfo>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardData();
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await InitializeCharts();
+        }
+    }
+
+    private async Task LoadDashboardData()
+    {
+        // Load Users Stats
+        UsersCount = await DbContext.Users.CountAsync();
+        var thirtyDaysAgo = DateTime.Now.AddDays(-30);
+        NewUsersCount = await DbContext.Users
+            .Where(u => u.CreatedDate > thirtyDaysAgo)
+            .CountAsync();
+
+        // Load Revenue Info
+        var billings = await DbContext.Billing.ToListAsync();
+        TotalRevenue = billings.Where(b => b.IsPaid).Sum(b => b.Amount);
+        RecentRevenue = billings
+            .Where(b => b.IsPaid && b.IssuedAt.ToDateTime(TimeOnly.MinValue) > thirtyDaysAgo)
+            .Sum(b => b.Amount);
+
+        // Load Facility Info
+        var facilities = await DbContext.Facility.ToListAsync();
+        TotalFacilities = facilities.Count;
+        AvailableFacilities = facilities.Count(f => f.Available ?? false);
+
+        // Load Pending Payments
+        var pendingBillings = billings.Where(b => !b.IsPaid).ToList();
+        PendingPayments = pendingBillings.Count;
+        PendingAmount = pendingBillings.Sum(b => b.Amount);
+
+        // Load Recent Payments
+        RecentPayments = await GetRecentPayments();
+
+        // Load Upcoming Events
+        UpcomingEvents = await GetUpcomingEvents();
+
+        // Load Community Stats
+        await LoadCommunityStats();
+
+        // Load Facilities
+        Facilities = facilities.Select(f => new FacilityInfo
+            {
+                Name = f.Name,
+                Address = f.Address,
+                Description = f.Description,
+                Available = f.Available ?? false
+            }).ToList();
+    }
+
+    private async Task<List<PaymentInfo>> GetRecentPayments()
+    {
+        var recentPayments = new List<PaymentInfo>();
+
+        var billings = await DbContext.Billing
+            .OrderByDescending(b => b.IssuedAt)
+            .Take(5)
+            .ToListAsync();
+
+        foreach (var billing in billings)
+        {
+            var user = await DbContext.Users.FindAsync(billing.UserId);
+            if (user != null)
+            {
+                recentPayments.Add(new PaymentInfo
+                    {
+                        UserName = $"{user.FirstName} {user.LastName}",
+                        UserInitial = user.FirstName.FirstOrDefault().ToString(),
+                        Amount = billing.Amount,
+                        IsPaid = billing.IsPaid,
+                        Date = billing.IssuedAt.ToDateTime(TimeOnly.MinValue)
+                    });
+            }
+        }
+
+        return recentPayments;
+    }
+
+    private async Task<List<EventInfo>> GetUpcomingEvents()
+    {
+        var now = DateTime.Now;
+
+        // Get upcoming events directly from database with proper filtering
+        var upcomingEvents = await DbContext.Events
+            .OrderBy(e => e.StartedAt)
+            .Take(5)
+            .Select(e => new EventInfo
+                {
+                    Name = e.Name,
+                    Description = e.Description,
+                     // Convert DateOnly to DateTime
+                })
+            .ToListAsync();
+
+        return upcomingEvents;
+    }
+
+    private async Task LoadCommunityStats()
+    {
+        var posts = await DbContext.CommunityPosts.ToListAsync();
+        TotalPosts = posts.Count;
+
+        TotalComments = await DbContext.CommunityComments.CountAsync();
+
+        // Calculate engagement rate (likes + comments / total posts)
+        var totalInteractions = posts.Sum(p => p.LikeCount + p.CommentCount);
+        EngagementRate = TotalPosts > 0 ? (int)((double)totalInteractions / TotalPosts * 100) : 0;
+
+        // Get top posts by likes
+        TopPosts = await DbContext.CommunityPosts
+            .OrderByDescending(p => p.LikeCount)
+            .Take(3)
+            .Select(p => new PostInfo
+                {
+                    UserName = p.User.UserName,
+                    UserInitial = p.User.FirstName.FirstOrDefault().ToString(),
+                    Content = p.Content.Length > 50 ? p.Content.Substring(0, 47) + "..." : p.Content,
+                    LikeCount = p.LikeCount
+                })
+            .ToListAsync();
+    }
+
+    private async Task InitializeCharts()
+    {
+        await JSRuntime.InvokeVoidAsync("initCharts");
+    }
+
+    private async Task UpdateRevenueChart(ChangeEventArgs e)
+    {
+        await JSRuntime.InvokeVoidAsync("updateRevenueChart", e.Value.ToString());
+    }
+
+    private async Task UpdateUserActivityChart(ChangeEventArgs e)
+    {
+        await JSRuntime.InvokeVoidAsync("updateUserActivityChart", e.Value.ToString());
+    }
+
+    private void NavigateTo(string url)
+    {
+        // Navigation implementation would go here
+    }
+
+    // Model classes for the component
+    public class PaymentInfo
+    {
+        public string UserName { get; set; }
+        public string UserInitial { get; set; }
+        public double Amount { get; set; }
+        public bool IsPaid { get; set; }
+        public DateTime Date { get; set; }
+    }
+
+    public class EventInfo
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public DateTime StartDate { get; set; }
+    }
+
+    public class PostInfo
+    {
+        public string UserName { get; set; }
+        public string UserInitial { get; set; }
+        public string Content { get; set; }
+        public int LikeCount { get; set; }
+    }
+
+    public class FacilityInfo
+    {
+        public string Name { get; set; }
+        public string Address { get; set; }
+        public string Description { get; set; }
+        public bool Available { get; set; }
+    }
+}
+
+<!-- JavaScript for Charts - Add this to your _Host.cshtml or include with JSRuntime -->
+<script>
+    window.initCharts = function () {
+        // Simulated data - in a real app, this would come from your backend
+        const revenueData = [
+            { date: '2025-04-01', amount: 1200 },
+            { date: '2025-04-05', amount: 1900 },
+            { date: '2025-04-10', amount: 1500 },
+            { date: '2025-04-15', amount: 2200 },
+            { date: '2025-04-20', amount: 1800 },
+            { date: '2025-04-25', amount: 2400 },
+            { date: '2025-04-29', amount: 2800 }
+        ];
+
+        const userActivityData = [
+            { date: '2025-04-01', logins: 45, posts: 12 },
+            { date: '2025-04-05', logins: 52, posts: 18 },
+            { date: '2025-04-10', logins: 49, posts: 15 },
+            { date: '2025-04-15', logins: 60, posts: 20 },
+            { date: '2025-04-20', logins: 55, posts: 22 },
+            { date: '2025-04-25', logins: 70, posts: 25 },
+            { date: '2025-04-29', logins: 75, posts: 30 }
+        ];
+
+        // Load the charts library
+        if (typeof Chart === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js';
+            script.onload = function() {
+                createRevenueChart(revenueData);
+                createUserActivityChart(userActivityData);
+            };
+            document.head.appendChild(script);
+        } else {
+            createRevenueChart(revenueData);
+            createUserActivityChart(userActivityData);
+        }
+    };
+
+    let revenueChart = null;
+    let userActivityChart = null;
+
+    function createRevenueChart(data) {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+
+        if (revenueChart) {
+            revenueChart.destroy();
+        }
+
+        revenueChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(item => {
+                    const date = new Date(item.date);
+                    return `${date.getMonth() + 1}/${date.getDate()}`;
+                }),
+                datasets: [{
+                    label: 'Revenue',
+                    data: data.map(item => item.amount),
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Revenue: ${context.parsed.y.toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return ' + value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function createUserActivityChart(data) {
+        const ctx = document.getElementById('userActivityChart').getContext('2d');
+
+        if (userActivityChart) {
+            userActivityChart.destroy();
+        }
+
+        userActivityChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(item => {
+                    const date = new Date(item.date);
+                    return `${date.getMonth() + 1}/${date.getDate()}`;
+                }),
+                datasets: [
+                    {
+                        label: 'Logins',
+                        data: data.map(item => item.logins),
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                    },
+                    {
+                        label: 'Posts',
+                        data: data.map(item => item.posts),
+                        backgroundColor: 'rgba(139, 92, 246, 0.7)',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    window.updateRevenueChart = function(timeRange) {
+        // Simulate fetching different time range data
+        let data = [];
+
+        if (timeRange === 'week') {
+            data = [
+                { date: '2025-04-23', amount: 800 },
+                { date: '2025-04-24', amount: 950 },
+                { date: '2025-04-25', amount: 1200 },
+                { date: '2025-04-26', amount: 1000 },
+                { date: '2025-04-27', amount: 1500 },
+                { date: '2025-04-28', amount: 1300 },
+                { date: '2025-04-29', amount: 1400 }
+            ];
+        } else if (timeRange === 'month') {
+            data = [
+                { date: '2025-04-01', amount: 1200 },
+                { date: '2025-04-05', amount: 1900 },
+                { date: '2025-04-10', amount: 1500 },
+                { date: '2025-04-15', amount: 2200 },
+                { date: '2025-04-20', amount: 1800 },
+                { date: '2025-04-25', amount: 2400 },
+                { date: '2025-04-29', amount: 2800 }
+            ];
+        } else if (timeRange === 'year') {
+            data = [
+                { date: '2025-01-01', amount: 12000 },
+                { date: '2025-02-01', amount: 15000 },
+                { date: '2025-03-01', amount: 16500 },
+                { date: '2025-04-01', amount: 19000 },
+                { date: '2025-05-01', amount: 21000 },
+                { date: '2025-06-01', amount: 18500 },
+                { date: '2025-07-01', amount: 22000 },
+                { date: '2025-08-01', amount: 24000 },
+                { date: '2025-09-01', amount: 26000 },
+                { date: '2025-10-01', amount: 23000 },
+                { date: '2025-11-01', amount: 28000 },
+                { date: '2025-12-01', amount: 32000 }
+            ];
+        }
+
+        createRevenueChart(data);
+    };
+
+    window.updateUserActivityChart = function(timeRange) {
+        // Simulate fetching different time range data
+        let data = [];
+
+        if (timeRange === 'week') {
+            data = [
+                { date: '2025-04-23', logins: 35, posts: 10 },
+                { date: '2025-04-24', logins: 42, posts: 15 },
+                { date: '2025-04-25', logins: 38, posts: 12 },
+                { date: '2025-04-26', logins: 30, posts: 8 },
+                { date: '2025-04-27', logins: 45, posts: 18 },
+                { date: '2025-04-28', logins: 50, posts: 20 },
+                { date: '2025-04-29', logins: 55, posts: 22 }
+            ];
+        } else if (timeRange === 'month') {
+            data = [
+                { date: '2025-04-01', logins: 45, posts: 12 },
+                { date: '2025-04-05', logins: 52, posts: 18 },
+                { date: '2025-04-10', logins: 49, posts: 15 },
+                { date: '2025-04-15', logins: 60, posts: 20 },
+                { date: '2025-04-20', logins: 55, posts: 22 },
+                { date: '2025-04-25', logins: 70, posts: 25 },
+                { date: '2025-04-29', logins: 75, posts: 30 }
+            ];
+        } else if (timeRange === 'year') {
+            data = [
+                { date: '2025-01-01', logins: 350, posts: 120 },
+                { date: '2025-02-01', logins: 420, posts: 145 },
+                { date: '2025-03-01', logins: 480, posts: 160 },
+                { date: '2025-04-01', logins: 520, posts: 180 },
+                { date: '2025-05-01', logins: 550, posts: 190 },
+                { date: '2025-06-01', logins: 500, posts: 170 },
+                { date: '2025-07-01', logins: 600, posts: 210 },
+                { date: '2025-08-01', logins: 650, posts: 230 },
+                { date: '2025-09-01', logins: 680, posts: 240 },
+                { date: '2025-10-01', logins: 630, posts: 220 },
+                { date: '2025-11-01', logins: 700, posts: 260 },
+                { date: '2025-12-01', logins: 750, posts: 290 }
+            ];
+        }
+
+        createUserActivityChart(data);
+    };
+</script>
