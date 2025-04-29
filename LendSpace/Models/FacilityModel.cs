@@ -5,18 +5,17 @@ namespace LendSpace.Models
     public class FacilityModel
     {
         [Key]
-        public required string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
         [Required]
-        public required string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [Required]
-        public required string Address { get; set; }
+        public string Address { get; set; } = string.Empty;
 
         [Required]
-        public required string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
-        [Required]
-        public bool? Available { get; set; }
+        public bool Available { get; set; }
     }
 }

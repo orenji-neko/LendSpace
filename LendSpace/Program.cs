@@ -1,6 +1,7 @@
 using LendSpace.Components;
 using LendSpace.Data;
 using LendSpace.Models;
+using LendSpace.Services;  // Add this to import the Services namespace
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,12 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-
 builder.Services.AddControllers();
-
 builder.Services.AddHttpClient();
-
-
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
@@ -31,6 +28,9 @@ builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
+// Register the EventService - update the namespace to match your interface
+builder.Services.AddScoped<IEventService, EventService>();
+
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("UserOnly", policy =>
     {
@@ -39,6 +39,10 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminOnly", policy =>
     {
         policy.RequireRole("Admin");
+    })
+    .AddPolicy("StaffOnly", policy =>
+    {
+        policy.RequireRole("Staff");
     });
 
 builder.Services.ConfigureApplicationCookie(options =>
@@ -61,12 +65,12 @@ else
     app.UseHsts();
 }
 
-
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseHttpsRedirection();
 app.UseAntiforgery();
 app.MapStaticAssets();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

@@ -8,7 +8,7 @@
 @inject IJSRuntime JSRuntime
 
 <PageTitle>Admin Dashboard</PageTitle>
-
+.
 <div class="bg-gray-100 min-h-screen">
     <!-- Header -->
     <div class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
@@ -339,7 +339,7 @@
         // Load Facility Info
         var facilities = await DbContext.Facility.ToListAsync();
         TotalFacilities = facilities.Count;
-        AvailableFacilities = facilities.Count(f => f.Available ?? false);
+        AvailableFacilities = facilities.Count(f => f.Available);
 
         // Load Pending Payments
         var pendingBillings = billings.Where(b => !b.IsPaid).ToList();
@@ -361,7 +361,7 @@
                 Name = f.Name,
                 Address = f.Address,
                 Description = f.Description,
-                Available = f.Available ?? false
+                Available = f.Available,
             }).ToList();
     }
 
