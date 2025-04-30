@@ -1,0 +1,57 @@
+﻿@inherits ComponentBase
+@rendermode InteractiveServer
+
+@inject DialogManager DialogManager
+
+<!-- Overlay: Always rendered, with CSS controlled opacity -->
+<div class="@GetOverlayClasses()">
+    @* Just the background *@
+</div>
+
+<!-- Dialog wrapper: Always rendered and centered -->
+<div class="@GetDialogWrapperClasses()">
+    <div class="bg-white rounded-md shadow-md p-4 flex flex-col gap-2 transform transition-transform duration-300 ease-out @(DialogManager.Show ? "scale-100" : "scale-95")">
+        <h1 class="text-2xl font-bold">@DialogManager.Title</h1>
+        <p>@DialogManager.Message</p>
+        <div class="flex flex-row gap-2">
+            <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" @onclick="() => OnConfirm(true)">Confirm</button>
+            <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" @onclick="() => OnConfirm(false)">Cancel</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        DialogManager.Reset();
+        DialogManager.OnChange += HandleDialogServiceChanged;
+    }
+
+    private void HandleDialogServiceChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnConfirm(bool result)
+    {
+        DialogManager.Confirm(result);
+    }
+
+    public void Dispose()
+    {
+        DialogManager.OnChange -= HandleDialogServiceChanged;
+    }
+
+    // transition shit
+    private string GetOverlayClasses()
+    {
+        return $"absolute bg-gray-300 w-screen h-screen flex flex-row justify-center items-center z-40 transition-opacity duration-300 ease-in-out " +
+               $"{(DialogManager.Show ? "opacity-50" : "opacity-0 pointer-events-none")}";
+    }
+
+    private string GetDialogWrapperClasses()
+    {
+        return $"absolute w-screen h-screen flex flex-row justify-center items-center z-50 transition-opacity duration-300 ease-in-out " +
+               $"{(DialogManager.Show ? "opacity-100" : "opacity-0 pointer-events-none")}";
+    }
+}

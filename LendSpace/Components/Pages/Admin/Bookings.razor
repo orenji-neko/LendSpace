@@ -3,7 +3,8 @@
 @attribute [Authorize(Policy = "AdminOnly")]
 
 @inject ApplicationDbContext Context
-@inject BookingService BookingService
+@inject BookingManager BookingService
+@inject DialogManager DialogManager
 
 <PageTitle>Billing</PageTitle>
 
@@ -240,10 +241,20 @@
 	{
 		if (!edit)
 		{
+			bool confirmed = await DialogManager.ShowDialogAsync("Confirm", "Proceed to edit?");
+			if (!confirmed)
+			{
+				return;
+			}
 			await BookingService.AddFacilityBooking(model!);
 		}
 		else
 		{
+			bool confirmed = await DialogManager.ShowDialogAsync("Confirm", "Proceed to add?");
+			if (!confirmed)
+			{
+				return;
+			}
 			await BookingService.EditFacilityBooking(model!);
 		}
 

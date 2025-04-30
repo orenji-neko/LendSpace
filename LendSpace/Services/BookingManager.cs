@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LendSpace.Services
 {
-    public class BookingService
+    public class BookingManager
     {
         private readonly ApplicationDbContext _context;
 
-        public BookingService(ApplicationDbContext context)
+        public BookingManager(ApplicationDbContext context)
         {
             _context = context;
         }
