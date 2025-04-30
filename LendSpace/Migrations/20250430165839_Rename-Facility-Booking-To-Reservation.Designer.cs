@@ -3,6 +3,7 @@ using System;
 using LendSpace.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LendSpace.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250430165839_Rename-Facility-Booking-To-Reservation")]
+    partial class RenameFacilityBookingToReservation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
@@ -233,9 +236,6 @@ namespace LendSpace.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<double>("Pricing")
-                        .HasColumnType("REAL");
-
                     b.HasKey("Id");
 
                     b.ToTable("Facility");
@@ -247,8 +247,7 @@ namespace LendSpace.Migrations
                             Address = "Biringan City, Samar",
                             Available = true,
                             Description = "A big tub, with water!",
-                            Name = "Swimming Pool",
-                            Pricing = 200.0
+                            Name = "Swimming Pool"
                         });
                 });
 
@@ -257,18 +256,15 @@ namespace LendSpace.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateOnly>("BookedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateOnly>("EndsAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("FacilityId")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("StartsAt")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Status")
@@ -382,8 +378,8 @@ namespace LendSpace.Migrations
                             Id = "test-user-0001",
                             AccessFailedCount = 0,
                             Address = "Cebu City",
-                            ConcurrencyStamp = "94f1ff4a-ddb7-48ee-87a7-fd656830998b",
-                            CreatedDate = new DateTime(2025, 4, 30, 18, 3, 30, 831, DateTimeKind.Utc).AddTicks(2936),
+                            ConcurrencyStamp = "05e0836e-4f89-4425-821c-da0daecf998b",
+                            CreatedDate = new DateTime(2025, 4, 30, 16, 58, 38, 343, DateTimeKind.Utc).AddTicks(2690),
                             Email = "user1@email.com",
                             EmailConfirmed = false,
                             FirstName = "Ian John",
@@ -392,9 +388,9 @@ namespace LendSpace.Migrations
                             MidInitial = "L",
                             NormalizedEmail = "USER1@EMAIL.COM",
                             NormalizedUserName = "USER1@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEEofsGm8kXHMyz7sFAjjH4j/xc5EgU/jL90M6MQvNJanS0O+5kHvOEP1vJS2+jK8WQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEHh/1g2CuMO/zvjGRkBsSGqGExc6aoQt/P0XpV/OVKzmMngMDmeYqHiOSMRNJfMXNw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "f5f99b33-6853-4d77-9cd3-a0513924fc2d",
+                            SecurityStamp = "2fb3969e-ebf7-4e90-a191-2fb71d631ffc",
                             TwoFactorEnabled = false,
                             UserName = "user1@email.com"
                         },
@@ -403,8 +399,8 @@ namespace LendSpace.Migrations
                             Id = "test-user-0002",
                             AccessFailedCount = 0,
                             Address = "Basey, Samar",
-                            ConcurrencyStamp = "a42c96e3-ad30-4a77-859f-5a64aa5e30af",
-                            CreatedDate = new DateTime(2025, 4, 30, 18, 3, 30, 877, DateTimeKind.Utc).AddTicks(5585),
+                            ConcurrencyStamp = "6e0af4ce-3806-4167-b07c-97e1667e59ab",
+                            CreatedDate = new DateTime(2025, 4, 30, 16, 58, 38, 395, DateTimeKind.Utc).AddTicks(3085),
                             Email = "user2@email.com",
                             EmailConfirmed = false,
                             FirstName = "Christian",
@@ -413,9 +409,9 @@ namespace LendSpace.Migrations
                             MidInitial = "D",
                             NormalizedEmail = "USER2@EMAIL.COM",
                             NormalizedUserName = "USER2@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAECNmSYa0UUljRdUu5QruCqsHfJ6jMc+eVH01EcWpmFzdqZep3nGcS7B8bVKQKLGFzg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEO3f+tfzmjY6tXW7hfG0TaJAEisFmqCuhfZOIrH9LPPepyrRtZSKrgchhIJRon0MPA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "3ec677d3-66c1-4a73-8678-5f9f62b912b4",
+                            SecurityStamp = "9dd8f2db-e81e-433f-b521-24dfd566b18b",
                             TwoFactorEnabled = false,
                             UserName = "user2@email.com"
                         },
@@ -424,8 +420,8 @@ namespace LendSpace.Migrations
                             Id = "test-admin-0001",
                             AccessFailedCount = 0,
                             Address = "123 Admin St.",
-                            ConcurrencyStamp = "aa80c21e-4b16-4399-a68c-d4fa85522fd2",
-                            CreatedDate = new DateTime(2025, 4, 30, 18, 3, 30, 924, DateTimeKind.Utc).AddTicks(6605),
+                            ConcurrencyStamp = "121670ff-1b91-4a69-a3cf-136cca027b9c",
+                            CreatedDate = new DateTime(2025, 4, 30, 16, 58, 38, 456, DateTimeKind.Utc).AddTicks(5246),
                             Email = "admin@email.com",
                             EmailConfirmed = false,
                             FirstName = "John",
@@ -434,9 +430,9 @@ namespace LendSpace.Migrations
                             MidInitial = "A",
                             NormalizedEmail = "ADMIN@EMAIL.COM",
                             NormalizedUserName = "ADMIN@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPsEbzZ31TsAwxNMIqymfRMHq/RSYqInNTehX5iTbCwTLIUM7b4Xk8fULq3KWoDJ3Q==",
+                            PasswordHash = "AQAAAAIAAYagAAAAENWb+Hq4hq6JHRGhYrA/0W/IeMlW3MtJJn/2feGP85xcM2lXDcqq2laGc7voX/1+tA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "5f160d6b-d566-4520-8510-d62b22f861e0",
+                            SecurityStamp = "3b4bc1f3-885c-4a56-ada3-61de800e5656",
                             TwoFactorEnabled = false,
                             UserName = "admin@email.com"
                         },
@@ -445,8 +441,8 @@ namespace LendSpace.Migrations
                             Id = "test-staff-0001",
                             AccessFailedCount = 0,
                             Address = "123 Staff St.",
-                            ConcurrencyStamp = "346a9cca-d49f-44a2-b81b-862745ae011d",
-                            CreatedDate = new DateTime(2025, 4, 30, 18, 3, 30, 969, DateTimeKind.Utc).AddTicks(9423),
+                            ConcurrencyStamp = "8540d4eb-e049-485d-a72c-4d4741c76325",
+                            CreatedDate = new DateTime(2025, 4, 30, 16, 58, 38, 506, DateTimeKind.Utc).AddTicks(9446),
                             Email = "staff@email.com",
                             EmailConfirmed = false,
                             FirstName = "Jane",
@@ -455,9 +451,9 @@ namespace LendSpace.Migrations
                             MidInitial = "B",
                             NormalizedEmail = "STAFF@EMAIL.COM",
                             NormalizedUserName = "STAFF@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEIy8qQpR2N7Axu1GzeHr+04wi1CtaC+cYoVpXaFAmLWK/j5G+RadmnkBYlUlakW+fA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEH39vOSQJkp9W7nJEl48T2RWVFfx14UyxQRj72z98p0ajNMAz+UEGZINa4UqmbXnOw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "6d35a731-e525-4b94-984b-9f6cb414349d",
+                            SecurityStamp = "3348d5ac-8ad0-4e94-ad80-d025328347ed",
                             TwoFactorEnabled = false,
                             UserName = "staff@email.com"
                         });

@@ -2,406 +2,196 @@
 @rendermode InteractiveServer
 @attribute [Authorize(Policy = "AdminOnly")]
 
-@using LendSpace.Models
-@using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext Context
+@inject DialogManager DialogManager
 
 <PageTitle>Facilities</PageTitle>
-<style>
-	body {
-		background-color: whitesmoke;
-	}
 
-	html {
-		scroll-behavior: smooth;
-		overflow-y: scroll;
-		overflow-x: hidden;
-		font-family: 'PT Sans Narrow', sans-serif;
-	}
-
-		html::-webkit-scrollbar {
-			width: 8px;
-		}
-
-		html::-webkit-scrollbar-track {
-			background: #f0f0f0;
-		}
-
-		html::-webkit-scrollbar-thumb {
-			background-color: #888;
-			border-radius: 4px;
-			border: 2px solid #f0f0f0;
-		}
-
-			html::-webkit-scrollbar-thumb:hover {
-				background-color: #555;
-			}
-</style>
-<div class="text-center">
-	<h2 class="text-3xl font-bold mb-2">Facilities</h2>
-	<p class="text-gray-600">Explore and Book a facility with your preferences!</p>
-	<div class="h-1 w-20 bg-green-500 mx-auto mt-4"></div>
-</div>
-<div class="min-h-screen w-full px-8">
-
-	<header class=" px-20">
-
-		<div class="w-full mx-auto items-center flex justify-between">
-			<div class="items-center flex">
-				<h1 class="text-lg text-gray-800 mr-3">Search</h1>
-				<div class="relative">
-					<input type="text"
-						   class="w-full pl-12 pr-4 py-3 border border-gray-300 shadow-sm"
-						   placeholder="Search facilities by name or description..."
-						   @bind="searchTerm"
-						   @bind:event="oninput" />
-					<svg class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-					</svg>
-				</div>
-			</div>
-		</div>
-		<div class="border-b-3 border-gray-300 mt-3 w-full"></div>
-	</header>
-
-	<!-- Facilities Grid -->
-	<div class="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-1 mt-5 gap-6 px-20 items-center">
-
-		@foreach (var facility in filteredFacilities!)
-		{
-			<div class="bg-white rounded-lg shadow-md overflow-hidden">
-				<!-- Facility Card Content -->
-				<div class="flex">
-					<div class="relative h-48 overflow-hidden w-150 h-80">
-						<img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80"
-							 alt="@facility.Name"
-							 class="w-full h-full object-cover" />
-						<div class="absolute top-2 right-2">
-							<span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Available</span>
-						</div>
-						<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-							<h3 class="text-xl font-semibold text-white">@facility.Name</h3>
-						</div>
-					</div>
-					<div class="p-4 w-50">
-						<div class="flex items-center text-sm text-gray-500 mb-2">
-							<i class="fas fa-map-marker-alt mr-1.5 text-xs"></i>
-							<span class="truncate">@facility.Address</span>
-						</div>
-						<p class="text-gray-700 text-sm line-clamp-2 mb-3">@facility.Description</p>
-
-						<!-- View Facility Button -->
-						<button @onclick="() => OpenFacilityModal(facility)" class="mt-4 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md text-sm font-medium transition-colors">
-							View Facility
-						</button>
-					</div>
-				</div>
-			</div>
-		}
-	</div>
-</div>
-<!-- Step 1: Facility Details Modal -->
-@if (showFacilityModal && selectedFacility != null)
-{
-	<div class="fixed inset-0 mt-10 bg-gray-500/50 flex items-center justify-center z-40"
-		 @onclick="CloseFacilityModal">
-		<div class="bg-white rounded-lg shadow-xl p-0 w-full max-w-3xl mx-4 overflow-hidden"
-			 @onclick:stopPropagation="true">
-			<!-- Modal Header with close button -->
-			<div class="relative">
-				<img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80"
-					 alt="@selectedFacility.Name"
-					 class="w-full h-64 object-cover" />
-				<button @onclick="CloseFacilityModal" class="absolute top-4 right-4  text-white p-2 rounded-full hover:bg-opacity-70">
-					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-					</svg>
-				</button>
-				<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
-					<h2 class="text-2xl font-bold text-white">@selectedFacility.Name</h2>
-					<div class="flex items-center text-white/80 mt-1">
-						<i class="fas fa-map-marker-alt mr-1.5"></i>
-						<span>@selectedFacility.Address</span>
-					</div>
-				</div>
-			</div>
-
-			<!-- Modal Content -->
-			<div class="p-6">
-				<div class="mb-6">
-					<h3 class="text-lg font-semibold mb-2">About this facility</h3>
-					<p class="text-gray-600">
-						@selectedFacility.Description
-					</p>
-				</div>
-
-				<div class="mb-6">
-					<h3 class="text-lg font-semibold mb-2">Booking Details</h3>
-					<div class="flex flex-wrap gap-4">
-						<div class="w-full md:w-auto">
-							<label class="block text-sm font-medium text-gray-700 mb-1">Check-in Date</label>
-							<input type="date" @bind="bookingInfo.CheckInDate" class="border border-gray-300 rounded-md px-3 py-2" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
-						</div>
-						<div class="w-full md:w-auto">
-							<label class="block text-sm font-medium text-gray-700 mb-1">Check-out Date</label>
-							<input type="date" @bind="bookingInfo.CheckOutDate" class="border border-gray-300 rounded-md px-3 py-2" min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" />
-						</div>
-						<div class="w-full md:w-auto">
-							<label class="block text-sm font-medium text-gray-700 mb-1">Guests</label>
-							<select @bind="bookingInfo.GuestCount" class="border border-gray-300 rounded-md px-3 py-2">
-								@for (int i = 1; i <= 10; i++)
-								{
-									<option value="@i">@i @(i == 1 ? "guest" : "guests")</option>
-								}
-							</select>
-						</div>
-					</div>
-				</div>
-
-				<div class="flex justify-between items-center border-t border-gray-200 pt-4 mt-6">
-					<div>
-						<p class="text-2xl font-bold">$@GetFacilityPrice(selectedFacility) <span class="text-gray-500 text-sm font-normal">/night</span></p>
-						<p class="text-sm text-gray-500">+ taxes and fees</p>
-					</div>
-					<button @onclick="OpenPaymentModal" class="bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-md font-medium">
-						Book Now
-					</button>
-				</div>
-			</div>
-		</div>
-	</div>
-}
-
-<!-- Step 2: Payment Modal -->
-@if (showPaymentModal && selectedFacility != null)
-{
-	<div class="fixed inset-0 mt-10  flex items-center justify-center z-50"
-		 @onclick="ClosePaymentModal">
-		<div class="bg-white rounded-lg shadow-xl p-6 w-200 mx-4 h-170"
-			 @onclick:stopPropagation="true">
-			<div class="flex justify-between items-center mb-6">
-				<h2 class="text-2xl font-bold">Complete Your Booking</h2>
-				<button @onclick="ClosePaymentModal" class="text-gray-500 hover:text-gray-700">
-					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-					</svg>
+<main class="w-full h-full p-4">
+	<div class="max-w-7xl mx-auto px-4 py-8">
+		<div class="">
+			<h1 class="text-3xl font-bold text-gray-900 mb-4">Facilities</h1>
+			<div class="flex flex-row justify-end">
+				<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-6" @onclick="AddFacility">
+					Add Facility
 				</button>
 			</div>
 
-			<!-- Booking Summary -->
-			<div class="bg-gray-50 p-4 rounded-lg mb-6">
-				<h3 class="font-semibold mb-2">Booking Summary</h3>
-				<div class="flex justify-between mb-1">
-					<span>Facility:</span>
-					<span class="font-medium">@selectedFacility.Name</span>
-				</div>
-				<div class="flex justify-between mb-1">
-					<span>Dates:</span>
-					<span class="font-medium">@bookingInfo.CheckInDate.ToString("MMM dd") - @bookingInfo.CheckOutDate.ToString("MMM dd, yyyy")</span>
-				</div>
-				<div class="border-t border-gray-200 my-2"></div>
-				@{
-					int nights = (bookingInfo.CheckOutDate - bookingInfo.CheckInDate).Days;
-					decimal subtotal = GetFacilityPrice(selectedFacility) * nights;
-					decimal taxes = subtotal * 0.15m;
-					decimal total = subtotal + taxes;
+			@* Billing Records List *@
+			@if (facilities != null && facilities.Any())
+			{
+				@foreach (var facility in facilities)
+				{
+					<div class="bg-white shadow rounded-lg overflow-hidden mb-6 hover:shadow-md transition-shadow">
+						<div class="p-4">
+							<div class="flex justify-between items-center">
+								<h2 class="text-lg font-medium text-gray-800">@facility.Name</h2>
+								<span class="px-2 py-1 text-xs font-bold text-white rounded @(facility.Available ? "bg-green-500" : "bg-red-500")">
+									@(facility.Available ? "Available" : "Unavailable")
+								</span>
+							</div>
+							<div class="mt-2">
+								<p class="text-gray-600">₱@facility.Pricing</p>
+								<p class="text-gray-600">@facility.Description</p>
+								<p class="text-gray-600">@facility.Address</p>
+							</div>
+						</div>
+						<div class="p-3 flex flex-row gap-4">
+							<button class="text-emerald-600 text-sm font-medium hover:text-emerald-800" @onclick="() => EditFacility(facility.Id!)">
+								Edit
+							</button>
+							<button class="text-red-600 text-sm font-medium hover:text-red-800" @onclick="() => DeleteFacility(facility.Id!)">
+								Delete
+							</button>
+						</div>
+					</div>
 				}
-				<div class="flex justify-between mb-1">
-					<span>$@GetFacilityPrice(selectedFacility) x @nights nights:</span>
-					<span class="font-medium">$@subtotal</span>
-				</div>
-				<div class="flex justify-between font-bold text-lg mt-2">
-					<span>Total:</span>
-					<span>$@total.ToString("0.00")</span>
-				</div>
-			</div>
-
-			<!-- Payment Information -->
-			<div class="mb-6">
-				<h3 class="font-semibold mb-3">Payment Information</h3>
-				<div class="mb-4">
-					<label class="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
-					<input type="text" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="1234 5678 9012 3456" />
-				</div>
-				<div class="flex gap-4 mb-4">
-					<div class="w-1/2">
-						<label class="block text-sm font-medium text-gray-700 mb-1">Expiration Date</label>
-						<input type="text" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="MM/YY" />
-					</div>
-					<div class="w-1/2">
-						<label class="block text-sm font-medium text-gray-700 mb-1">CVV</label>
-						<input type="text" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="123" />
-					</div>
-				</div>
-				<div class="mb-4">
-					<label class="block text-sm font-medium text-gray-700 mb-1">Name on Card</label>
-					<input type="text" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="John Smith" />
-				</div>
-			</div>
-
-			<!-- Terms and Conditions -->
-			<div class="mb-6">
-				<div class="flex items-center gap-2">
-					<input type="checkbox" @bind="bookingInfo.AgreeToTerms" id="agreeTerms" />
-					<label for="agreeTerms" class="text-sm text-gray-700">I agree to the terms and conditions and cancellation policy</label>
-				</div>
-			</div>
-
-			<!-- Submit Button -->
-			<div class="flex justify-end">
-				<button @onclick="ProcessPayment" class="bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-md font-medium @(bookingInfo.AgreeToTerms ? "" : "opacity-50 cursor-not-allowed")">
-					Pay Now
-				</button>
-			</div>
+			}
+			else
+			{
+				<p class="text-gray-600">No billing records found.</p>
+			}
 		</div>
 	</div>
-}
+</main>
 
-<!-- Confirmation Modal -->
-@if (showConfirmationModal)
-{
-	<div class="fixed inset-0 mt-10 flex items-center justify-center z-50"
-		 @onclick="CloseConfirmationModal">
-		<div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4 text-center"
-			 @onclick:stopPropagation="true">
+<Modal Show="showModal">
+	<div class="p-4 w-full md:w-[300px]">
+		<h1 class="text-2xl font-bold">@(!edit ? "Add Facility" : "Edit Facility")</h1>
+		<EditForm Model="model" OnValidSubmit="Confirm">
 			<div class="mb-4">
-				<div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-					<svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-					</svg>
-				</div>
+				<label class="block text-gray-700">Name</label>
+				<InputText @bind-Value="model!.Name" class="w-full border rounded p-2" />
+				<ValidationMessage For="() => model.Name" />
 			</div>
-			<h3 class="text-lg font-medium text-gray-900 mb-2">Booking Confirmed!</h3>
-			<p class="text-gray-500 mb-6">Your booking has been successfully confirmed. A confirmation email has been sent to your email address.</p>
-			<div class="flex justify-center">
-				<button @onclick="CloseConfirmationModal" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md font-medium">
-					Close
+			<div class="mb-4">
+				<label class="block text-gray-700">Description</label>
+				<InputText @bind-Value="model!.Description" class="w-full border rounded p-2" />
+				<ValidationMessage For="() => model.Description" />
+			</div>
+			<div class="mb-4">
+				<label class="block text-gray-700">Address</label>
+				<InputText @bind-Value="model!.Address" class="w-full border rounded p-2" />
+				<ValidationMessage For="() => model.Address" />
+			</div>
+			<div class="mb-4">
+				<label class="block text-gray-700">Pricing</label>
+				<InputNumber @bind-Value="model!.Pricing" class="w-full border rounded p-2" />
+				<ValidationMessage For="() => model.Pricing" />
+			</div>
+			<div class="mb-4 flex items-center">
+				<InputCheckbox @bind-Value="model!.Available" class="mr-2" />
+				<label class="text-gray-700">Available</label>
+			</div>
+			<div class="flex justify-end space-x-2">
+				<button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save</button>
+				<button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" @onclick="Close">
+					Cancel
 				</button>
 			</div>
-		</div>
+		</EditForm>
 	</div>
-}
+</Modal>
 
 @code {
-	// Update model to match your DB schema - using string ID instead of int
-	public class FacilityModel
-	{
-		public string Id { get; set; } = string.Empty;
-		public string Name { get; set; } = string.Empty;
-		public string Description { get; set; } = string.Empty;
-		public string Address { get; set; } = string.Empty;
-	}
+	private FacilityModel[]? facilities;
 
-	// Booking info model for the booking form
-	private class BookingInfo
-	{
-		public DateTime CheckInDate { get; set; } = DateTime.Now.AddDays(1);
-		public DateTime CheckOutDate { get; set; } = DateTime.Now.AddDays(3);
-		public int GuestCount { get; set; } = 2;
-		public bool AgreeToTerms { get; set; } = false;
-	}
-
-	private string searchTerm = string.Empty;
-	private bool showFilterDropdown = false;
-	private FacilityModel selectedFacility;
-	private BookingInfo bookingInfo = new BookingInfo();
-
-	private IEnumerable<FacilityModel> facilities;
-	private IEnumerable<FacilityModel> filteredFacilities;
-	private bool showFacilityModal = false;
-	private bool showPaymentModal = false;
-	private bool showConfirmationModal = false;
-
-	private List<string> facilityCategories = new() { "Event Spaces", "Sports Facilities", "Meeting Rooms" };
+	private FacilityModel? model { get; set; }
+	private bool edit = false;
+	private bool showModal = false;
 
 	protected override void OnInitialized()
 	{
-		// Get data directly from your DbContext - no need for conversion since structure matches
-		facilities = Context.Facility.Select(f => new FacilityModel
+		base.OnInitialized();
+		FetchData();
+
+		model = new FacilityModel();
+	}
+
+	private void FetchData()
+	{
+		facilities = Context.Facility.ToArray();
+	}
+
+	private void AddFacility()
+	{
+		edit = false;
+		model = new FacilityModel
 			{
-				Id = f.Id,  // No parsing needed - keep as string
-				Name = f.Name,
-				Description = f.Description,
-				Address = f.Address
-			}).ToList();
-
-		ApplyFilters();
+				Id = Guid.NewGuid().ToString(),
+				Name = string.Empty,
+				Pricing = 0,
+				Address = "",
+				Available = true,
+				Description = string.Empty
+			};
+		showModal = true;
 	}
 
-	private void ApplyFilters()
+	private void EditFacility(string id)
 	{
-		filteredFacilities = facilities
-			.Where(f => string.IsNullOrEmpty(searchTerm) ||
-							f.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-							f.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-			.ToList();
-	}
-
-	// Helper method to get price since it's not in your actual model yet
-	private decimal GetFacilityPrice(FacilityModel facility)
-	{
-		// Modified to work with string IDs
-		Dictionary<string, decimal> mockPrices = new Dictionary<string, decimal>
+		edit = true;
+		model = Context.Facility.Find(id);
+		if (model == null)
 		{
-			{ "test-facility-0001", 1200.00m },
-			{ "test-facility-0002", 750.00m },
-			{ "test-facility-0003", 500.00m }
-		};
-
-		return mockPrices.TryGetValue(facility.Id, out decimal price) ? price : 999.99m;
-	}
-
-	private void ToggleFilterDropdown()
-	{
-		showFilterDropdown = !showFilterDropdown;
-	}
-
-	private void OpenFacilityModal(FacilityModel facility)
-	{
-		selectedFacility = facility;
-		showFacilityModal = true;
-		// Reset booking info for new selection
-		bookingInfo = new BookingInfo();
-	}
-
-	private void CloseFacilityModal()
-	{
-		showFacilityModal = false;
-	}
-
-	private void OpenPaymentModal()
-	{
-		// Validate dates before proceeding
-		if (bookingInfo.CheckInDate >= bookingInfo.CheckOutDate)
-		{
-			// In a real app, you'd show an error message
 			return;
 		}
 
-		showPaymentModal = true;
+		showModal = true;
 	}
 
-	private void ClosePaymentModal()
+	private async Task DeleteFacility(string id)
 	{
-		showPaymentModal = false;
+		var confirmed = await DialogManager.ShowDialogAsync("Confirm Delete", "Proceed?");
+		if (!confirmed)
+		{
+			return;
+		}
+
+		var temp = await Context.Facility.FindAsync(id);
+		if (temp != null)
+		{
+			Context.Facility.Remove(temp);
+			await Context.SaveChangesAsync();
+			FetchData();
+		}
 	}
 
-	private void ProcessPayment()
+	private void Close()
 	{
-		if (!bookingInfo.AgreeToTerms)
+		edit = false;
+		showModal = false;
+	}
+
+	private async Task Confirm()
+	{
+		if (model == null)
 			return;
 
-		// In a real application, you would process the payment here
-		// For demo purposes, we'll just show the confirmation
+		if (edit)
+		{
+			var confirmed = await DialogManager.ShowDialogAsync("Confirm Edit", "Proceed?");
+			if (!confirmed)
+			{
+				return;
+			}
 
-		ClosePaymentModal();
-		showConfirmationModal = true;
-	}
+			Context.Facility.Update(model);
+			Context.SaveChanges();
+		}
+		else
+		{
+			var confirmed = await DialogManager.ShowDialogAsync("Confirm Add", "Proceed?");
+			if (!confirmed)
+			{
+				return;
+			}
 
-	private void CloseConfirmationModal()
-	{
-		showConfirmationModal = false;
-		CloseFacilityModal();
-		selectedFacility = null;
+			Context.Facility.Add(model);
+			Context.SaveChanges();
+		}
+
+		FetchData();
+		showModal = false;
 	}
 }

@@ -1,0 +1,45 @@
+﻿@inherits ComponentBase
+@rendermode InteractiveServer
+
+@* Overlay *@
+<div class="@GetOverlayClasses()" @onclick="Close">
+</div>  
+
+@* The actual model *@
+<div class="@GetModalClasses()">
+    <div class="bg-white rounded-md shadow-md p-4 flex flex-col gap-2 transform transition-transform duration-300 ease-out @(Show ? "scale-100" : "scale-95")">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public bool Show { get; set; }
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Show = false;
+    }
+
+    private string GetOverlayClasses()
+    {
+        return $"absolute bg-gray-300 w-screen h-screen flex flex-row justify-center items-center z-30 transition-opacity duration-300 ease-in-out " +
+               $"{(Show ? "opacity-50" : "opacity-0 pointer-events-none")}";
+    }
+
+    private string GetModalClasses()
+    {
+        return $"absolute w-screen h-screen flex flex-row justify-center items-center z-30 transition-opacity duration-300 ease-in-out " +
+               $"{(Show ? "opacity-100" : "opacity-0 pointer-events-none")}";
+    }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

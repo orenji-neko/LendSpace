@@ -19,6 +19,6 @@ namespace LendSpace.Models
         [Required]
         public ICollection<BillingModel> Billings { get; } = new List<BillingModel>();
         [Required]
-        public ICollection<FacilityBookingModel> FacilityBookings { get; } = new List<FacilityBookingModel>();
+        public ICollection<ReservationModel> Reservations { get; } = new List<ReservationModel>();
     }
 }

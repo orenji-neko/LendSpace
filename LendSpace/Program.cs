@@ -55,7 +55,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddSingleton<DialogManager>();
 
 // Other Services
-builder.Services.AddScoped<BookingManager>();
+builder.Services.AddScoped<ReservationManager>();
 
 var app = builder.Build();
 

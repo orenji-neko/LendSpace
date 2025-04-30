@@ -9,7 +9,7 @@ namespace LendSpace.Data
     public class ApplicationDbContext : IdentityDbContext<UserModel, IdentityRole, string>
     {
         public DbSet<FacilityModel> Facility { get; set; }
-        public DbSet<FacilityBookingModel> FacilityBookings { get; set; }
+        public DbSet<ReservationModel> Reservations { get; set; }
 
         public DbSet<BillingModel> Billing { get; set; }
         public DbSet<EventModel> Events { get; set; }
@@ -42,15 +42,15 @@ namespace LendSpace.Data
                 .HasForeignKey(b => b.UserId)
                 .IsRequired();
 
-            // one-to-many between UserModel and FacilityBookingModel
+            // UserModel[one] - ReservationModel[many]
             builder.Entity<UserModel>()
-                .HasMany(u => u.FacilityBookings)
+                .HasMany(u => u.Reservations)
                 .WithOne(b => b.User)
                 .HasForeignKey(b => b.UserId)
                 .IsRequired();
-            builder.Entity<FacilityBookingModel>()
+            builder.Entity<ReservationModel>()
                 .HasOne(fb => fb.User)
-                .WithMany(u => u.FacilityBookings)
+                .WithMany(u => u.Reservations)
                 .HasForeignKey(fb => fb.UserId)
                 .IsRequired();
 
@@ -209,7 +209,8 @@ namespace LendSpace.Data
                     Name = "Swimming Pool",
                     Description = "A big tub, with water!",
                     Address = "Biringan City, Samar",
-                    Available = true
+                    Available = true,
+                    Pricing = 200.00
                 },
                 ]);
 
