@@ -21,5 +21,7 @@ namespace LendSpace.Models
 
         [Required]
         public bool Available { get; set; }
+
+        public string? ImagePath { get; set; }
     }
 }

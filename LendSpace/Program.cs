@@ -51,11 +51,11 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/AccessDenied";
 });
 
-// Toast
-builder.Services.AddSingleton<DialogManager>();
+// File Manager
+builder.Services.AddScoped<FileManager>();
 
-// Other Services
-builder.Services.AddScoped<ReservationManager>();
+// Dialogs
+builder.Services.AddSingleton<DialogManager>();
 
 var app = builder.Build();
 
