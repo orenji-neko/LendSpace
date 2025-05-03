@@ -1,4 +1,5 @@
 ﻿using LendSpace.Models;
+using LendSpace.Models.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -220,7 +221,7 @@ namespace LendSpace.Data
                 {
                     Id = "test-billing-0001",
                     Name = "Rent",
-                    IsPaid = false,
+                    Status = BillingStatus.Unpaid,
                     Amount = 2000.00,
                     UserId = "test-user-0001",
                     IssuedAt = new DateOnly(2025, 4, 2)
