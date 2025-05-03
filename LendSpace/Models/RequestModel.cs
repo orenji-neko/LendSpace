@@ -18,13 +18,13 @@ namespace LendSpace.Models
         public required string Description { get; set; }
 
         [Required]
-        public DateOnly StartsAt { get; set; }
+        public required DateOnly StartsAt { get; set; }
 
         [Required]
-        public DateOnly EndsAt { get; set; }
+        public required DateOnly EndsAt { get; set; }
 
         [Required]
-        public RequestStatus Status { get; set; }
+        public required RequestStatus Status { get; set; }
 
 
         [Required]

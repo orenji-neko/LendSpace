@@ -1,0 +1,309 @@
+﻿@page "/Admin/Request"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = "AdminOnly")]
+
+@inject ApplicationDbContext Context
+@inject DialogManager DialogManager
+
+<PageTitle>Service Requests</PageTitle>
+
+<main class="w-full h-full p-4">
+	<div class="max-w-7xl mx-auto px-4 py-8">
+		<div class="">
+			<h1 class="text-3xl font-bold text-gray-900 mb-4">Service Requests</h1>
+			<div class="flex flex-row justify-end">
+				<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-6" @onclick="OpenAdd">
+					Add Service
+				</button>
+			</div>
+
+			@* Facility Bookings List *@
+			@if (requests != null && requests.Any())
+			{
+				@foreach (var request in requests)
+				{
+					<div class="bg-white shadow rounded-lg overflow-hidden mb-6 hover:shadow-md transition-shadow">
+						<div class="p-4">
+							<!-- Header: Reservation Title with Status -->
+							<div class="flex justify-between items-center mb-4">
+								<div>
+									<h2 class="text-xl font-bold text-gray-800">@request.Title</h2>
+								</div>
+								<span class="@GetBadgeClasses(request.Status)">
+									@if (request.Status == RequestStatus.Cancelled || request.Status == RequestStatus.Failed)
+									{
+										@(request.Status == RequestStatus.Cancelled ? "Cancelled" : "Failed")
+									}
+									else
+									{
+										@request.Status.ToString()
+									}
+								</span>
+							</div>
+
+							<!-- Description Section -->
+							<div class="mb-4">
+								<p class="text-gray-700">
+									<span class="font-semibold">Description:</span>
+									<span class="ml-1">@request.Description</span>
+								</p>
+							</div>
+
+							<!-- Reservation Dates -->
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+								<!-- Start Date -->
+								<div class="flex items-start gap-2">
+									<svg class="w-5 h-5 text-gray-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+										d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+									</svg>
+									<div>
+										<p class="text-sm font-semibold text-gray-600">Start Date</p>
+										<p class="text-gray-700">@request.StartsAt.ToString("d")</p>
+									</div>
+								</div>
+								<!-- End Date -->
+								<div class="flex items-start gap-2">
+									<svg class="w-5 h-5 text-gray-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+										d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+									</svg>
+									<div>
+										<p class="text-sm font-semibold text-gray-600">End Date</p>
+										<p class="text-gray-700">@request.EndsAt.ToString("d")</p>
+									</div>
+								</div>
+							</div>
+
+							<!-- User Information Section -->
+							<div class="mt-4 border-t pt-4">
+								<div class="flex items-center gap-2">
+									<svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+										<path fill-rule="evenodd" d="M10 2C7.243 2 5 4.243 5 7s2.243 5 5 5 5-2.243 5-5S12.757 2 10 2zm-7 16a7 7 0 0114 0H3z" clip-rule="evenodd"></path>
+									</svg>
+									<p class="text-gray-700">
+										<span class="font-semibold">Requested by:</span>
+										<span class="ml-1">@request.User!.LastName, @request.User!.FirstName</span>
+									</p>
+								</div>
+							</div>
+						</div>
+						<div class="p-3 flex flex-row gap-4">
+							<button class="text-emerald-600 text-sm font-medium hover:text-emerald-800"
+							@onclick="() => OpenEdit(request)">
+								Edit
+							</button>
+							<button class="text-red-600 text-sm font-medium hover:text-red-800"
+							@onclick="() => Delete(request)">
+								Delete
+							</button>
+						</div>
+					</div>
+				}
+			}
+			else
+			{
+				<p class="text-gray-600">No requests found.</p>
+			}
+		</div>
+	</div>
+</main>
+
+@* Add/Edit Facility Modal *@
+<Modal Show="Show" OnClose="Close">
+	@if (!Edit)
+	{
+		<h2 class="text-2xl font-bold mb-4">Add Service</h2>
+	}
+	else
+	{
+		<h2 class="text-2xl font-bold mb-4">Edit Service</h2>
+	}
+
+	<EditForm Model="model" OnValidSubmit="Confirm">
+		<DataAnnotationsValidator />
+
+		<div class="mb-4">
+			<label class="block text-gray-700">Title</label>
+			<InputText @bind-Value="model!.Title" class="w-full border rounded p-2" />
+			<ValidationMessage For="() => model.Title" />
+		</div>
+		<div class="mb-4">
+			<label class="block text-gray-700">Description</label>
+			<InputText @bind-Value="model!.Description" class="w-full border rounded p-2" />
+			<ValidationMessage For="() => model.Description" />
+		</div>
+		<div class="mb-4 flex flex-row md:flex-col gap-2">
+			<div>
+				<label class="block text-gray-700">Starts At</label>
+				<InputDate @bind-Value="model.StartsAt" class="w-full border rounded p-2" />
+				<ValidationMessage For="() => model.StartsAt" />
+			</div>
+			<div>
+				<label class="block text-gray-700">Ends At</label>
+				<InputDate @bind-Value="model.EndsAt" class="w-full border rounded p-2" />
+				<ValidationMessage For="() => model.EndsAt" />
+			</div>
+		</div>
+		<div class="mb-4">
+			<label class="block text-gray-700">Services</label>
+			<select class="w-full border rounded p-2" @bind="model.ServiceId">
+				<option disabled value="">Select a service</option>
+				@foreach (var service in services!)
+				{
+					<option value="@service.Id">@service.Name</option>
+				}
+			</select>
+			<ValidationMessage For="() => model.UserId" />
+		</div>
+		<div class="mb-4">
+			<label class="block text-gray-700">Users</label>
+			<select class="w-full border rounded p-2" @bind="model.UserId">
+				<option disabled value="">Select a user</option>
+				@foreach (var user in users!)
+				{
+					<option value="@user.Id">@user.LastName, @user.FirstName</option>
+				}
+			</select>
+			<ValidationMessage For="() => model.UserId" />
+		</div>
+		<div class="mb-4">
+			<label class="block text-gray-700">Status</label>
+			<select class="w-full border rounded p-2" @bind="model.Status">
+				<option disabled value="">Select status</option>
+				<option value="@RequestStatus.Pending">Pending</option>
+				<option value="@RequestStatus.Approved">Approved</option>
+				<option value="@RequestStatus.Completed">Completed</option>
+				<option value="@RequestStatus.Cancelled">Cancelled</option>
+				<option value="@RequestStatus.Failed">Failed</option>
+			</select>
+			<ValidationMessage For="() => model.Status" />
+		</div>
+		<div class="flex justify-end space-x-2">
+			<button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save</button>
+			<button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" @onclick="Close">
+				Cancel
+			</button>
+		</div>
+	</EditForm>
+</Modal>
+
+@code {
+	private IEnumerable<RequestModel>? requests;
+	private IEnumerable<ServiceModel>? services;
+	private IEnumerable<UserModel>? users;
+	private RequestModel? model { get; set; }
+	public bool Show { get; set; }
+	public bool Edit { get; set; }
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		FetchData();
+		Clear();
+	}
+
+	private void Clear()
+	{
+		model = new RequestModel
+			{
+				Title = string.Empty,
+				Description = string.Empty,
+				ServiceId = string.Empty,
+				UserId = string.Empty,
+				Status = RequestStatus.Pending,
+				StartsAt = DateOnly.FromDateTime(DateTime.Today),
+				EndsAt = DateOnly.FromDateTime(DateTime.Today)
+			};
+	}
+
+	private void FetchData()
+	{
+		requests = Context.Requests
+			.Include(r => r.User)
+			.ToList();
+		services = Context.Services.ToList();
+		users = Context.Users.ToList();
+	}
+
+	private string GetBadgeClasses(RequestStatus status) =>
+		status switch
+		{
+			RequestStatus.Pending =>
+					"px-3 py-1 text-xs font-bold text-yellow-800 bg-yellow-100 rounded-full",
+			RequestStatus.Approved =>
+					"px-3 py-1 text-xs font-bold text-green-800 bg-green-100 rounded-full",
+			RequestStatus.Completed =>
+					"px-3 py-1 text-xs font-bold text-blue-800 bg-blue-100 rounded-full",
+			RequestStatus.Failed =>
+					"px-3 py-1 text-xs font-bold text-red-800 bg-red-100 rounded-full",
+			RequestStatus.Cancelled =>
+					"px-3 py-1 text-xs font-bold text-red-800 bg-red-100 rounded-full",
+			_ => string.Empty
+		};
+
+	public async Task Delete(RequestModel request)
+	{
+		if (!(await DialogManager.ShowDialogAsync("Confirm", "Proceed to delete?")))
+		{
+			return;
+		}
+
+		Context.Requests.Remove(request);
+		await Context.SaveChangesAsync();
+		FetchData();
+	}
+
+	public void OpenAdd()
+	{
+		Clear();
+
+		Edit = false;
+		Show = true;
+	}
+
+	public void OpenEdit(RequestModel request)
+	{
+		model = request;
+
+		Edit = true;
+		Show = true;
+	}
+
+	public void Close()
+	{
+		Clear();
+		Edit = false;
+		Show = false;
+	}
+
+	public async Task Confirm()
+	{
+		if (Edit)
+		{
+			// edit
+
+			if (!(await DialogManager.ShowDialogAsync("Confirm", "Proceed to edit?")))
+			{
+				return;
+			}
+			Context.Requests.Update(model!);
+		}
+		else
+		{
+			// add
+
+			if (!(await DialogManager.ShowDialogAsync("Confirm", "Proceed to add?")))
+			{
+				return;
+			}
+
+			model!.Id = Guid.NewGuid().ToString();
+			Context.Requests.Add(model!);
+		}
+
+		await Context.SaveChangesAsync();
+		FetchData();
+		Close();
+	}
+}
