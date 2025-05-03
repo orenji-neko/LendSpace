@@ -1,0 +1,215 @@
+﻿@page "/Admin/Service"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = "AdminOnly")]
+
+@inject ApplicationDbContext Context
+@inject DialogManager DialogManager
+
+<PageTitle>Services</PageTitle>
+
+<main class="w-full h-full p-4">
+	<div class="max-w-7xl mx-auto px-4 py-8">
+		<div class="">
+			<h1 class="text-3xl font-bold text-gray-900 mb-4">Services</h1>
+			<div class="flex flex-row justify-end">
+				<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-6" @onclick="OpenAdd">
+					Add Service
+				</button>
+			</div>
+
+			@* Facility Bookings List *@
+			@if (services != null && services.Any())
+			{
+				@foreach (var service in services)
+				{
+					<div class="bg-white shadow rounded-lg overflow-hidden mb-6 hover:shadow-md transition-shadow">
+						<div class="p-4">
+							<!-- Header: Reservation Title with Status -->
+							<div class="flex justify-between items-center mb-4">
+								<div>
+									<h2 class="text-xl font-bold text-gray-800">@service.Name</h2>
+								</div>
+							</div>
+
+							<!-- Description Section -->
+							<div class="mb-4">
+								<p class="text-gray-700">
+									<span class="font-semibold">Description:</span>
+									<span class="ml-1">@service.Description</span>
+								</p>
+							</div>
+						</div>
+						<div class="p-3 flex flex-row gap-4">
+							<button class="text-emerald-600 text-sm font-medium hover:text-emerald-800" @onclick="() => OpenEdit(service.Id!)">
+								Edit
+							</button>
+							<button class="text-red-600 text-sm font-medium hover:text-red-800" @onclick="() => OnDelete(service)">
+								Delete
+							</button>
+						</div>
+					</div>
+				}
+			}
+			else
+			{
+				<p class="text-gray-600">No services found.</p>
+			}
+		</div>
+	</div>
+</main>
+
+@* Add/Edit Facility Modal *@
+<Modal Show="showModal" OnClose="OnClose">
+	@if (!edit)
+	{
+		<h2 class="text-2xl font-bold mb-4">Add Service</h2>
+	}
+	else
+	{
+		<h2 class="text-2xl font-bold mb-4">Edit Service</h2>
+	}
+
+	<EditForm Model="model" OnValidSubmit="OnConfirm">
+		<DataAnnotationsValidator />
+		<div class="mb-4">
+			<label class="block text-gray-700">Name</label>
+			<InputText @bind-Value="model!.Name" class="w-full border rounded p-2" />
+			<ValidationMessage For="() => model.Name" />
+		</div>
+		<div class="mb-4">
+			<label class="block text-gray-700">Description</label>
+			<InputText @bind-Value="model!.Description" class="w-full border rounded p-2" />
+			<ValidationMessage For="() => model.Description" />
+		</div>
+		<div class="flex justify-end space-x-2">
+			<button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save</button>
+			<button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" @onclick="OnClose">
+				Cancel
+			</button>
+		</div>
+	</EditForm>
+</Modal>
+
+@code {
+	private UserModel[]? users;
+	private IEnumerable<ServiceModel>? services;
+
+	private ServiceModel? model { get; set; }
+	private bool edit = false;
+	private bool showModal = false;
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		FetchData();
+		model ??= new ServiceModel
+			{
+				Name = string.Empty,
+				Description = string.Empty
+			};
+	}
+
+	private void FetchData()
+	{
+		services = Context.Services
+			.ToList();
+		users = Context.Users.ToArray();
+	}
+
+	private void OpenAdd()
+	{
+		edit = false;
+
+		model = new ServiceModel()
+			{
+				Id = Guid.NewGuid().ToString(),
+				Name = string.Empty,
+				Description = string.Empty,
+			};
+
+		showModal = true;
+	}
+
+	private void OpenEdit(string id)
+	{
+		var service = Context.Services.Find(id);
+		if (service == null)
+		{
+			return;
+		}
+
+		edit = true;
+		showModal = true;
+
+		model = new ServiceModel
+			{
+				Id = service.Id,
+				Name = service.Name,
+				Description = service.Description
+			};
+	}
+
+	private async Task OnDelete(ServiceModel service)
+	{
+		bool confirmed = await DialogManager.ShowDialogAsync("Confirm", "Proceed to delete?");
+		if (!confirmed)
+		{
+			return;
+		}
+
+		Context.Services.Remove(service);
+		await Context.SaveChangesAsync();
+
+		FetchData();
+	}
+
+	private async Task OnConfirm()
+	{
+		if (!edit)
+		{
+			if (!(await DialogManager.ShowDialogAsync("Confirm", "Proceed to edit?")))
+			{
+				return;
+			}
+
+			await Context.Services.AddAsync(model!);
+		}
+		else
+		{
+			if (!(await DialogManager.ShowDialogAsync("Confirm", "Proceed to edit?")))
+			{
+				return;
+			}
+
+			Context.Services.Update(model!);
+		}
+
+		await Context.SaveChangesAsync();
+
+		OnClose();
+	}
+
+	private void OnClose()
+	{
+		edit = false;
+		showModal = false;
+
+		FetchData();
+	}
+
+	private string GetBadgeClasses(ReservationStatus status) =>
+		status switch
+		{
+			ReservationStatus.Pending =>
+					"px-3 py-1 text-xs font-bold text-yellow-800 bg-yellow-100 rounded-full",
+			ReservationStatus.Approved =>
+					"px-3 py-1 text-xs font-bold text-green-800 bg-green-100 rounded-full",
+			ReservationStatus.Completed =>
+					"px-3 py-1 text-xs font-bold text-blue-800 bg-blue-100 rounded-full",
+			ReservationStatus.Failed =>
+					"px-3 py-1 text-xs font-bold text-red-800 bg-red-100 rounded-full",
+			ReservationStatus.Cancelled =>
+					"px-3 py-1 text-xs font-bold text-red-800 bg-red-100 rounded-full",
+			_ => string.Empty
+		};
+}
