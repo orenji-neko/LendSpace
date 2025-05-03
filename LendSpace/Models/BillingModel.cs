@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using LendSpace.Models.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace LendSpace.Models
 {
@@ -21,7 +22,7 @@ namespace LendSpace.Models
         public string? UserId { get; set; }
 
         [Required]
-        public bool IsPaid { get; set; }
+        public BillingStatus Status { get; set; }
 
         [Required]
         public DateOnly IssuedAt { get; set; }

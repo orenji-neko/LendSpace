@@ -87,9 +87,20 @@
 							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₱@billing.Amount.ToString("N2")</td>
 							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@billing.IssuedAt.ToString("MMM dd, yyyy")</td>
 							<td class="px-6 py-4 whitespace-nowrap text-sm">
-								<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full @StatusColor(billing.IsPaid)">
-									@(billing.IsPaid ? "Paid" : "Pending")
-								</span>
+								@* Unpaid *@
+								@if (billing!.Status == BillingStatus.Unpaid)
+								{
+									<span class="px-2 py-1 text-xs font-bold text-white rounded bg-red-500">
+										Unpaid
+									</span>
+								}
+								@* Paid *@
+								else
+								{
+									<span class="px-2 py-1 text-xs font-bold text-white rounded bg-green-500">
+										Paid
+									</span>
+								}
 							</td>
 						</tr>
 					}
@@ -139,7 +150,7 @@
 			.ToArray();
 
 		balance = Context.Billing.Sum(b => b.Amount);
-		unpaidCount = Context.Billing.Where(b => b.IsPaid == false).Count();
+		unpaidCount = Context.Billing.Where(b => b.Status == BillingStatus.Unpaid).Count();
 	}
 
 	private string StatusColor(bool isPaid)
