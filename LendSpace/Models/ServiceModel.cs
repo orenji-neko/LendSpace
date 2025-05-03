@@ -17,9 +17,9 @@ namespace LendSpace.Models
         public required string Description { get; set; }
 
         [Required]
-        public double Pricing { get; set; } // per day
+        public required double Pricing { get; set; } // per day
 
         [Required]
-        public bool Available { get; set; }
+        public required bool Available { get; set; }
     }
 }

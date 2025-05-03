@@ -38,6 +38,28 @@
 									<span class="ml-1">@service.Description</span>
 								</p>
 							</div>
+
+							<!-- Pricing -->
+							<div class="mb-4">
+								<p class="text-gray-700">
+									<span class="font-semibold">Pricing:</span>
+									<span class="ml-1">@service.Pricing</span>
+								</p>
+							</div>
+
+							<!-- Available? -->
+							<div class="mb-4">
+								<p class="text-gray-700">
+									@if(service.Available)
+									{
+										<span class="ml-1">Available</span>
+									}
+									else
+									{
+										<span class="ml-1">Unavailable</span>
+									}
+								</p>
+							</div>
 						</div>
 						<div class="p-3 flex flex-row gap-4">
 							<button class="text-emerald-600 text-sm font-medium hover:text-emerald-800" @onclick="() => OpenEdit(service.Id!)">
@@ -81,6 +103,21 @@
 			<InputText @bind-Value="model!.Description" class="w-full border rounded p-2" />
 			<ValidationMessage For="() => model.Description" />
 		</div>
+		<div class="mb-4">
+			<label class="block text-gray-700">Price</label>
+			<div class="relative">
+				<span class="absolute inset-y-0 left-0 flex items-center pl-3 pr-2 text-gray-500">₱</span>
+				<InputNumber TValue="double" @bind-Value="model!.Pricing" class="w-full border rounded p-2 pl-8" />
+			</div>
+			<ValidationMessage For="() => model.Pricing" />
+		</div>
+		<div class="mb-4">
+			<div class="w-full flex flex-row justify-center gap-2">
+				<InputCheckbox @bind-Value="model!.Available" class="border rounded p-2"/>
+				<label class="block text-gray-700">Available</label>
+			</div>
+			<ValidationMessage For="() => model.Available" />
+		</div>
 		<div class="flex justify-end space-x-2">
 			<button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save</button>
 			<button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" @onclick="OnClose">
@@ -105,7 +142,9 @@
 		model ??= new ServiceModel
 			{
 				Name = string.Empty,
-				Description = string.Empty
+				Description = string.Empty,
+				Pricing = 0.00,
+				Available = true
 			};
 	}
 
@@ -125,6 +164,8 @@
 				Id = Guid.NewGuid().ToString(),
 				Name = string.Empty,
 				Description = string.Empty,
+				Pricing = 0.00,
+				Available = true
 			};
 
 		showModal = true;
@@ -145,7 +186,9 @@
 			{
 				Id = service.Id,
 				Name = service.Name,
-				Description = service.Description
+				Description = service.Description,
+				Pricing = service.Pricing,
+				Available = service.Available
 			};
 	}
 
