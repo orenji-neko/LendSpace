@@ -12,6 +12,9 @@ namespace LendSpace.Data
         public DbSet<FacilityModel> Facility { get; set; }
         public DbSet<ReservationModel> Reservations { get; set; }
 
+        public DbSet<ServiceModel> Services { get; set; }
+        public DbSet<RequestModel> Requests { get; set; }
+
         public DbSet<BillingModel> Billing { get; set; }
         public DbSet<EventModel> Events { get; set; }
         public DbSet<AnnouncementModel> Announcements { get; set; }
@@ -31,28 +34,44 @@ namespace LendSpace.Data
         {
             base.OnModelCreating(builder);
 
-            // one-to-many between UserModel and BillingModel
+            // User billilngs
             builder.Entity<UserModel>()
                 .HasMany(u => u.Billings)
                 .WithOne(b => b.User)
                 .HasForeignKey(b => b.UserId)
                 .IsRequired();
+            // User Requests
+            builder.Entity<UserModel>()
+                .HasMany(u => u.Requests)
+                .WithOne(r => r.User)
+                .HasForeignKey(r => r.UserId)
+                .IsRequired();
+            // User Reservations
+            builder.Entity<UserModel>()
+                .HasMany(u => u.Reservations)
+                .WithOne(b => b.User)
+                .HasForeignKey(b => b.UserId)
+                .IsRequired();
+
+            // Billing -> User
             builder.Entity<BillingModel>()
                 .HasOne(b => b.User)
                 .WithMany(u => u.Billings)
                 .HasForeignKey(b => b.UserId)
                 .IsRequired();
 
-            // UserModel[one] - ReservationModel[many]
-            builder.Entity<UserModel>()
-                .HasMany(u => u.Reservations)
-                .WithOne(b => b.User)
-                .HasForeignKey(b => b.UserId)
-                .IsRequired();
+            // Reservation -> User
             builder.Entity<ReservationModel>()
                 .HasOne(fb => fb.User)
                 .WithMany(u => u.Reservations)
                 .HasForeignKey(fb => fb.UserId)
+                .IsRequired();
+
+            // Request -> User
+            builder.Entity<RequestModel>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Requests)
+                .HasForeignKey(r => r.UserId)
                 .IsRequired();
 
             // CommunityPostModel[one] - CommunityCommentModel[many]
