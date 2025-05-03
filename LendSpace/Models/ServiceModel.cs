@@ -2,6 +2,9 @@
 
 namespace LendSpace.Models
 {
+    /// <summary>
+    /// Model for Services provided by the subdivision.
+    /// </summary>
     public class ServiceModel
     {
         [Key]
@@ -12,5 +15,11 @@ namespace LendSpace.Models
 
         [Required]
         public required string Description { get; set; }
+
+        [Required]
+        public double Pricing { get; set; } // per day
+
+        [Required]
+        public bool Available { get; set; }
     }
 }
