@@ -14,7 +14,36 @@
 @inject ApplicationDbContext DbContext
 
 <PageTitle>Staff Home</PageTitle>
+<style>
+    body {
+        background-color: whitesmoke;
+    }
 
+    html {
+        scroll-behavior: smooth;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        font-family: 'PT Sans Narrow', sans-serif;
+    }
+
+        html::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        html::-webkit-scrollbar-track {
+            background: #f0f0f0;
+        }
+
+        html::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 4px;
+            border: 2px solid #f0f0f0;
+        }
+
+            html::-webkit-scrollbar-thumb:hover {
+                background-color: #555;
+            }
+</style>
 <div class="bg-gray-100 min-h-screen">
     <!-- Header -->
     <div class="bg-white shadow-md py-4 px-6">
@@ -145,26 +174,21 @@
                     <a href="/Staff/Event" class="text-blue-500 hover:text-blue-700 text-sm">View All</a>
                 </div>
                 <div class="space-y-4">
-                    @if (UpcomingEvents.Any())
+                    @foreach (var evt in UpcomingEvents)
                     {
-                        @foreach (var evt in UpcomingEvents)
-                        {
-                            <div class="border-l-4 border-blue-500 pl-4 py-2">
-                                <div class="flex justify-between">
-                                    <div>
-                                        <h4 class="text-lg font-semibold text-gray-800">@evt.Name</h4>
-                                        <p class="text-sm text-gray-500">@evt.Description</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <span class="text-sm font-medium text-gray-700">@evt.StartsAt.ToString("MMM dd, yyyy")</span>
-                                    </div>
+                        <div class="border-l-4 border-blue-500 pl-4 py-2">
+                            <div class="flex justify-between">
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-800">@evt.Name</h4>
+                                    <p class="text-sm text-gray-500">@evt.Description</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-sm font-medium text-gray-700">@evt.StartDate.ToString("MMM dd")</span>
+                                    <p class="text-xs text-gray-500">@evt.StartDate.ToString("h:mm tt")</p>
                                 </div>
                             </div>
-                        }
-                    }
-                    else
-                    {
-                        <p class="text-gray-500">No upcoming events scheduled</p>
+                        </div>
+                        
                     }
                 </div>
                 <a href="/Staff/Event" class="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors duration-200 mt-4">
@@ -268,9 +292,9 @@
     private int PendingRequestsCount { get; set; }
     private int NewReservationsCount { get; set; }
     private int MaintenanceRequestsCount { get; set; }
-    
+    private List<EventInfo> UpcomingEvents = new List<EventInfo>();
     // Add collections for recent data
-    private List<EventModel> UpcomingEvents { get; set; } = new();
+    
     
     // For tracking recent activities
     // You might want to create an ActivityLog model in your project
@@ -304,7 +328,31 @@
         // Fetch counts from database
         await LoadDashboardData();
     }
+     public class EventInfo
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public DateTime StartDate { get; set; }
+    }
 
+    private async Task<List<EventInfo>> GetUpcomingEvents()
+    {
+        var now = DateTime.Now;
+
+        // Get upcoming events directly from database with proper filtering
+        var upcomingEvents = await DbContext.Events
+            .OrderBy(e => e.StartsAt)
+            .Take(5)
+            .Select(e => new EventInfo
+                {
+                    Name = e.Name,
+                    Description = e.Description,
+                // Convert DateOnly to DateTime
+                })
+            .ToListAsync();
+
+        return upcomingEvents;
+    }
     private async Task LoadDashboardData()
     {
         try
@@ -332,11 +380,7 @@
                 .CountAsync();
 
             // Get upcoming events for display
-            UpcomingEvents = await DbContext.Set<EventModel>()
-                .Where(e => e.StartsAt >= today)
-                .OrderBy(e => e.StartsAt)
-                .Take(2)
-                .ToListAsync();
+            UpcomingEvents = await GetUpcomingEvents();
 
             // Get counts for facility management section
             NewReservationsCount = 5; // Replace with actual query
