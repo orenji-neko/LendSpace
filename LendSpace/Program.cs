@@ -2,6 +2,7 @@ using LendSpace.Components;
 using LendSpace.Data;
 using LendSpace.Models;
 using LendSpace.Services;
+using LendSpace.Services.Background;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -61,6 +62,9 @@ builder.Services.AddScoped<FileManager>();
 
 // Dialogs
 builder.Services.AddSingleton<DialogManager>();
+
+// Background services
+builder.Services.AddHostedService<Scheduler>();
 
 var app = builder.Build();
 

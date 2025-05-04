@@ -890,8 +890,11 @@
         StateHasChanged();
     }
 
-    private async Task Logout()
+    private void Logout()
     {
-        NavigationManager.NavigateTo("/logout");
+        NavigationManager.NavigateTo("/logout", forceLoad: true);
+        currentUser = null;
+
+        StateHasChanged();
     }
 }
