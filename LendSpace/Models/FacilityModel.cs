@@ -5,17 +5,23 @@ namespace LendSpace.Models
     public class FacilityModel
     {
         [Key]
-        public string Id { get; set; } = string.Empty;
+        public string? Id { get; set; }
 
         [Required]
-        public string Name { get; set; } = string.Empty;
+        public string? Name { get; set; }
 
         [Required]
-        public string Address { get; set; } = string.Empty;
+        public string? Address { get; set; }
 
         [Required]
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; }
 
+        [Required]
+        public double Pricing { get; set; } // per day
+
+        [Required]
         public bool Available { get; set; }
+
+        public string? ImagePath { get; set; }
     }
 }

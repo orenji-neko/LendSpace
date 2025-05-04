@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace LendSpace.Services
 {
-    public class EventService : IEventService
+    public class EventService : EventManager
     {
         // You would typically inject a database context or repository here
         // private readonly IEventRepository _repository;

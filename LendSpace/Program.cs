@@ -29,7 +29,7 @@ builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
     .AddDefaultTokenProviders();
 
 // Register the EventService - update the namespace to match your interface
-builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<EventManager, EventService>();
 
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("UserOnly", policy =>
@@ -51,8 +51,11 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/AccessDenied";
 });
 
-// Other Services
-builder.Services.AddScoped<BookingService>();
+// File Manager
+builder.Services.AddScoped<FileManager>();
+
+// Dialogs
+builder.Services.AddSingleton<DialogManager>();
 
 var app = builder.Build();
 

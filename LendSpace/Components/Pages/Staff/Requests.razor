@@ -1,0 +1,141 @@
+﻿@page "/Staff/Request"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = "StaffOnly")]
+
+@inject ApplicationDbContext Context
+@inject DialogManager DialogManager
+
+<PageTitle>Service Requests</PageTitle>
+
+<main class="w-full h-full p-4">
+	<div class="max-w-7xl mx-auto px-4 py-8">
+		<div class="">
+			<h1 class="text-3xl font-bold text-gray-900 mb-4">Service Requests</h1>
+
+			@* Facility Bookings List *@
+			@if (requests != null && requests.Any())
+			{
+				@foreach (var request in requests)
+				{
+					<div class="bg-white shadow rounded-lg overflow-hidden mb-6 hover:shadow-md transition-shadow">
+						<div class="p-4">
+							<!-- Header: Reservation Title with Status -->
+							<div class="flex justify-between items-center mb-4">
+								<div>
+									<h2 class="text-xl font-bold text-gray-800">@request.Title</h2>
+								</div>
+								<span class="@GetBadgeClasses(request.Status)">
+									@if (request.Status == RequestStatus.Cancelled || request.Status == RequestStatus.Failed)
+									{
+										@(request.Status == RequestStatus.Cancelled ? "Cancelled" : "Failed")
+									}
+									else
+									{
+										@request.Status.ToString()
+									}
+								</span>
+							</div>
+
+							<!-- Description Section -->
+							<div class="mb-4">
+								<p class="text-gray-700">
+									<span class="font-semibold">Description:</span>
+									<span class="ml-1">@request.Description</span>
+								</p>
+							</div>
+
+							<!-- Reservation Dates -->
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+								<!-- Start Date -->
+								<div class="flex items-start gap-2">
+									<svg class="w-5 h-5 text-gray-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+											  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+									</svg>
+									<div>
+										<p class="text-sm font-semibold text-gray-600">Start Date</p>
+										<p class="text-gray-700">@request.StartsAt.ToString("d")</p>
+									</div>
+								</div>
+								<!-- End Date -->
+								<div class="flex items-start gap-2">
+									<svg class="w-5 h-5 text-gray-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+											  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+									</svg>
+									<div>
+										<p class="text-sm font-semibold text-gray-600">End Date</p>
+										<p class="text-gray-700">@request.EndsAt.ToString("d")</p>
+									</div>
+								</div>
+							</div>
+
+							<!-- User Information Section -->
+							<div class="mt-4 border-t pt-4">
+								<div class="flex items-center gap-2">
+									<svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+										<path fill-rule="evenodd" d="M10 2C7.243 2 5 4.243 5 7s2.243 5 5 5 5-2.243 5-5S12.757 2 10 2zm-7 16a7 7 0 0114 0H3z" clip-rule="evenodd"></path>
+									</svg>
+									<p class="text-gray-700">
+										<span class="font-semibold">Reserved by:</span>
+										<span class="ml-1">@request.User!.LastName, @request.User!.FirstName</span>
+									</p>
+								</div>
+							</div>
+						</div>
+						<div class="p-3 flex flex-row gap-4">
+							<button class="text-emerald-600 text-sm font-medium hover:text-emerald-800">
+								Edit
+							</button>
+							<button class="text-red-600 text-sm font-medium hover:text-red-800">
+								Delete
+							</button>
+						</div>
+					</div>
+				}
+			}
+			else
+			{
+				<p class="text-gray-600">No requests found.</p>
+			}
+		</div>
+	</div>
+</main>
+
+@code {
+	private IEnumerable<RequestModel>? requests;
+
+	private ReservationModel? model { get; set; }
+	private bool edit = false;
+	private bool showModal = false;
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		FetchData();
+		model ??= new ReservationModel();
+	}
+
+	private void FetchData()
+	{
+		requests = Context.Requests
+			.Include(r => r.User)
+			.ToList();
+	}
+
+	private string GetBadgeClasses(RequestStatus status) =>
+		status switch
+		{
+			RequestStatus.Pending =>
+					"px-3 py-1 text-xs font-bold text-yellow-800 bg-yellow-100 rounded-full",
+			RequestStatus.Approved =>
+					"px-3 py-1 text-xs font-bold text-green-800 bg-green-100 rounded-full",
+			RequestStatus.Completed =>
+					"px-3 py-1 text-xs font-bold text-blue-800 bg-blue-100 rounded-full",
+			RequestStatus.Failed =>
+					"px-3 py-1 text-xs font-bold text-red-800 bg-red-100 rounded-full",
+			RequestStatus.Cancelled =>
+					"px-3 py-1 text-xs font-bold text-red-800 bg-red-100 rounded-full",
+			_ => string.Empty
+		};
+}

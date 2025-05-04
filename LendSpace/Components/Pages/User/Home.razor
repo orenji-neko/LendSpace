@@ -290,10 +290,10 @@
                                         <p class="text-sm text-gray-500">@bill.IssuedAt.ToString("MMM dd, yyyy")</p>
                                     </div>
                                     <div class="text-right">
-                                        <p class="font-medium @(bill.IsPaid ? "text-green-600" : "text-red-600")">₱@bill.Amount.ToString("N2")</p>
+                                        <p class="font-medium @(bill.Status == BillingStatus.Paid ? "text-green-600" : "text-red-600")">₱@bill.Amount.ToString("N2")</p>
                                         <div class="flex items-center gap-2 mt-1">
-                                            <div class="w-2 h-2 rounded-full @(bill.IsPaid ? "bg-green-500" : "bg-red-500")"></div>
-                                            <span class="text-sm">@(bill.IsPaid ? "Paid" : "Unpaid")</span>
+                                            <div class="w-2 h-2 rounded-full @(bill.Status == BillingStatus.Paid ? "bg-green-500" : "bg-red-500")"></div>
+                                            <span class="text-sm">@(bill.Status == BillingStatus.Paid ? "Paid" : "Unpaid")</span>
                                         </div>
                                     </div>
                                 </div>
@@ -328,7 +328,7 @@
         User = await UserManager.GetUserAsync(principal);
 
         // Load counts
-        unpaidBillsCount = await Context.Billing.CountAsync(b => !b.IsPaid);
+        unpaidBillsCount = await Context.Billing.CountAsync(b => b.Status == BillingStatus.Unpaid);
         upcomingEventsCount = await Context.Events.CountAsync(e => e.StartedAt > DateOnly.FromDateTime(DateTime.Now));
         availableFacilitiesCount = await Context.Facility.CountAsync(f => f.Available == true);
         recentAnnouncementsCount = await Context.Announcements.CountAsync(a => a.PostedAt > DateOnly.FromDateTime(DateTime.Now.AddDays(-7)));

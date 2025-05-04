@@ -161,7 +161,7 @@
                                         <div class="text-sm text-gray-900">$@payment.Amount.ToString("N2")</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        @if (payment.IsPaid)
+                                        @if (payment.Status == BillingStatus.Paid)
                                         {
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                                 Paid
@@ -331,9 +331,9 @@
 
         // Load Revenue Info
         var billings = await DbContext.Billing.ToListAsync();
-        TotalRevenue = billings.Where(b => b.IsPaid).Sum(b => b.Amount);
+        TotalRevenue = billings.Where(b => b.Status == BillingStatus.Paid).Sum(b => b.Amount);
         RecentRevenue = billings
-            .Where(b => b.IsPaid && b.IssuedAt.ToDateTime(TimeOnly.MinValue) > thirtyDaysAgo)
+            .Where(b => b.Status == BillingStatus.Paid && b.IssuedAt.ToDateTime(TimeOnly.MinValue) > thirtyDaysAgo)
             .Sum(b => b.Amount);
 
         // Load Facility Info
@@ -342,7 +342,7 @@
         AvailableFacilities = facilities.Count(f => f.Available);
 
         // Load Pending Payments
-        var pendingBillings = billings.Where(b => !b.IsPaid).ToList();
+        var pendingBillings = billings.Where(b => b.Status == BillingStatus.Unpaid).ToList();
         PendingPayments = pendingBillings.Count;
         PendingAmount = pendingBillings.Sum(b => b.Amount);
 
@@ -384,7 +384,7 @@
                         UserName = $"{user.FirstName} {user.LastName}",
                         UserInitial = user.FirstName.FirstOrDefault().ToString(),
                         Amount = billing.Amount,
-                        IsPaid = billing.IsPaid,
+                        Status = billing.Status,
                         Date = billing.IssuedAt.ToDateTime(TimeOnly.MinValue)
                     });
             }
@@ -463,7 +463,7 @@
         public string UserName { get; set; }
         public string UserInitial { get; set; }
         public double Amount { get; set; }
-        public bool IsPaid { get; set; }
+        public BillingStatus Status { get; set; }
         public DateTime Date { get; set; }
     }
 

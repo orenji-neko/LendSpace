@@ -1,4 +1,5 @@
 ﻿using LendSpace.Models;
+using LendSpace.Models.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,10 @@ namespace LendSpace.Data
     public class ApplicationDbContext : IdentityDbContext<UserModel, IdentityRole, string>
     {
         public DbSet<FacilityModel> Facility { get; set; }
-        public DbSet<FacilityBookingModel> FacilityBookings { get; set; }
+        public DbSet<ReservationModel> Reservations { get; set; }
+
+        public DbSet<ServiceModel> Services { get; set; }
+        public DbSet<RequestModel> Requests { get; set; }
 
         public DbSet<BillingModel> Billing { get; set; }
         public DbSet<EventModel> Events { get; set; }
@@ -30,28 +34,44 @@ namespace LendSpace.Data
         {
             base.OnModelCreating(builder);
 
-            // one-to-many between UserModel and BillingModel
+            // User billilngs
             builder.Entity<UserModel>()
                 .HasMany(u => u.Billings)
                 .WithOne(b => b.User)
                 .HasForeignKey(b => b.UserId)
                 .IsRequired();
+            // User Requests
+            builder.Entity<UserModel>()
+                .HasMany(u => u.Requests)
+                .WithOne(r => r.User)
+                .HasForeignKey(r => r.UserId)
+                .IsRequired();
+            // User Reservations
+            builder.Entity<UserModel>()
+                .HasMany(u => u.Reservations)
+                .WithOne(b => b.User)
+                .HasForeignKey(b => b.UserId)
+                .IsRequired();
+
+            // Billing -> User
             builder.Entity<BillingModel>()
                 .HasOne(b => b.User)
                 .WithMany(u => u.Billings)
                 .HasForeignKey(b => b.UserId)
                 .IsRequired();
 
-            // one-to-many between UserModel and FacilityBookingModel
-            builder.Entity<UserModel>()
-                .HasMany(u => u.FacilityBookings)
-                .WithOne(b => b.User)
-                .HasForeignKey(b => b.UserId)
-                .IsRequired();
-            builder.Entity<FacilityBookingModel>()
+            // Reservation -> User
+            builder.Entity<ReservationModel>()
                 .HasOne(fb => fb.User)
-                .WithMany(u => u.FacilityBookings)
+                .WithMany(u => u.Reservations)
                 .HasForeignKey(fb => fb.UserId)
+                .IsRequired();
+
+            // Request -> User
+            builder.Entity<RequestModel>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Requests)
+                .HasForeignKey(r => r.UserId)
                 .IsRequired();
 
             // CommunityPostModel[one] - CommunityCommentModel[many]
@@ -209,7 +229,8 @@ namespace LendSpace.Data
                     Name = "Swimming Pool",
                     Description = "A big tub, with water!",
                     Address = "Biringan City, Samar",
-                    Available = true
+                    Available = true,
+                    Pricing = 200.00
                 },
                 ]);
 
@@ -219,7 +240,7 @@ namespace LendSpace.Data
                 {
                     Id = "test-billing-0001",
                     Name = "Rent",
-                    IsPaid = false,
+                    Status = BillingStatus.Unpaid,
                     Amount = 2000.00,
                     UserId = "test-user-0001",
                     IssuedAt = new DateOnly(2025, 4, 2)

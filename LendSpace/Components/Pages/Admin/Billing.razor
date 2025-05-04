@@ -24,7 +24,7 @@
 						<div class="fixed inset-0 bg-gray-500 opacity-75"></div>
 						<div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full relative z-20">
 							<div class="p-6">
-								@if(edit)
+								@if (edit)
 								{
 									<h2 class="text-2xl font-bold mb-4">Edit Billing</h2>
 								}
@@ -44,9 +44,13 @@
 										<label class="block text-gray-700">Amount</label>
 										<InputNumber @bind-Value="billingModel!.Amount" class="w-full border rounded p-2" />
 									</div>
-									<div class="mb-4 flex items-center">
-										<InputCheckbox @bind-Value="billingModel!.IsPaid" class="mr-2" />
-										<label class="text-gray-700">Is Paid</label>
+									<div class="mb-4">
+										<label class="block text-gray-700">Status</label>
+										<select class="w-full border rounded p-2" @bind="billingModel.Status">
+											<option disabled value="">Select a user</option>
+											<option value="@BillingStatus.Unpaid">Unpaid</option>
+											<option value="@BillingStatus.Paid">Paid</option>
+										</select>
 									</div>
 									<div class="mb-4">
 										<label class="block text-gray-700">User</label>
@@ -80,9 +84,20 @@
 						<div class="p-4">
 							<div class="flex justify-between items-center">
 								<h2 class="text-lg font-medium text-gray-800">@billing.Name</h2>
-								<span class="px-2 py-1 text-xs font-bold text-white rounded @(billing.IsPaid ? "bg-green-500" : "bg-red-500")">
-									@(billing.IsPaid ? "Paid" : "Unpaid")
-								</span>
+								@* Unpaid *@
+								@if (billing!.Status == BillingStatus.Unpaid)
+								{
+									<span class="px-2 py-1 text-xs font-bold text-white rounded bg-red-500">
+										Unpaid
+									</span>
+								}
+								@* Paid *@
+								else
+								{
+									<span class="px-2 py-1 text-xs font-bold text-white rounded bg-green-500">
+										Paid
+									</span>
+								}
 							</div>
 							<div class="mt-2">
 								<p class="text-gray-600">₱@billing.Amount.ToString("N2")</p>
@@ -153,7 +168,7 @@
 				Id = Guid.NewGuid().ToString(),
 				Name = string.Empty,
 				Amount = 0,
-				IsPaid = false,
+				Status = BillingStatus.Unpaid,
 				IssuedAt = DateOnly.FromDateTime(DateTime.Today),
 				UserId = string.Empty
 			};

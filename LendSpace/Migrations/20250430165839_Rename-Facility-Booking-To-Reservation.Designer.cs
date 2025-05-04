@@ -3,6 +3,7 @@ using System;
 using LendSpace.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LendSpace.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250430165839_Rename-Facility-Booking-To-Reservation")]
+    partial class RenameFacilityBookingToReservation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
@@ -55,15 +58,15 @@ namespace LendSpace.Migrations
                     b.Property<double>("Amount")
                         .HasColumnType("REAL");
 
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateOnly>("IssuedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -80,9 +83,9 @@ namespace LendSpace.Migrations
                         {
                             Id = "test-billing-0001",
                             Amount = 2000.0,
+                            IsPaid = false,
                             IssuedAt = new DateOnly(2025, 4, 2),
                             Name = "Rent",
-                            Status = 0,
                             UserId = "test-user-0001"
                         });
                 });
@@ -229,15 +232,9 @@ namespace LendSpace.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ImagePath")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<double>("Pricing")
-                        .HasColumnType("REAL");
 
                     b.HasKey("Id");
 
@@ -250,48 +247,8 @@ namespace LendSpace.Migrations
                             Address = "Biringan City, Samar",
                             Available = true,
                             Description = "A big tub, with water!",
-                            Name = "Swimming Pool",
-                            Pricing = 200.0
+                            Name = "Swimming Pool"
                         });
-                });
-
-            modelBuilder.Entity("LendSpace.Models.RequestModel", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("EndsAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ServiceId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("StartsAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ServiceId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Requests");
                 });
 
             modelBuilder.Entity("LendSpace.Models.ReservationModel", b =>
@@ -299,18 +256,15 @@ namespace LendSpace.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateOnly>("BookedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateOnly>("EndsAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("FacilityId")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("StartsAt")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Status")
@@ -331,30 +285,6 @@ namespace LendSpace.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Reservations");
-                });
-
-            modelBuilder.Entity("LendSpace.Models.ServiceModel", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("Available")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<double>("Pricing")
-                        .HasColumnType("REAL");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Services");
                 });
 
             modelBuilder.Entity("LendSpace.Models.UserModel", b =>
@@ -448,8 +378,8 @@ namespace LendSpace.Migrations
                             Id = "test-user-0001",
                             AccessFailedCount = 0,
                             Address = "Cebu City",
-                            ConcurrencyStamp = "adeb9886-59bc-48e3-b1a0-0f98197f0072",
-                            CreatedDate = new DateTime(2025, 5, 3, 8, 47, 54, 575, DateTimeKind.Utc).AddTicks(8154),
+                            ConcurrencyStamp = "05e0836e-4f89-4425-821c-da0daecf998b",
+                            CreatedDate = new DateTime(2025, 4, 30, 16, 58, 38, 343, DateTimeKind.Utc).AddTicks(2690),
                             Email = "user1@email.com",
                             EmailConfirmed = false,
                             FirstName = "Ian John",
@@ -458,9 +388,9 @@ namespace LendSpace.Migrations
                             MidInitial = "L",
                             NormalizedEmail = "USER1@EMAIL.COM",
                             NormalizedUserName = "USER1@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEHDQdPMK2WLo6Dyy/Idxj3oYYkzEzlQcFokopgAUIg8WN6ndsOktZ3rM7Bg+bqkApQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEHh/1g2CuMO/zvjGRkBsSGqGExc6aoQt/P0XpV/OVKzmMngMDmeYqHiOSMRNJfMXNw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "dfffa42d-3066-4227-ba6a-c2c586935ae0",
+                            SecurityStamp = "2fb3969e-ebf7-4e90-a191-2fb71d631ffc",
                             TwoFactorEnabled = false,
                             UserName = "user1@email.com"
                         },
@@ -469,8 +399,8 @@ namespace LendSpace.Migrations
                             Id = "test-user-0002",
                             AccessFailedCount = 0,
                             Address = "Basey, Samar",
-                            ConcurrencyStamp = "5c73fc66-b15b-4a64-8253-19322e4bd15f",
-                            CreatedDate = new DateTime(2025, 5, 3, 8, 47, 54, 624, DateTimeKind.Utc).AddTicks(9094),
+                            ConcurrencyStamp = "6e0af4ce-3806-4167-b07c-97e1667e59ab",
+                            CreatedDate = new DateTime(2025, 4, 30, 16, 58, 38, 395, DateTimeKind.Utc).AddTicks(3085),
                             Email = "user2@email.com",
                             EmailConfirmed = false,
                             FirstName = "Christian",
@@ -479,9 +409,9 @@ namespace LendSpace.Migrations
                             MidInitial = "D",
                             NormalizedEmail = "USER2@EMAIL.COM",
                             NormalizedUserName = "USER2@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEH+ksXJye3OubAPczofI1Fl/rb00Xnmp55Fgs6XpkCfTOooCJ6a77grhpvCaLhZfwA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEO3f+tfzmjY6tXW7hfG0TaJAEisFmqCuhfZOIrH9LPPepyrRtZSKrgchhIJRon0MPA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "ef9a6824-ce2d-4d5b-8168-cce50334dd5a",
+                            SecurityStamp = "9dd8f2db-e81e-433f-b521-24dfd566b18b",
                             TwoFactorEnabled = false,
                             UserName = "user2@email.com"
                         },
@@ -490,8 +420,8 @@ namespace LendSpace.Migrations
                             Id = "test-admin-0001",
                             AccessFailedCount = 0,
                             Address = "123 Admin St.",
-                            ConcurrencyStamp = "824448e5-0755-4370-ab2e-2cea9c17b4f9",
-                            CreatedDate = new DateTime(2025, 5, 3, 8, 47, 54, 670, DateTimeKind.Utc).AddTicks(1241),
+                            ConcurrencyStamp = "121670ff-1b91-4a69-a3cf-136cca027b9c",
+                            CreatedDate = new DateTime(2025, 4, 30, 16, 58, 38, 456, DateTimeKind.Utc).AddTicks(5246),
                             Email = "admin@email.com",
                             EmailConfirmed = false,
                             FirstName = "John",
@@ -500,9 +430,9 @@ namespace LendSpace.Migrations
                             MidInitial = "A",
                             NormalizedEmail = "ADMIN@EMAIL.COM",
                             NormalizedUserName = "ADMIN@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEEr338kxk9676R6yrznytIWnQsWO7Rq9F5BvkCCyxRF/xkMpSMD67W6lYF+IrdaNsg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAENWb+Hq4hq6JHRGhYrA/0W/IeMlW3MtJJn/2feGP85xcM2lXDcqq2laGc7voX/1+tA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "8324d250-a0ae-4145-bb35-905d8deb84b8",
+                            SecurityStamp = "3b4bc1f3-885c-4a56-ada3-61de800e5656",
                             TwoFactorEnabled = false,
                             UserName = "admin@email.com"
                         },
@@ -511,8 +441,8 @@ namespace LendSpace.Migrations
                             Id = "test-staff-0001",
                             AccessFailedCount = 0,
                             Address = "123 Staff St.",
-                            ConcurrencyStamp = "0eff0f42-b31f-4159-8ac0-e457ff03a02e",
-                            CreatedDate = new DateTime(2025, 5, 3, 8, 47, 54, 713, DateTimeKind.Utc).AddTicks(9305),
+                            ConcurrencyStamp = "8540d4eb-e049-485d-a72c-4d4741c76325",
+                            CreatedDate = new DateTime(2025, 4, 30, 16, 58, 38, 506, DateTimeKind.Utc).AddTicks(9446),
                             Email = "staff@email.com",
                             EmailConfirmed = false,
                             FirstName = "Jane",
@@ -521,9 +451,9 @@ namespace LendSpace.Migrations
                             MidInitial = "B",
                             NormalizedEmail = "STAFF@EMAIL.COM",
                             NormalizedUserName = "STAFF@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPVx/iy3RTSAcVv4vbruP3gXXvGkfOv/ea2pIVgd37hpp2DVfaogZuUMBRNX8Sz/RQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEH39vOSQJkp9W7nJEl48T2RWVFfx14UyxQRj72z98p0ajNMAz+UEGZINa4UqmbXnOw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "cc969a4d-32de-4479-8990-cd75a645af9f",
+                            SecurityStamp = "3348d5ac-8ad0-4e94-ad80-d025328347ed",
                             TwoFactorEnabled = false,
                             UserName = "staff@email.com"
                         });
@@ -747,25 +677,6 @@ namespace LendSpace.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("LendSpace.Models.RequestModel", b =>
-                {
-                    b.HasOne("LendSpace.Models.ServiceModel", "Service")
-                        .WithMany()
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LendSpace.Models.UserModel", "User")
-                        .WithMany("Requests")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Service");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("LendSpace.Models.ReservationModel", b =>
                 {
                     b.HasOne("LendSpace.Models.FacilityModel", "Facility")
@@ -849,8 +760,6 @@ namespace LendSpace.Migrations
             modelBuilder.Entity("LendSpace.Models.UserModel", b =>
                 {
                     b.Navigation("Billings");
-
-                    b.Navigation("Requests");
 
                     b.Navigation("Reservations");
                 });

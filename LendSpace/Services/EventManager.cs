@@ -4,7 +4,7 @@ using LendSpace.Models;
 
 namespace LendSpace.Services
 {
-    public interface IEventService
+    public interface EventManager
     {
         Task<IEnumerable<EventModel>> GetEventsAsync();
         Task<EventModel> GetEventByIdAsync(string id);

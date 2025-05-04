@@ -1,6 +1,6 @@
 ﻿namespace LendSpace.Models.Enums
 {
-    public enum BookingStatus
+    public enum ReservationStatus
     {
         Pending,
         Approved,

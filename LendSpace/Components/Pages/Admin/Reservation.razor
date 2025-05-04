@@ -1,0 +1,336 @@
+﻿@page "/Admin/Reservation"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = "AdminOnly")]
+
+@inject ApplicationDbContext Context
+@inject DialogManager DialogManager
+
+<PageTitle>Reservations</PageTitle>
+
+<main class="w-full h-full p-4">
+	<div class="max-w-7xl mx-auto px-4 py-8">
+		<div class="">
+			<h1 class="text-3xl font-bold text-gray-900 mb-4">Reservation</h1>
+			<div class="flex flex-row justify-end">
+				<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-6" @onclick="OpenAdd">
+					Add Reservation
+				</button>
+			</div>
+
+			@* Facility Bookings List *@
+			@if (reservations != null && reservations.Any())
+			{
+				@foreach (var reservation in reservations)
+				{
+					<div class="bg-white shadow rounded-lg overflow-hidden mb-6 hover:shadow-md transition-shadow">
+						<div class="p-4">
+							<!-- Header: Reservation Title with Status -->
+							<div class="flex justify-between items-center mb-4">
+								<div>
+									<h2 class="text-xl font-bold text-gray-800">@reservation.Title</h2>
+								</div>
+								<span class="@GetBadgeClasses(reservation.Status)">
+									@if (reservation.Status == ReservationStatus.Cancelled || reservation.Status == ReservationStatus.Failed)
+									{
+										@(reservation.Status == ReservationStatus.Cancelled ? "Cancelled" : "Failed")
+									}
+									else
+									{
+										@reservation.Status.ToString()
+									}
+								</span>
+							</div>
+
+							<!-- Description Section -->
+							<div class="mb-4">
+								<p class="text-gray-700">
+									<span class="font-semibold">Description:</span>
+									<span class="ml-1">@reservation.Description</span>
+								</p>
+							</div>
+
+							<!-- Facility Information -->
+							<div class="mb-4">
+								<div class="flex items-center gap-2">
+									<svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+										<path d="M10 2a1 1 0 00-.894.553L7.382 6H4a1 1 0 000 2h2.382l1.724 3.447A1 1 0 0010 12a1 1 0 00.894-.553L13.618 8H16a1 1 0 100-2h-2.382l-1.724-3.447A1 1 0 0010 2z" />
+										<path d="M2 14a2 2 0 012-2h12a2 2 0 012 2v2a1 1 0 01-1 1H3a1 1 0 01-1-1v-2z" />
+									</svg>
+									<p class="text-gray-700">
+										<span class="font-semibold">Facility:</span>
+										<span class="ml-1">@reservation.Facility!.Name</span>
+									</p>
+								</div>
+							</div>
+
+							<!-- Reservation Dates -->
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+								<!-- Start Date -->
+								<div class="flex items-start gap-2">
+									<svg class="w-5 h-5 text-gray-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+										d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+									</svg>
+									<div>
+										<p class="text-sm font-semibold text-gray-600">Start Date</p>
+										<p class="text-gray-700">@reservation.StartsAt.ToString("d")</p>
+									</div>
+								</div>
+								<!-- End Date -->
+								<div class="flex items-start gap-2">
+									<svg class="w-5 h-5 text-gray-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+										d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+									</svg>
+									<div>
+										<p class="text-sm font-semibold text-gray-600">End Date</p>
+										<p class="text-gray-700">@reservation.EndsAt.ToString("d")</p>
+									</div>
+								</div>
+							</div>
+
+							<!-- User Information Section -->
+							<div class="mt-4 border-t pt-4">
+								<div class="flex items-center gap-2">
+									<svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+										<path fill-rule="evenodd" d="M10 2C7.243 2 5 4.243 5 7s2.243 5 5 5 5-2.243 5-5S12.757 2 10 2zm-7 16a7 7 0 0114 0H3z" clip-rule="evenodd"></path>
+									</svg>
+									<p class="text-gray-700">
+										<span class="font-semibold">Reserved by:</span>
+										<span class="ml-1">@reservation.User!.FirstName @reservation.User!.LastName</span>
+									</p>
+								</div>
+							</div>
+						</div>
+						<div class="p-3 flex flex-row gap-4">
+							<button class="text-emerald-600 text-sm font-medium hover:text-emerald-800" @onclick="() => OpenEdit(reservation.Id!)">
+								Edit
+							</button>
+							<button class="text-red-600 text-sm font-medium hover:text-red-800" @onclick="() => Delete(reservation)">
+								Delete
+							</button>
+						</div>
+					</div>
+				}
+			}
+			else
+			{
+				<p class="text-gray-600">No billing records found.</p>
+			}
+		</div>
+	</div>
+</main>
+
+<Modal Show="showModal" OnClose="Close">
+	@if (edit)
+	{
+		<h2 class="text-2xl font-bold mb-4">Edit Facility</h2>
+	}
+	else
+	{
+		<h2 class="text-2xl font-bold mb-4">Add Facility</h2>
+	}
+
+	<EditForm Model="model" OnValidSubmit="Confirm">
+		<DataAnnotationsValidator />
+
+		<div class="mb-4">
+			<label class="block text-gray-700">Title</label>
+			<InputText @bind-Value="model!.Title" class="w-full border rounded p-2" />
+			<ValidationMessage For="() => model.Title" />
+		</div>
+		<div class="mb-4">
+			<label class="block text-gray-700">Description</label>
+			<InputText @bind-Value="model!.Description" class="w-full border rounded p-2" />
+			<ValidationMessage For="() => model.Description" />
+		</div>
+		<div class="mb-4">
+			<label class="block text-gray-700">Status</label>
+			<select class="w-full border rounded p-2" @bind="model.Status">
+				<option disabled value="">Select status</option>
+				<option value="@ReservationStatus.Pending">Pending</option>
+				<option value="@ReservationStatus.Approved">Approved</option>
+				<option value="@ReservationStatus.Completed">Completed</option>
+				<option value="@ReservationStatus.Cancelled">Cancelled</option>
+				<option value="@ReservationStatus.Failed">Failed</option>
+			</select>
+			<ValidationMessage For="() => model.FacilityId" />
+		</div>
+		<div class="mb-4 flex flex-row md:flex-col gap-2">
+			<div>
+				<label class="block text-gray-700">Starts At</label>
+				<InputDate @bind-Value="model.StartsAt" class="w-full border rounded p-2" />
+				<ValidationMessage For="() => model.StartsAt" />
+			</div>
+			<div>
+				<label class="block text-gray-700">Ends At</label>
+				<InputDate @bind-Value="model.EndsAt" class="w-full border rounded p-2" />
+				<ValidationMessage For="() => model.EndsAt" />
+			</div>
+		</div>
+		<div class="mb-4">
+			<label class="block text-gray-700">Facility</label>
+			<select class="w-full border rounded p-2" @bind="model.FacilityId">
+				<option disabled value="">Select a facility</option>
+				@foreach (var facility in facilities!)
+				{
+					<option value="@facility.Id">@facility.Name</option>
+				}
+			</select>
+			<ValidationMessage For="() => model.FacilityId" />
+		</div>
+		<div class="mb-4">
+			<label class="block text-gray-700">User</label>
+			<select class="w-full border rounded p-2" @bind="model.UserId">
+				<option disabled value="">Select a user</option>
+				@foreach (var user in users!)
+				{
+					<option value="@user.Id">@user.LastName, @user.FirstName</option>
+				}
+			</select>
+			<ValidationMessage For="() => model.UserId" />
+		</div>
+		<div class="flex justify-end space-x-2">
+			<button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save</button>
+			<button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" @onclick="Close">
+				Cancel
+			</button>
+		</div>
+	</EditForm>
+</Modal>
+
+@code {
+	private UserModel[]? users;
+	private IEnumerable<FacilityModel>? facilities;
+	private IEnumerable<ReservationModel>? reservations;
+
+	private ReservationModel? model { get; set; }
+	private bool edit = false;
+	private bool showModal = false;
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		FetchData();
+		model ??= new ReservationModel();
+	}
+
+	private void FetchData()
+	{
+		reservations = Context.Reservations
+			.Include(r => r.Facility)
+			.Include(r => r.User)
+			.ToList();
+		facilities = Context.Facility.ToArray();
+		users = Context.Users.ToArray();
+	}
+
+	private void OpenAdd()
+	{
+		edit = false;
+
+		model = new ReservationModel()
+			{
+				Id = Guid.NewGuid().ToString(),
+				Title = string.Empty,
+				Description = string.Empty,
+				StartsAt = DateOnly.FromDateTime(DateTime.Today),
+				EndsAt = DateOnly.FromDateTime(DateTime.Today),
+				Status = ReservationStatus.Pending,
+				UserId = string.Empty,
+				FacilityId = string.Empty
+			};
+
+		showModal = true;
+	}
+
+	private void OpenEdit(string id)
+	{
+		var reservation = Context.Reservations.Find(id);
+		if (reservation == null)
+		{
+			return;
+		}
+
+		edit = true;
+		showModal = true;
+
+		model = new ReservationModel()
+			{
+				Id = reservation.Id,
+				Title = reservation.Title,
+				Description = reservation.Description,
+				StartsAt = reservation.StartsAt,
+				EndsAt = reservation.EndsAt,
+				Status = reservation.Status,
+				UserId = reservation.UserId,
+				FacilityId = reservation.FacilityId
+			};
+	}
+
+	private async Task Confirm()
+	{
+		if (!edit)
+		{
+			bool confirmed = await DialogManager.ShowDialogAsync("Confirm", "Proceed to add?");
+			if (!confirmed)
+			{
+				return;
+			}
+
+			await Context.Reservations.AddAsync(model!);
+			await Context.SaveChangesAsync();
+		}
+		else
+		{
+			bool confirmed = await DialogManager.ShowDialogAsync("Confirm", "Proceed to edit?");
+			if (!confirmed)
+			{
+				return;
+			}
+
+			Context.Reservations.Update(model!);
+			await Context.SaveChangesAsync();
+		}
+
+		Close();
+	}
+
+	private void Close()
+	{
+		edit = false;
+		showModal = false;
+
+		FetchData();
+	}
+
+	private async Task Delete(ReservationModel reservation)
+	{
+		bool confirmed = await DialogManager.ShowDialogAsync("Confirm", "Proceed to delete?");
+		if (!confirmed)
+		{
+			return;
+		}
+
+		Context.Reservations.Remove(reservation);
+		await Context.SaveChangesAsync();
+
+		FetchData();
+	}
+
+	private string GetBadgeClasses(ReservationStatus status) =>
+		status switch
+		{
+			ReservationStatus.Pending =>
+					"px-3 py-1 text-xs font-bold text-yellow-800 bg-yellow-100 rounded-full",
+			ReservationStatus.Approved =>
+					"px-3 py-1 text-xs font-bold text-green-800 bg-green-100 rounded-full",
+			ReservationStatus.Completed =>
+					"px-3 py-1 text-xs font-bold text-blue-800 bg-blue-100 rounded-full",
+			ReservationStatus.Failed =>
+					"px-3 py-1 text-xs font-bold text-red-800 bg-red-100 rounded-full",
+			ReservationStatus.Cancelled =>
+					"px-3 py-1 text-xs font-bold text-red-800 bg-red-100 rounded-full",
+			_ => string.Empty
+		};
+}
