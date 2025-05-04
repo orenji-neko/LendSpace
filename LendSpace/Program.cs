@@ -5,15 +5,20 @@ using LendSpace.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Blazored.Toast; // Add this for Toast service
+
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddScoped<LendSpace.Services.NotificationServices>();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 
+// Add Blazored Toast Service
+builder.Services.AddBlazoredToast();
+builder.Services.AddScoped<LendSpace.Services.NotificationServices>();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlite("Data Source=database.db");

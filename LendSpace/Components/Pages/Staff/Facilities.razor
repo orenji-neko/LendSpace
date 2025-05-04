@@ -1,6 +1,6 @@
-﻿@page "/Admin/Facility"
+﻿@page "/Staff/Facility"
 @rendermode InteractiveServer
-@attribute [Authorize(Policy = "AdminOnly")]
+@attribute [Authorize(Policy = "StaffOnly")]
 
 @inject ApplicationDbContext Context
 @inject FileManager FileManager

@@ -3,10 +3,31 @@ using LendSpace.Models.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System.ComponentModel;
 
 namespace LendSpace.Data
 {
+    public class DateOnlyConverter : ValueConverter<DateOnly, DateTime>
+    {
+        public DateOnlyConverter() : base(
+            dateOnly => dateOnly.ToDateTime(TimeOnly.MinValue),
+            dateTime => DateOnly.FromDateTime(dateTime))
+        {
+        }
+    }
+
+    // DateOnly value comparer for Entity Framework Core
+    public class DateOnlyComparer : ValueComparer<DateOnly>
+    {
+        public DateOnlyComparer() : base(
+            (d1, d2) => d1.DayNumber == d2.DayNumber,
+            d => d.GetHashCode())
+        {
+        }
+    }
     public class ApplicationDbContext : IdentityDbContext<UserModel, IdentityRole, string>
     {
         public DbSet<FacilityModel> Facility { get; set; }
@@ -18,6 +39,7 @@ namespace LendSpace.Data
         public DbSet<BillingModel> Billing { get; set; }
         public DbSet<EventModel> Events { get; set; }
         public DbSet<AnnouncementModel> Announcements { get; set; }
+        public DbSet<NotificationModel> Notifications { get; set; }
 
         public DbSet<CommunityPostModel> CommunityPosts { get; set; }
         public DbSet<CommunityCommentModel> CommunityComments { get; set; }
@@ -52,6 +74,16 @@ namespace LendSpace.Data
                 .WithOne(b => b.User)
                 .HasForeignKey(b => b.UserId)
                 .IsRequired();
+            // User Notifications
+            builder.Entity<UserModel>()
+            .HasMany<NotificationModel>()
+            .WithOne(n => n.User)
+            .HasForeignKey(n => n.UserId)
+            .IsRequired();
+
+            builder.Entity<NotificationModel>()
+            .Property(n => n.CreatedAt)
+            .HasConversion<DateOnlyConverter, DateOnlyComparer>();
 
             // Billing -> User
             builder.Entity<BillingModel>()
@@ -275,6 +307,22 @@ namespace LendSpace.Data
                     PostedAt = new DateOnly(2025, 4, 6)
                 }
                 ]);
+
+            // Notification Seeding
+            builder.Entity<NotificationModel>().HasData([
+                new NotificationModel
+                {
+                    Id = "test-notification-0001",
+                    UserId = "test-user-0001",
+                    Title = "Welcome to LendSpace",
+                    Message = "Thank you for joining our community!",
+                    CreatedAt = new DateOnly(2025, 4, 6),
+                    IsRead = false,
+                    Type = NotificationType.General,
+                    Link = "/dashboard" // Added the Link property
+                }
+                ]);
+
         }
     }
 }

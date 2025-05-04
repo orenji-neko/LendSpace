@@ -4,8 +4,8 @@
     {
         Pending,
         Approved,
-        Cancelled,
-        Completed,
-        Failed
+        Rejected,
+        Cancelled,  // Note the spelling with double 'l'
+        Completed
     }
 }

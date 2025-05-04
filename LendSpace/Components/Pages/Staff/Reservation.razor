@@ -1,0 +1,538 @@
+﻿@page "/Staff/Reservations"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = "StaffOnly")]
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+
+@using LendSpace.Models
+@using LendSpace.Models.Enums
+@using Microsoft.EntityFrameworkCore
+@using Blazored.Toast.Services
+@using LendSpace.Services
+@inject ApplicationDbContext Context
+@inject NavigationManager NavigationManager
+@inject IToastService ToastService
+@inject NotificationServices NotificationService
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Manage Reservations</PageTitle>
+
+<style>
+    body {
+        background-color: whitesmoke;
+    }
+
+    html {
+        scroll-behavior: smooth;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        font-family: 'PT Sans Narrow', sans-serif;
+    }
+
+        html::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        html::-webkit-scrollbar-track {
+            background: #f0f0f0;
+        }
+
+        html::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 4px;
+            border: 2px solid #f0f0f0;
+        }
+
+            html::-webkit-scrollbar-thumb:hover {
+                background-color: #555;
+            }
+</style>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold">Reservation Management</h1>
+        <p class="text-gray-600 mt-2">View and manage all facility bookings</p>
+        <div class="h-1 w-20 bg-blue-500 mx-auto mt-4"></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+        <div class="flex flex-wrap gap-4 justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <select @bind="statusFilter" class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Statuses</option>
+                        @foreach (var status in Enum.GetValues(typeof(ReservationStatus)))
+                        {
+                            <option value="@status">@status</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                    <div class="flex space-x-2">
+                        <input type="date" @bind="startDateFilter" class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        <span class="self-center">to</span>
+                        <input type="date" @bind="endDateFilter" class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                </div>
+            </div>
+            <div class="relative">
+                <input type="text"
+                       class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       placeholder="Search by user or facility..."
+                       @bind="searchTerm"
+                       @bind:event="oninput" />
+                <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <button @onclick="ApplyFilters" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md text-sm font-medium transition-colors">
+                Apply Filters
+            </button>
+        </div>
+    </div>
+
+    <!-- Reservations Table -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Facility</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dates</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @if (filteredReservations == null || !filteredReservations.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">No reservations found</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var reservation in GetPagedReservations())
+                        {
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">@(reservation.Id?.Length > 8 ? reservation.Id.Substring(0, 8) + "..." : reservation.Id)</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">@GetUserFullName(reservation.User)</div>
+                                    <div class="text-sm text-gray-500">@(reservation.User?.Email ?? "No email")</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">@(reservation.Facility?.Name ?? "Unknown")</div>
+                                    <div class="text-sm text-gray-500">@(reservation.Facility?.Address ?? "No address")</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">@reservation.StartsAt.ToString("MMM dd, yyyy")</div>
+                                    <div class="text-sm text-gray-500">to @reservation.EndsAt.ToString("MMM dd, yyyy")</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="@GetStatusBadgeClass(reservation.Status) px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                                        @reservation.Status
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex space-x-2">
+                                        <button @onclick="() => OpenDetailsModal(reservation)" class="text-blue-600 hover:text-blue-900">
+                                            Details
+                                        </button>
+                                        @if (reservation.Status == ReservationStatus.Pending)
+                                        {
+                                            <button @onclick="() => UpdateStatus(reservation, ReservationStatus.Approved)" class="text-green-600 hover:text-green-900">
+                                                Approve
+                                            </button>
+                                            <button @onclick="() => UpdateStatus(reservation, ReservationStatus.Rejected)" class="text-red-600 hover:text-red-900">
+                                                Reject
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages > 1)
+    {
+        <div class="mt-4 flex justify-center">
+            <nav class="flex items-center">
+                <button @onclick="PreviousPage" disabled="@(currentPage == 1)" class="px-3 py-1 rounded-md mr-2 @(currentPage == 1 ? "bg-gray-200 text-gray-500 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600")">
+                    Previous
+                </button>
+                <div class="flex space-x-1">
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        var pageNumber = i;
+                        <button @onclick="() => GoToPage(pageNumber)" class="px-3 py-1 rounded-md @(currentPage == pageNumber ? "bg-blue-600 text-white" : "bg-gray-200 hover:bg-gray-300")">
+                            @pageNumber
+                        </button>
+                    }
+                </div>
+                <button @onclick="NextPage" disabled="@(currentPage == totalPages)" class="px-3 py-1 rounded-md ml-2 @(currentPage == totalPages ? "bg-gray-200 text-gray-500 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600")">
+                    Next
+                </button>
+            </nav>
+        </div>
+    }
+</div>
+
+<!-- Reservation Details Modal -->
+@if (showDetailsModal && selectedReservation != null)
+{
+    <div class="fixed inset-0 bg-gray-500/50 flex items-center justify-center z-50"
+         @onclick="CloseDetailsModal">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl mx-4"
+             @onclick:stopPropagation="true">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Reservation Details</h2>
+                <button @onclick="CloseDetailsModal" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Reservation Info</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Reservation ID:</span>
+                            <span class="font-medium">@selectedReservation.Id</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Title:</span>
+                            <span class="font-medium">@selectedReservation.Title</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Status:</span>
+                            <span class="@GetStatusBadgeClass(selectedReservation.Status) px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                                @selectedReservation.Status
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Start Date:</span>
+                            <span class="font-medium">@selectedReservation.StartsAt.ToString("MMM dd, yyyy")</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">End Date:</span>
+                            <span class="font-medium">@selectedReservation.EndsAt.ToString("MMM dd, yyyy")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Facility & User</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Facility:</span>
+                            <span class="font-medium">@(selectedReservation.Facility?.Name ?? "Unknown")</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Address:</span>
+                            <span class="font-medium">@(selectedReservation.Facility?.Address ?? "No address")</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">User:</span>
+                            <span class="font-medium">@GetUserFullName(selectedReservation.User)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Email:</span>
+                            <span class="font-medium">@(selectedReservation.User?.Email ?? "No email")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3">Description</h3>
+                <p class="text-gray-700">@selectedReservation.Description</p>
+            </div>
+
+            <!-- Staff Notes Input -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3">Staff Notes</h3>
+                <textarea @bind="staffNotes"
+                          class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          rows="3"
+                          placeholder="Add notes about this reservation..."></textarea>
+            </div>
+
+            @if (selectedReservation.Status == ReservationStatus.Pending)
+            {
+                <div class="flex justify-end space-x-3 border-t border-gray-200 pt-4">
+                    <button @onclick="() => UpdateStatusFromModal(ReservationStatus.Rejected)" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md font-medium">
+                        Reject
+                    </button>
+                    <button @onclick="() => UpdateStatusFromModal(ReservationStatus.Approved)" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md font-medium">
+                        Approve
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="flex justify-end border-t border-gray-200 pt-4">
+                    <button @onclick="CloseDetailsModal" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md font-medium">
+                        Close
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private List<ReservationModel> allReservations;
+    private List<ReservationModel> filteredReservations;
+    private ReservationModel selectedReservation;
+    private bool showDetailsModal = false;
+    private string staffNotes = string.Empty;
+    private string currentUserId;
+
+    // Filters
+    private string searchTerm = string.Empty;
+    private string statusFilter = string.Empty;
+    private DateTime? startDateFilter;
+    private DateTime? endDateFilter;
+
+    // Pagination
+    private int pageSize = 10;
+    private int currentPage = 1;
+    private int totalPages => (int)Math.Ceiling((double)(filteredReservations?.Count ?? 0) / pageSize);
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUserId = await GetCurrentUserIdAsync();
+
+        await LoadReservations();
+        ApplyFilters();
+    }
+
+    private async Task<string> GetCurrentUserIdAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            return user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+
+        return null;
+    }
+
+    private async Task LoadReservations()
+    {
+        // Load reservations with related data
+        allReservations = await Context.Reservations
+            .Include(r => r.User)
+            .Include(r => r.Facility)
+            .OrderByDescending(r => r.StartsAt)
+            .ToListAsync();
+        filteredReservations = allReservations;
+    }
+
+    private void ApplyFilters()
+    {
+        var query = allReservations.AsQueryable();
+
+        // Apply search term
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            string term = searchTerm.Trim().ToLower();
+            // Fix by ensuring all conditions return boolean values
+            query = query.Where(r =>
+                (r.User != null && r.User.Name != null && r.User.Name.ToLower().Contains(term)) ||
+                (r.User != null && r.User.Email != null && r.User.Email.ToLower().Contains(term)) ||
+                (r.Facility != null && r.Facility.Name != null && r.Facility.Name.ToLower().Contains(term)) ||
+                (r.Title != null && r.Title.ToLower().Contains(term))
+            );
+        }
+
+        // Apply status filter
+        if (!string.IsNullOrEmpty(statusFilter) && Enum.TryParse<ReservationStatus>(statusFilter, out var status))
+        {
+            query = query.Where(r => r.Status == status);
+        }
+
+        // Apply date filters
+        if (startDateFilter.HasValue)
+        {
+            query = query.Where(r => r.StartsAt >= DateOnly.FromDateTime(startDateFilter.Value));
+        }
+
+        if (endDateFilter.HasValue)
+        {
+            query = query.Where(r => r.EndsAt <= DateOnly.FromDateTime(endDateFilter.Value));
+        }
+
+        filteredReservations = query.ToList();
+        currentPage = 1; // Reset to first page when filtering
+    }
+
+    private List<ReservationModel> GetPagedReservations()
+    {
+        return filteredReservations
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+    }
+
+    private void PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            StateHasChanged();
+        }
+    }
+
+    private void NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            StateHasChanged();
+        }
+    }
+
+    private void GoToPage(int page)
+    {
+        currentPage = page;
+        StateHasChanged();
+    }
+
+    private string GetUserFullName(UserModel user)
+    {
+        if (user == null)
+            return "Unknown";
+
+        return $"{user.FirstName} {user.MidInitial} {user.LastName}".Trim();
+    }
+
+    private string GetStatusBadgeClass(ReservationStatus status)
+    {
+        return status switch
+        {
+            ReservationStatus.Pending => "bg-yellow-100 text-yellow-800",
+            ReservationStatus.Approved => "bg-green-100 text-green-800",
+            ReservationStatus.Rejected => "bg-red-100 text-red-800",
+            ReservationStatus.Cancelled => "bg-gray-100 text-gray-800",
+            ReservationStatus.Completed => "bg-blue-100 text-blue-800",
+            _ => "bg-gray-100 text-gray-800"
+        };
+    }
+
+    private void OpenDetailsModal(ReservationModel reservation)
+    {
+        selectedReservation = reservation;
+        staffNotes = reservation.StaffNotes ?? string.Empty;
+        showDetailsModal = true;
+    }
+
+    private void CloseDetailsModal()
+    {
+        showDetailsModal = false;
+        selectedReservation = null;
+        staffNotes = string.Empty;
+    }
+
+    private async Task UpdateStatus(ReservationModel reservation, ReservationStatus newStatus)
+    {
+        var dbReservation = await Context.Reservations.FindAsync(reservation.Id);
+        if (dbReservation != null)
+        {
+            // Update reservation in database
+            dbReservation.Status = newStatus;
+            dbReservation.ReviewedAt = DateTime.Now;
+            dbReservation.ReviewedById = await GetCurrentUserIdAsync(); // Assuming you have access to current user ID
+            dbReservation.StaffNotes = staffNotes;
+            await Context.SaveChangesAsync();
+
+            // Update local list for UI
+            reservation.Status = newStatus;
+
+            // Create notification for the user
+            await SendNotificationForStatusChange(reservation, newStatus);
+
+            ToastService.ShowSuccess($"Reservation {(newStatus == ReservationStatus.Approved ? "approved" : "rejected")} successfully");
+
+            StateHasChanged();
+        }
+    }
+
+    private async Task UpdateStatusFromModal(ReservationStatus newStatus)
+    {
+        if (selectedReservation != null)
+        {
+            await UpdateStatus(selectedReservation, newStatus);
+            CloseDetailsModal();
+        }
+    }
+
+    private async Task SendNotificationForStatusChange(ReservationModel reservation, ReservationStatus newStatus)
+    {
+        if (reservation.User == null || string.IsNullOrEmpty(reservation.User.Id))
+            return;
+
+        string title = string.Empty;
+        string message = string.Empty;
+        NotificationType notificationType = NotificationType.Info;
+        string link = $"/reservations/details/{reservation.Id}";
+
+        // Set notification details based on status
+        switch (newStatus)
+        {
+            case ReservationStatus.Approved:
+                title = "Reservation Approved!";
+                message = $"Your reservation for {reservation.Facility?.Name} from {reservation.StartsAt:MMM dd, yyyy} to {reservation.EndsAt:MMM dd, yyyy} has been approved.";
+                notificationType = NotificationType.Success;
+                break;
+            case ReservationStatus.Rejected:
+                title = "Reservation Rejected";
+                message = $"We're sorry, but your reservation for {reservation.Facility?.Name} from {reservation.StartsAt:MMM dd, yyyy} to {reservation.EndsAt:MMM dd, yyyy} has been rejected.";
+                notificationType = NotificationType.Error;
+                break;
+            case ReservationStatus.Cancelled:
+                title = "Reservation Cancelled";
+                message = $"Your reservation for {reservation.Facility?.Name} from {reservation.StartsAt:MMM dd, yyyy} to {reservation.EndsAt:MMM dd, yyyy} has been cancelled.";
+                notificationType = NotificationType.Warning;
+                break;
+            case ReservationStatus.Completed:
+                title = "Reservation Completed";
+                message = $"Your reservation for {reservation.Facility?.Name} from {reservation.StartsAt:MMM dd, yyyy} to {reservation.EndsAt:MMM dd, yyyy} has been marked as completed.";
+                notificationType = NotificationType.Info;
+                break;
+            default:
+                title = "Reservation Status Updated";
+                message = $"The status of your reservation for {reservation.Facility?.Name} from {reservation.StartsAt:MMM dd, yyyy} to {reservation.EndsAt:MMM dd, yyyy} has been updated to {newStatus}.";
+                break;
+        }
+
+        // Add notes if available
+        if (!string.IsNullOrEmpty(staffNotes))
+        {
+            message += $"\n\nStaff note: {staffNotes}";
+        }
+
+        // Create the notification
+        await NotificationService.CreateNotificationAsync(
+            reservation.UserId,
+            title,
+            message,
+            notificationType,
+            link
+        );
+    }
+}

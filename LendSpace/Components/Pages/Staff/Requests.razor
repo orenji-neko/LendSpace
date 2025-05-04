@@ -1,9 +1,10 @@
 ﻿@page "/Staff/Request"
 @rendermode InteractiveServer
 @attribute [Authorize(Policy = "StaffOnly")]
-
+@using Blazored.Toast.Services
 @inject ApplicationDbContext Context
 @inject DialogManager DialogManager
+@inject IToastService ToastService
 
 <PageTitle>Service Requests</PageTitle>
 
@@ -70,6 +71,17 @@
 								</div>
 							</div>
 
+							<!-- Service Information -->
+							@if (request.Service != null)
+							{
+								<div class="mb-4">
+									<p class="text-gray-700">
+										<span class="font-semibold">Service:</span>
+										<span class="ml-1">@request.Service.Name</span>
+									</p>
+								</div>
+							}
+
 							<!-- User Information Section -->
 							<div class="mt-4 border-t pt-4">
 								<div class="flex items-center gap-2">
@@ -84,10 +96,31 @@
 							</div>
 						</div>
 						<div class="p-3 flex flex-row gap-4">
-							<button class="text-emerald-600 text-sm font-medium hover:text-emerald-800">
+							@if (request.Status == RequestStatus.Pending)
+							{
+								<button @onclick="() => ApproveRequest(request)" class="text-emerald-600 text-sm font-medium hover:text-emerald-800 flex items-center">
+									<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+									</svg>
+									Approve
+								</button>
+								<button @onclick="() => RejectRequest(request)" class="text-red-600 text-sm font-medium hover:text-red-800 flex items-center">
+									<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+									Reject
+								</button>
+							}
+							<button @onclick="() => EditRequest(request)" class="text-blue-600 text-sm font-medium hover:text-blue-800 flex items-center">
+								<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+								</svg>
 								Edit
 							</button>
-							<button class="text-red-600 text-sm font-medium hover:text-red-800">
+							<button @onclick="() => DeleteRequest(request)" class="text-red-600 text-sm font-medium hover:text-red-800 flex items-center">
+								<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+								</svg>
 								Delete
 							</button>
 						</div>
@@ -105,7 +138,7 @@
 @code {
 	private IEnumerable<RequestModel>? requests;
 
-	private ReservationModel? model { get; set; }
+	private RequestModel? currentRequest { get; set; }
 	private bool edit = false;
 	private bool showModal = false;
 
@@ -113,13 +146,14 @@
 	{
 		base.OnInitialized();
 		FetchData();
-		model ??= new ReservationModel();
+		currentRequest ??= new RequestModel();
 	}
 
 	private void FetchData()
 	{
 		requests = Context.Requests
 			.Include(r => r.User)
+			.Include(r => r.Service)
 			.ToList();
 	}
 
@@ -138,4 +172,84 @@
 					"px-3 py-1 text-xs font-bold text-red-800 bg-red-100 rounded-full",
 			_ => string.Empty
 		};
+
+	private async Task ApproveRequest(RequestModel request)
+	{
+		// Show confirmation dialog
+		bool confirmed = await DialogManager.ShowDialogAsync(
+			"Approve Request",
+			$"Are you sure you want to approve the request '{request.Title}'?"
+		);
+
+		if (confirmed)
+		{
+			// Update request status to approved
+			request.Status = RequestStatus.Approved;
+			Context.Requests.Update(request);
+			await Context.SaveChangesAsync();
+
+			// Show success message
+			ToastService.ShowSuccess("Request approved successfully!");
+
+			// Refresh the data
+			FetchData();
+			StateHasChanged();
+		}
+	}
+
+	private async Task RejectRequest(RequestModel request)
+	{
+		// Show confirmation dialog
+		bool confirmed = await DialogManager.ShowDialogAsync(
+			"Reject Request",
+			$"Are you sure you want to reject the request '{request.Title}'?"
+		);
+
+		if (confirmed)
+		{
+			// Update request status to cancelled
+			request.Status = RequestStatus.Cancelled;
+			Context.Requests.Update(request);
+			await Context.SaveChangesAsync();
+
+			// Show success message
+			ToastService.ShowWarning("Request rejected.");
+
+			// Refresh the data
+			FetchData();
+			StateHasChanged();
+		}
+	}
+
+	private void EditRequest(RequestModel request)
+	{
+		// Clone the request for editing
+		currentRequest = request;
+		edit = true;
+		showModal = true;
+		// You'd typically show a modal/dialog here for editing
+	}
+
+	private async Task DeleteRequest(RequestModel request)
+	{
+		// Show confirmation dialog
+		bool confirmed = await DialogManager.ShowDialogAsync(
+			"Delete Request",
+			$"Are you sure you want to delete the request '{request.Title}'? This action cannot be undone."
+		);
+
+		if (confirmed)
+		{
+			// Remove the request
+			Context.Requests.Remove(request);
+			await Context.SaveChangesAsync();
+
+			// Show success message
+			ToastService.ShowSuccess("Request deleted successfully!");
+
+			// Refresh the data
+			FetchData();
+			StateHasChanged();
+		}
+	}
 }

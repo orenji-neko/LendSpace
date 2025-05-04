@@ -32,3 +32,70 @@ h1:focus {
 .blazor-error-boundary::after {
     content: "An error has occurred."
 }
+/* Blazored Toast styles */
+.blazored-toast-container {
+    z-index: 9000;
+}
+
+.blazored-toast {
+    padding: 1rem;
+    color: #fff;
+    display: flex;
+    position: relative;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: fadein 1.5s;
+}
+
+.blazored-toast-info {
+    background-color: #2196f3;
+}
+
+.blazored-toast-success {
+    background-color: #4caf50;
+}
+
+.blazored-toast-warning {
+    background-color: #ff9800;
+}
+
+.blazored-toast-error {
+    background-color: #f44336;
+}
+
+.blazored-toast-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    cursor: pointer;
+    color: #fff;
+}
+
+.blazored-toast-icon {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    margin-right: 0.5rem;
+}
+
+.blazored-toast-body {
+    flex-grow: 1;
+}
+
+.blazored-toast-header {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+@keyframes fadein {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
