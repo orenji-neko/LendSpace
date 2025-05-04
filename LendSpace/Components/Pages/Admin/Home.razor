@@ -399,7 +399,7 @@
 
         // Get upcoming events directly from database with proper filtering
         var upcomingEvents = await DbContext.Events
-            .OrderBy(e => e.StartedAt)
+            .OrderBy(e => e.StartsAt)
             .Take(5)
             .Select(e => new EventInfo
                 {

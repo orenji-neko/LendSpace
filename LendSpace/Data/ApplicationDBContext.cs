@@ -254,14 +254,16 @@ namespace LendSpace.Data
                     Id = "test-event-0001",
                     Name = "Anniversary",
                     Description = "Home Owners Association Anniversary",
-                    StartedAt = new DateOnly(2025, 4, 6)
+                    StartsAt = new DateOnly(2025, 4, 6),
+                    EndsAt = new DateOnly(2025, 4, 6)
                 },
                 new EventModel
                 {
                     Id = "test-event-0002",
                     Name = "Test Event 1",
                     Description = "Test Event Description",
-                    StartedAt = new DateOnly(2025, 4, 15)
+                    StartsAt = new DateOnly(2025, 4, 6),
+                    EndsAt = new DateOnly(2025, 4, 6)
                 },
                 ]);
 
