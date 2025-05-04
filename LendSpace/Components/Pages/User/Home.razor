@@ -268,7 +268,7 @@
                                 <div class="flex justify-between items-start">
                                     <div>
                                         <h4 class="font-medium text-gray-900">@eventItem.Name</h4>
-                                        <p class="text-sm text-gray-500 mt-1">@eventItem.StartedAt.ToString("MMM dd, yyyy")</p>
+                                        <p class="text-sm text-gray-500 mt-1">@eventItem.StartsAt.ToString("MMM dd, yyyy")</p>
                                     </div>
                                     <span class="text-sm text-gray-500 line-clamp-2">@eventItem.Description</span>
                                 </div>
@@ -329,7 +329,7 @@
 
         // Load counts
         unpaidBillsCount = await Context.Billing.CountAsync(b => b.Status == BillingStatus.Unpaid);
-        upcomingEventsCount = await Context.Events.CountAsync(e => e.StartedAt > DateOnly.FromDateTime(DateTime.Now));
+        upcomingEventsCount = await Context.Events.CountAsync(e => e.StartsAt > DateOnly.FromDateTime(DateTime.Now));
         availableFacilitiesCount = await Context.Facility.CountAsync(f => f.Available == true);
         recentAnnouncementsCount = await Context.Announcements.CountAsync(a => a.PostedAt > DateOnly.FromDateTime(DateTime.Now.AddDays(-7)));
 
@@ -340,8 +340,8 @@
             .ToListAsync();
 
         upcomingEvents = await Context.Events
-            .Where(e => e.StartedAt > DateOnly.FromDateTime(DateTime.Now))
-            .OrderBy(e => e.StartedAt)
+            .Where(e => e.StartsAt > DateOnly.FromDateTime(DateTime.Now))
+            .OrderBy(e => e.StartsAt)
             .Take(5)
             .ToListAsync();
 
