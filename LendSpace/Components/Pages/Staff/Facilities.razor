@@ -18,72 +18,72 @@
 				</button>
 			</div>
 
-			@* Billing Records List *@
+			@* Facility List *@
 			@if (facilities != null && facilities.Any())
 			{
 				@foreach (var facility in facilities)
 				{
-					<div class="bg-white shadow rounded-lg overflow-hidden mb-6 hover:shadow-md transition-shadow flex flex-col">
-						<div>
-							<!-- Adjusted Image: Fixed height of 8rem (h-32) and full width -->
-							<img class="w-full h-32 object-cover rounded" src="@Assets["uploads/" + facility.ImagePath]" alt="@facility.Name" />
-						</div>
-						<div class="p-4 w-full">
-							<!-- Header: Facility Title with Availability -->
-							<div class="flex justify-between items-center mb-4">
+							<div class="bg-white shadow rounded-lg overflow-hidden mb-6 hover:shadow-md transition-shadow flex flex-col">
 								<div>
-									<h2 class="text-xl font-bold text-gray-800">@facility.Name</h2>
+									<!-- Adjusted Image: Fixed height of 8rem (h-32) and full width -->
+									<img class="w-full h-32 object-cover rounded" src="@Assets["uploads/" + facility.ImagePath]" alt="@facility.Name" />
 								</div>
-								<span class="px-3 py-1 rounded-full text-xs font-bold text-white @(facility.Available ? "bg-green-500" : "bg-red-500")">
+								<div class="p-4 w-full">
+									<!-- Header: Facility Title with Availability -->
+									<div class="flex justify-between items-center mb-4">
+										<div>
+											<h2 class="text-xl font-bold text-gray-800">@facility.Name</h2>
+										</div>
+										<span class="px-3 py-1 rounded-full text-xs font-bold text-white @(facility.Available ? "bg-green-500" : "bg-red-500")">
 									@(facility.Available ? "Available" : "Unavailable")
-								</span>
-							</div>
+										</span>
+									</div>
 
-							<!-- Pricing Section -->
-							<div class="mb-4">
-								<p class="text-gray-700">
-									<span class="font-semibold">Pricing:</span>
-									<span class="ml-1">₱@facility.Pricing <span class="text-sm">/ per day</span></span>
-								</p>
-							</div>
+									<!-- Pricing Section -->
+									<div class="mb-4">
+										<p class="text-gray-700">
+											<span class="font-semibold">Pricing:</span>
+											<span class="ml-1">₱@facility.Pricing <span class="text-sm">/ per day</span></span>
+										</p>
+									</div>
 
-							<!-- Description Section -->
-							<div class="mb-4">
-								<p class="text-gray-700">
-									<span class="font-semibold">Description:</span>
-									<span class="ml-1">@facility.Description</span>
-								</p>
-							</div>
+									<!-- Description Section -->
+									<div class="mb-4">
+										<p class="text-gray-700">
+											<span class="font-semibold">Description:</span>
+											<span class="ml-1">@facility.Description</span>
+										</p>
+									</div>
 
-							<!-- Address Section -->
-							<div class="mb-4">
-								<div class="flex items-center gap-2">
-									<svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-										<path fill-rule="evenodd" d="M10 2C6.686 2 4 4.686 4 8c0 4.866 6 10 6 10s6-5.134 6-10c0-3.314-2.686-6-6-6zm0 8a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
-									</svg>
-									<p class="text-gray-700">
-										<span class="font-semibold">Address:</span>
-										<span class="ml-1">@facility.Address</span>
-									</p>
+									<!-- Address Section -->
+									<div class="mb-4">
+										<div class="flex items-center gap-2">
+											<svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+												<path fill-rule="evenodd" d="M10 2C6.686 2 4 4.686 4 8c0 4.866 6 10 6 10s6-5.134 6-10c0-3.314-2.686-6-6-6zm0 8a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+											</svg>
+											<p class="text-gray-700">
+												<span class="font-semibold">Address:</span>
+												<span class="ml-1">@facility.Address</span>
+											</p>
+										</div>
+									</div>
+
+									<!-- Action Buttons -->
+									<div class="p-3 flex flex-row gap-4">
+										<button class="text-emerald-600 text-sm font-medium hover:text-emerald-800" @onclick="() => EditFacility(facility.Id!)">
+											Edit
+										</button>
+										<button class="text-red-600 text-sm font-medium hover:text-red-800" @onclick="() => DeleteFacility(facility.Id!)">
+											Delete
+										</button>
+									</div>
 								</div>
 							</div>
-
-							<!-- Action Buttons -->
-							<div class="p-3 flex flex-row gap-4">
-								<button class="text-emerald-600 text-sm font-medium hover:text-emerald-800" @onclick="() => EditFacility(facility.Id!)">
-									Edit
-								</button>
-								<button class="text-red-600 text-sm font-medium hover:text-red-800" @onclick="() => DeleteFacility(facility.Id!)">
-									Delete
-								</button>
-							</div>
-						</div>
-					</div>
 				}
 			}
 			else
 			{
-				<p class="text-gray-600">No billing records found.</p>
+					<p class="text-gray-600">No facilities found.</p>
 			}
 		</div>
 	</div>
@@ -165,6 +165,7 @@
 				Description = string.Empty
 			};
 		showModal = true;
+		images.Clear(); // Clear any previously selected images
 	}
 
 	private void EditFacility(string id)
@@ -177,6 +178,7 @@
 		}
 
 		showModal = true;
+		images.Clear(); // Clear any previously selected images
 	}
 
 	private async Task DeleteFacility(string id)
@@ -200,6 +202,7 @@
 	{
 		edit = false;
 		showModal = false;
+		images.Clear(); // Clear selected images when closing the modal
 	}
 
 	private async Task Confirm()
@@ -218,6 +221,7 @@
 			if (images.Any())
 			{
 				var paths = await FileManager.UploadFiles(images);
+				model.ImagePath = images.First().Name; // Add this line to update the ImagePath when editing
 				foreach (var path in paths)
 				{
 					Console.WriteLine(path);
@@ -241,17 +245,18 @@
 				model.ImagePath = images.First().Name;
 			}
 
-
 			Context.Facility.Add(model);
 			await Context.SaveChangesAsync();
 		}
 
 		FetchData();
 		showModal = false;
+		images.Clear(); // Clear images after processing
 	}
 
 	private void LoadImages(InputFileChangeEventArgs e)
 	{
+		images.Clear(); // Clear previous selections
 		foreach (var file in e.GetMultipleFiles())
 		{
 			images.Add(file);
