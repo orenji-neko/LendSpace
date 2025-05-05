@@ -1,10 +1,11 @@
 ﻿@page "/User/Billing"
 @rendermode InteractiveServer
 @attribute [Authorize(Policy = "UserOnly")]
-
+@using Blazored.Toast.Services
 @inject ApplicationDbContext Context
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<UserModel> UserManager
+@inject IToastService ToastService
 
 <style>
 	body {
@@ -77,6 +78,7 @@
 						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
 						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issued At</th>
 						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
 					</tr>
 				</thead>
 				<tbody class="bg-white divide-y divide-gray-200">
@@ -102,6 +104,18 @@
 									</span>
 								}
 							</td>
+							<td class="px-6 py-4 whitespace-nowrap text-sm">
+								@if (billing!.Status == BillingStatus.Unpaid)
+								{
+									<button @onclick="() => OpenPaymentModal(billing)" class="bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded text-xs font-medium">
+										Pay Now
+									</button>
+								}
+								else
+								{
+									<span class="text-gray-400">Paid</span>
+								}
+							</td>
 						</tr>
 					}
 				</tbody>
@@ -113,10 +127,102 @@
 	</div>
 </div>
 
+<!-- Payment Modal -->
+@if (showPaymentModal && selectedBilling != null)
+{
+	<div class="fixed inset-0 mt-10 bg-gray-500/50 flex items-center justify-center z-50"
+		 @onclick="ClosePaymentModal">
+		<div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4"
+			 @onclick:stopPropagation="true">
+			<div class="flex justify-between items-center mb-6">
+				<h2 class="text-xl font-bold">Payment</h2>
+				<button @onclick="ClosePaymentModal" class="text-gray-500 hover:text-gray-700">
+					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+					</svg>
+				</button>
+			</div>
+
+			<!-- Payment Summary -->
+			<div class="bg-gray-50 p-4 rounded-lg mb-6">
+				<h3 class="font-semibold mb-2">Payment Summary</h3>
+				<div class="flex justify-between mb-1">
+					<span>Item:</span>
+					<span class="font-medium">@selectedBilling.Name</span>
+				</div>
+				<div class="flex justify-between mb-1">
+					<span>Date Issued:</span>
+					<span class="font-medium">@selectedBilling.IssuedAt.ToString("MMM dd, yyyy")</span>
+				</div>
+				<div class="flex justify-between font-bold text-lg mt-2">
+					<span>Total:</span>
+					<span>₱@selectedBilling.Amount.ToString("N2")</span>
+				</div>
+			</div>
+
+			<!-- Payment Information -->
+			<div class="mb-6">
+				<h3 class="font-semibold mb-3">Payment Information</h3>
+				<div class="mb-4">
+					<label class="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
+					<input type="text" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="1234 5678 9012 3456" />
+				</div>
+				<div class="flex gap-4 mb-4">
+					<div class="w-1/2">
+						<label class="block text-sm font-medium text-gray-700 mb-1">Expiration Date</label>
+						<input type="text" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="MM/YY" />
+					</div>
+					<div class="w-1/2">
+						<label class="block text-sm font-medium text-gray-700 mb-1">CVV</label>
+						<input type="text" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="123" />
+					</div>
+				</div>
+				<div class="mb-4">
+					<label class="block text-sm font-medium text-gray-700 mb-1">Name on Card</label>
+					<input type="text" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="John Smith" />
+				</div>
+			</div>
+
+			<!-- Submit Button -->
+			<div class="flex justify-end">
+				<button @onclick="ProcessPayment" class="bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-md font-medium">
+					Pay ₱@selectedBilling.Amount.ToString("N2")
+				</button>
+			</div>
+		</div>
+	</div>
+}
+
+<!-- Payment Confirmation Modal -->
+@if (showConfirmationModal)
+{
+	<div class="fixed inset-0 mt-10 flex items-center justify-center z-50"
+		 @onclick="CloseConfirmationModal">
+		<div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4 text-center"
+			 @onclick:stopPropagation="true">
+			<div class="mb-4">
+				<div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+					<svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+					</svg>
+				</div>
+			</div>
+			<h3 class="text-lg font-medium text-gray-900 mb-2">Payment Successful!</h3>
+			<p class="text-gray-500 mb-6">Your payment of ₱@(selectedBilling?.Amount.ToString("N2")) has been processed successfully.</p>
+			<div class="flex justify-center">
+				<button @onclick="CloseConfirmationModal" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md font-medium">
+					Close
+				</button>
+			</div>
+		</div>
+	</div>
+}
+
 @code {
 
 	private UserModel? currentUser { get; set; }
 	private IEnumerable<BillingModel>? billings { get; set; }
+	private BillingModel? selectedBilling { get; set; }
 
 	private double balance { get; set; }
 	private int unpaidCount { get; set; }
@@ -125,6 +231,8 @@
 	private int totalPages { get; set; }
 	private int pageSize { get; set; }
 	private int currentPage { get; set; }
+	private bool showPaymentModal { get; set; } = false;
+	private bool showConfirmationModal { get; set; } = false;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -140,17 +248,66 @@
 	private void LoadBillings()
 	{
 		// pagination bullshit
-		int totalBillings = Context.Billing.Count();
+		int totalBillings = Context.Billing.Count(b => b.UserId == currentUser!.Id);
 		totalPages = (int)Math.Ceiling(totalBillings / (double)pageSize);
 
 		billings = Context.Billing
 			.Where(b => b.UserId == currentUser!.Id)
+			.OrderByDescending(b => b.IssuedAt)
+			.ThenBy(b => b.Status)
 			.Skip((currentPage - 1) * pageSize)
 			.Take(pageSize)
 			.ToArray();
 
-		balance = Context.Billing.Sum(b => b.Amount);
-		unpaidCount = Context.Billing.Where(b => b.Status == BillingStatus.Unpaid).Count();
+		balance = Context.Billing
+			.Where(b => b.UserId == currentUser!.Id)
+			.Sum(b => b.Amount);
+		
+		unpaidCount = Context.Billing
+			.Where(b => b.UserId == currentUser!.Id && b.Status == BillingStatus.Unpaid)
+			.Count();
+	}
+
+	private void OpenPaymentModal(BillingModel billing)
+	{
+		selectedBilling = billing;
+		showPaymentModal = true;
+	}
+
+	private void ClosePaymentModal()
+	{
+		showPaymentModal = false;
+	}
+
+	private async Task ProcessPayment()
+	{
+		if (selectedBilling == null)
+			return;
+
+		try
+		{
+			// Update billing status to paid
+			selectedBilling.Status = BillingStatus.Paid;
+			Context.Billing.Update(selectedBilling);
+			await Context.SaveChangesAsync();
+
+			// Close modal and show confirmation
+			ClosePaymentModal();
+			showConfirmationModal = true;
+
+			// Reload billings
+			LoadBillings();
+		}
+		catch (Exception ex)
+		{
+			ToastService.ShowError($"Error processing payment: {ex.Message}");
+		}
+	}
+
+	private void CloseConfirmationModal()
+	{
+		showConfirmationModal = false;
+		selectedBilling = null;
 	}
 
 	private string StatusColor(bool isPaid)

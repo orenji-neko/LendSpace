@@ -6,360 +6,306 @@
 @using LendSpace.Models;
 @using System.Security.Claims;
 @using LendSpace.Data;
+@using Microsoft.EntityFrameworkCore;
+@using LendSpace.Models.Enums;
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<UserModel> UserManager
 @inject ApplicationDbContext DbContext
 
 <PageTitle>Staff Home</PageTitle>
+<style>
+    body {
+        background-color: whitesmoke;
+    }
 
-<div class="min-h-screen bg-gray-50 pb-12">
-    <!-- Header Section -->
-    <div class="bg-gradient-to-r from-green-500 to-green-600 text-white py-8 shadow-md">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
-                <div class="mb-6 md:mb-0">
-                    <h1 class="text-4xl font-bold mb-2">Welcome back, <span class="text-green-200">@FirstName</span>!</h1>
-                    <p class="text-xl text-green-100">Here's what's happening in your community today.</p>
-                </div>
-                <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4 text-center shadow-sm">
-                    <div class="text-xl font-semibold text-green-50">@DateTime.Now.ToString("dddd")</div>
-                    <div class="text-green-100">@DateTime.Now.ToString("MMMM d, yyyy")</div>
-                </div>
-            </div>
+    html {
+        scroll-behavior: smooth;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        font-family: 'PT Sans Narrow', sans-serif;
+    }
+
+        html::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        html::-webkit-scrollbar-track {
+            background: #f0f0f0;
+        }
+
+        html::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 4px;
+            border: 2px solid #f0f0f0;
+        }
+
+            html::-webkit-scrollbar-thumb:hover {
+                background-color: #555;
+            }
+</style>
+<div class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white shadow-md py-4 px-6">
+        <div class="text-black pt-5">
+            <h1 class="text-3xl font-bold">Welcome Back, <span class="text-green-500">@FirstName</span></h1>
+            <p class="text-black mt-2">@DateTime.Now.ToString("dddd, MMMM dd, yyyy")</p>
         </div>
     </div>
 
-    <!-- Stats Overview -->
-    <div class="container mx-auto px-4 mt-8">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Dashboard Content -->
+    <div class="p-6">
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <!-- Facilities Card -->
-            <div class="bg-gradient-to-br from-green-500 to-green-700 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-sm font-medium text-green-100">Active Facilities</p>
-                        <p class="text-3xl font-bold mt-1">24</p>
-                    </div>
-                    <div class="bg-white bg-opacity-20 p-3 rounded-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-500 bg-opacity-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
                     </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Active Facilities</p>
+                        <h2 class="text-3xl font-bold text-gray-800">@ActiveFacilitiesCount</h2>
+                    </div>
                 </div>
-                <div class="mt-4 pt-4 border-t border-green-400 border-opacity-30">
-                    <a href="/Staff/Facilities" class="text-sm font-medium text-green-100 hover:text-white flex items-center">
-                        View all
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </a>
+                <div class="mt-4">
+                    <a href="/Staff/Facility" class="text-blue-500 hover:text-blue-700 text-sm">Manage Facilities</a>
                 </div>
             </div>
 
             <!-- Events Card -->
-            <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-sm font-medium text-green-100">Today's Events</p>
-                        <p class="text-3xl font-bold mt-1">5</p>
-                    </div>
-                    <div class="bg-white bg-opacity-20 p-3 rounded-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-500 bg-opacity-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                     </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Today's Events</p>
+                        <h2 class="text-3xl font-bold text-gray-800">@TodaysEventsCount</h2>
+                    </div>
                 </div>
-                <div class="mt-4 pt-4 border-t border-green-400 border-opacity-30">
-                    <a href="/Staff/Events" class="text-sm font-medium text-green-100 hover:text-white flex items-center">
-                        View all
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </a>
+                <div class="mt-4">
+                    <a href="/Staff/Event" class="text-blue-500 hover:text-blue-700 text-sm">View Events</a>
                 </div>
             </div>
 
             <!-- Announcements Card -->
-            <div class="bg-gradient-to-br from-teal-500 to-teal-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-sm font-medium text-teal-100">New Announcements</p>
-                        <p class="text-3xl font-bold mt-1">3</p>
-                    </div>
-                    <div class="bg-white bg-opacity-20 p-3 rounded-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-500 bg-opacity-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                         </svg>
                     </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">New Announcements</p>
+                        <h2 class="text-3xl font-bold text-gray-800">@NewAnnouncementsCount</h2>
+                    </div>
                 </div>
-                <div class="mt-4 pt-4 border-t border-teal-400 border-opacity-30">
-                    <a href="/Staff/Announcements" class="text-sm font-medium text-teal-100 hover:text-white flex items-center">
-                        View all
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </a>
+                <div class="mt-4">
+                    <a href="/Staff/Announcements" class="text-blue-500 hover:text-blue-700 text-sm">View Announcements</a>
                 </div>
             </div>
 
             <!-- Requests Card -->
-            <div class="bg-gradient-to-br from-amber-500 to-amber-600 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-sm font-medium text-amber-100">Pending Requests</p>
-                        <p class="text-3xl font-bold mt-1">7</p>
-                    </div>
-                    <div class="bg-white bg-opacity-20 p-3 rounded-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-amber-500 bg-opacity-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Pending Requests</p>
+                        <h2 class="text-3xl font-bold text-gray-800">@PendingRequestsCount</h2>
+                    </div>
                 </div>
-                <div class="mt-4 pt-4 border-t border-amber-400 border-opacity-30">
-                    <a href="/Staff/Requests" class="text-sm font-medium text-amber-100 hover:text-white flex items-center">
-                        View all
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </a>
+                <div class="mt-4">
+                    <a href="/Staff/Request" class="text-blue-500 hover:text-blue-700 text-sm">Review Requests</a>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Main Dashboard Sections -->
-    <div class="container mx-auto px-4 mt-10">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Main Sections -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <!-- Facility Management -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                <div class="bg-green-600 px-6 py-4 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-white flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0v12h8V4H6z" clip-rule="evenodd" />
-                        </svg>
-                        Facility Management
-                    </h3>
-                    <span class="bg-green-100 text-green-500 text-xs font-semibold px-2.5 py-0.5 rounded">5 New</span>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800">Facility Management</h3>
+                    <a href="/Staff/Facility" class="text-blue-500 hover:text-blue-700 text-sm">View All</a>
                 </div>
-                <div class="p-6">
-                    <p class="text-gray-600 mb-4">Manage and monitor facility resources and availability for residents.</p>
-                    <ul class="space-y-3 mb-6">
-                        <li class="flex items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                <p class="text-gray-600 mb-4">Manage and monitor facility resources and availability for residents.</p>
+                <div class="space-y-3 mb-4">
+                    @if (NewReservationsCount > 0)
+                    {
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                             </svg>
-                            <span class="text-gray-700">View facility availability</span>
-                        </li>
-                        <li class="flex items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                            <span class="text-gray-700">@NewReservationsCount new reservation requests</span>
+                        </div>
+                    }
+                    @if (MaintenanceRequestsCount > 0)
+                    {
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                             </svg>
-                            <span class="text-gray-700">Update facility information</span>
-                        </li>
-                        <li class="flex items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-gray-700">Handle maintenance requests</span>
-                        </li>
-                    </ul>
-                    <a href="/Staff/Facilities" class="w-full bg-green-50 hover:bg-green-100 text-green-700 font-medium py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors duration-200">
-                        <span>Manage Facilities</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                    </a>
+                            <span class="text-gray-700">@MaintenanceRequestsCount maintenance requests pending</span>
+                        </div>
+                    }
                 </div>
+                <a href="/Staff/Facility" class="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors duration-200">
+                    <span>Manage Facilities</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </a>
             </div>
 
             <!-- Events -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                <div class="bg-teal-600 px-6 py-4 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-white flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
-                        </svg>
-                        Events
-                    </h3>
-                    <span class="bg-teal-100 text-teal-500 text-xs font-semibold px-2.5 py-0.5 rounded">2 Upcoming</span>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800">Upcoming Events</h3>
+                    <a href="/Staff/Event" class="text-blue-500 hover:text-blue-700 text-sm">View All</a>
                 </div>
-                <div class="p-6">
-                    <p class="text-gray-600 mb-4">Manage upcoming community events and activities for residents.</p>
-                    <ul class="space-y-3 mb-6">
-                        <li class="flex items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-gray-700">Create new events</span>
-                        </li>
-                        <li class="flex items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-gray-700">Update event details</span>
-                        </li>
-                        <li class="flex items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-gray-700">Monitor event attendance</span>
-                        </li>
-                    </ul>
-                    <a href="/Staff/Events" class="w-full bg-teal-50 hover:bg-teal-100 text-teal-700 font-medium py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors duration-200">
-                        <span>Manage Events</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Announcements -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                <div class="bg-green-600 px-6 py-4 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-white flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" clip-rule="evenodd" />
-                        </svg>
-                        Announcements
-                    </h3>
-                    <span class="bg-green-100 text-green-500 text-xs font-semibold px-2.5 py-0.5 rounded">3 Unpublished</span>
-                </div>
-                <div class="p-6">
-                    <p class="text-gray-600 mb-4">Create and manage community announcements and alerts.</p>
-                    <ul class="space-y-3 mb-6">
-                        <li class="flex items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-gray-700">Post new announcements</span>
-                        </li>
-                        <li class="flex items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-gray-700">Edit existing announcements</span>
-                        </li>
-                        <li class="flex items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-gray-700">Remove outdated information</span>
-                        </li>
-                    </ul>
-                    <a href="/Staff/Announcements" class="w-full bg-green-50 hover:bg-green-100 text-green-700 font-medium py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors duration-200">
-                        <span>Manage Announcements</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Community -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                <div class="bg-amber-500 px-6 py-4 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-white flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v1h-3zM4.75 12.094A5.973 5.973 0 004 15v1H1v-1a3 3 0 013.75-2.906z" />
-                        </svg>
-                        Community
-                    </h3>
-                    <span class="bg-amber-100 text-amber-500 text-xs font-semibold px-2.5 py-0.5 rounded">4 New Posts</span>
-                </div>
-                <div class="p-6">
-                    <p class="text-gray-600 mb-4">Monitor and moderate community discussions and concerns.</p>
-                    <ul class="space-y-3 mb-6">
-                        <li class="flex items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-gray-700">Review community posts</span>
-                        </li>
-                        <li class="flex items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-gray-700">Address resident concerns</span>
-                        </li>
-                        <li class="flex items-start">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="text-gray-700">Moderate discussions</span>
-                        </li>
-                    </ul>
-                    <a href="/Staff/Community" class="w-full bg-amber-50 hover:bg-amber-100 text-amber-700 font-medium py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors duration-200">
-                        <span>View Community</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="container mx-auto px-4 mt-10">
-        <div class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="bg-gray-50 px-6 py-4 border-b">
-                <h3 class="text-lg font-semibold text-gray-500 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                    </svg>
-                    Recent Activity
-                </h3>
-            </div>
-            <div class="p-6">
                 <div class="space-y-4">
-                    <div class="flex">
-                        <div class="flex-shrink-0 mr-4">
-                            <div class="h-3 w-3 bg-green-500 rounded-full mt-1.5"></div>
+                    @foreach (var evt in UpcomingEvents)
+                    {
+                        <div class="border-l-4 border-blue-500 pl-4 py-2">
+                            <div class="flex justify-between">
+                                <div>
+                                    <h4 class="text-lg font-semibold text-gray-800">@evt.Name</h4>
+                                    <p class="text-sm text-gray-500">@evt.Description</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-sm font-medium text-gray-700">@evt.StartDate.ToString("MMM dd")</span>
+                                    <p class="text-xs text-gray-500">@evt.StartDate.ToString("h:mm tt")</p>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-500">10:30 AM</p>
-                            <p class="text-gray-500">You approved a reservation request for the Community Center</p>
-                        </div>
-                    </div>
-                    <div class="flex">
-                        <div class="flex-shrink-0 mr-4">
-                            <div class="h-3 w-3 bg-green-500 rounded-full mt-1.5"></div>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">9:15 AM</p>
-                            <p class="text-gray-500">New maintenance request submitted for Pool Area</p>
-                        </div>
-                    </div>
-                    <div class="flex">
-                        <div class="flex-shrink-0 mr-4">
-                            <div class="h-3 w-3 bg-teal-500 rounded-full mt-1.5"></div>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Yesterday, 4:45 PM</p>
-                            <p class="text-gray-500">You published a new announcement about parking restrictions</p>
-                        </div>
-                    </div>
-                    <div class="flex">
-                        <div class="flex-shrink-0 mr-4">
-                            <div class="h-3 w-3 bg-amber-500 rounded-full mt-1.5"></div>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Yesterday, 2:30 PM</p>
-                            <p class="text-gray-500">Responded to resident inquiry about event scheduling</p>
-                        </div>
-                    </div>
+                        
+                    }
                 </div>
-                <div class="mt-6 text-center">
-                    <a href="#" class="text-sm font-medium text-green-600 hover:text-green-500">View all activity</a>
+                <a href="/Staff/Event" class="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors duration-200 mt-4">
+                    <span>Manage Events</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">Recent Activity</h3>
+                <a href="#" class="text-blue-500 hover:text-blue-700 text-sm">View All</a>
+            </div>
+            <div class="space-y-4">
+                @if (RecentActivities != null && RecentActivities.Any())
+                {
+                    @foreach (var activity in RecentActivities)
+                    {
+                        <div class="flex">
+                            <div class="flex-shrink-0 mr-4">
+                                <div class="h-3 w-3 bg-@activity.ColorClass rounded-full mt-1.5"></div>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">@activity.Time</p>
+                                <p class="text-gray-500">@activity.Description</p>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <!-- Fallback to static data if no activity log exists -->
+                    <div class="flex">
+                        <div class="flex-shrink-0 mr-4">
+                            <div class="h-3 w-3 bg-green-500 rounded-full mt-1.5"></div>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">@DateTime.Now.AddHours(-2).ToString("h:mm tt")</p>
+                            <p class="text-gray-500">Approved reservation request for Community Center</p>
+                        </div>
+                    </div>
+                    <div class="flex">
+                        <div class="flex-shrink-0 mr-4">
+                            <div class="h-3 w-3 bg-blue-500 rounded-full mt-1.5"></div>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">@DateTime.Now.AddHours(-4).ToString("h:mm tt")</p>
+                            <p class="text-gray-500">New maintenance request for Pool Area</p>
+                        </div>
+                    </div>
+                }
                 </div>
             </div>
         </div>
     </div>
-</div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <a href="/Staff/Facility" class="bg-gray-50 hover:bg-gray-100 p-4 rounded-lg text-center transition-colors duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <p class="mt-2 font-medium text-gray-700">Add Facility</p>
+                </a>
+                <a href="/Staff/Event" class="bg-gray-50 hover:bg-gray-100 p-4 rounded-lg text-center transition-colors duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <p class="mt-2 font-medium text-gray-700">Create Event</p>
+                </a>
+                <a href="/Staff/Announcement" class="bg-gray-50 hover:bg-gray-100 p-4 rounded-lg text-center transition-colors duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <p class="mt-2 font-medium text-gray-700">Post Announcement</p>
+                </a>
+                <a href="/Staff/Request" class="bg-gray-50 hover:bg-gray-100 p-4 rounded-lg text-center transition-colors duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p class="mt-2 font-medium text-gray-700">Review Requests</p>
+                </a>
+            </div>
+        </div>
+
+
 
 @code {
     private string FirstName { get; set; } = "Staff";
+    
+    // Add properties for storing counts
+    private int ActiveFacilitiesCount { get; set; }
+    private int TodaysEventsCount { get; set; }
+    private int NewAnnouncementsCount { get; set; }
+    private int PendingRequestsCount { get; set; }
+    private int NewReservationsCount { get; set; }
+    private int MaintenanceRequestsCount { get; set; }
+    private List<EventInfo> UpcomingEvents = new List<EventInfo>();
+    // Add collections for recent data
+    
+    
+    // For tracking recent activities
+    // You might want to create an ActivityLog model in your project
+    public class ActivityLog
+    {
+        public string Time { get; set; }
+        public string Description { get; set; }
+        public string ColorClass { get; set; }
+    }
+    
+    private List<ActivityLog> RecentActivities { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -377,6 +323,103 @@
                     FirstName = userDetails.FirstName;
                 }
             }
+        }
+
+        // Fetch counts from database
+        await LoadDashboardData();
+    }
+     public class EventInfo
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public DateTime StartDate { get; set; }
+    }
+
+    private async Task<List<EventInfo>> GetUpcomingEvents()
+    {
+        var now = DateTime.Now;
+
+        // Get upcoming events directly from database with proper filtering
+        var upcomingEvents = await DbContext.Events
+            .OrderBy(e => e.StartsAt)
+            .Take(5)
+            .Select(e => new EventInfo
+                {
+                    Name = e.Name,
+                    Description = e.Description,
+                // Convert DateOnly to DateTime
+                })
+            .ToListAsync();
+
+        return upcomingEvents;
+    }
+    private async Task LoadDashboardData()
+    {
+        try
+        {
+            // Get active facilities count
+            ActiveFacilitiesCount = await DbContext.Set<FacilityModel>()
+                .Where(f => f.Available)
+                .CountAsync();
+
+            // Get today's events
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            TodaysEventsCount = await DbContext.Set<EventModel>()
+                .Where(e => e.StartsAt <= today && e.EndsAt >= today)
+                .CountAsync();
+
+            // Get new announcements (e.g., from the last 7 days)
+            var lastWeek = DateOnly.FromDateTime(DateTime.Today.AddDays(-7));
+            NewAnnouncementsCount = await DbContext.Set<AnnouncementModel>()
+                .Where(a => a.PostedAt >= lastWeek)
+                .CountAsync();
+
+            // Get pending requests
+            PendingRequestsCount = await DbContext.Set<RequestModel>()
+                .Where(r => r.Status == RequestStatus.Pending)
+                .CountAsync();
+
+            // Get upcoming events for display
+            UpcomingEvents = await GetUpcomingEvents();
+
+            // Get counts for facility management section
+            NewReservationsCount = 5; // Replace with actual query
+            MaintenanceRequestsCount = 2; // Replace with actual query
+
+            // For activities, you would ideally have an activity log table
+            // For now we'll create sample data
+            RecentActivities = new List<ActivityLog>
+            {
+                new ActivityLog 
+                { 
+                    Time = DateTime.Now.AddHours(-2).ToString("h:mm tt"),
+                    Description = "Approved reservation request for Community Center",
+                    ColorClass = "green-500"
+                },
+                new ActivityLog 
+                { 
+                    Time = DateTime.Now.AddHours(-4).ToString("h:mm tt"),
+                    Description = "New maintenance request for Pool Area",
+                    ColorClass = "blue-500"
+                },
+                new ActivityLog 
+                { 
+                    Time = "Yesterday, " + DateTime.Now.AddDays(-1).ToString("h:mm tt"),
+                    Description = "Published new announcement about parking",
+                    ColorClass = "purple-500"
+                }
+            };
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions, perhaps log them
+            Console.WriteLine($"Error loading dashboard data: {ex.Message}");
+            
+            // Set fallback values
+            ActiveFacilitiesCount = 0;
+            TodaysEventsCount = 0;
+            NewAnnouncementsCount = 0;
+            PendingRequestsCount = 0;
         }
     }
 }

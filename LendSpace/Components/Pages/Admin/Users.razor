@@ -6,7 +6,36 @@
 @inject UserManager<UserModel> UserManager
 
 <PageTitle>Users</PageTitle>
+<style>
+    body {
+        background-color: whitesmoke;
+    }
 
+    html {
+        scroll-behavior: smooth;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        font-family: 'PT Sans Narrow', sans-serif;
+    }
+
+        html::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        html::-webkit-scrollbar-track {
+            background: #f0f0f0;
+        }
+
+        html::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 4px;
+            border: 2px solid #f0f0f0;
+        }
+
+            html::-webkit-scrollbar-thumb:hover {
+                background-color: #555;
+            }
+</style>
 <main class="w-full h-full p-4">
     <div class="max-w-7xl mx-auto px-4 py-8">
         <div>
@@ -130,11 +159,12 @@
 
     public class UserBodyModel
     {
-        [Required] 
+        [Required]
         public string? Id { get; set; }
         [Required, EmailAddress]
         public string? Email { get; set; }
-        public string? Password { get; set; }
+        [Required]
+        public string? Password { get; set; } // Making Password required for new users
         [Required]
         public string? LastName { get; set; }
         [Required]
@@ -183,20 +213,25 @@
                 LastName = string.Empty,
                 FirstName = string.Empty,
                 MidInitial = string.Empty,
-                RoleId = string.Empty,
+                RoleId = roles?.FirstOrDefault()?.Id ?? string.Empty, // Set default role
             };
         showModal = true;
     }
 
-    private void Edit(string id)
+    private async Task Edit(string id)
     {
         edit = true;
         var user = Context.Users.Find(id);
-        var userRole = Context.UserRoles.FirstOrDefault(e => e.UserId.Equals(user!.Id));
         if (user == null)
         {
             return;
         }
+
+        // Get the user's current role
+        var userRoles = await UserManager.GetRolesAsync(user);
+        var roleName = userRoles.FirstOrDefault() ?? string.Empty;
+        var role = Context.Roles.FirstOrDefault(r => r.Name == roleName);
+
         // Populate the view model using existing user details.
         model = new UserBodyModel
             {
@@ -208,7 +243,7 @@
                 MidInitial = user.MidInitial,
             // Leave the password empty so the admin can update it only if desired.
                 Password = string.Empty,
-                RoleId = userRole?.RoleId ?? string.Empty
+                RoleId = role?.Id ?? string.Empty
             };
         showModal = true;
     }
@@ -228,7 +263,7 @@
         var selectedRole = roles?.FirstOrDefault(r => r.Id == model.RoleId);
         if (selectedRole == null)
         {
-            // Optionally display an error message
+            // Handle case where no role is selected
             return;
         }
 
@@ -240,6 +275,8 @@
             {
                 user.Email = model.Email;
                 user.NormalizedEmail = model.Email!.ToUpper();
+                user.UserName = model.Email; // Set UserName to be the same as Email
+                user.NormalizedUserName = model.Email!.ToUpper(); // Set NormalizedUserName
                 user.LastName = model.LastName;
                 user.FirstName = model.FirstName;
                 user.MidInitial = model.MidInitial;
@@ -261,12 +298,12 @@
                 var addRoleResult = await UserManager.AddToRoleAsync(user, selectedRole.Name!);
                 if (!addRoleResult.Succeeded)
                 {
-                    // Optionally, handle role assignment errors here.
+                    // Handle role assignment errors here.
                 }
                 var updateResult = await UserManager.UpdateAsync(user);
                 if (!updateResult.Succeeded)
                 {
-                    // Optionally handle errors here.
+                    // Handle errors here.
                 }
             }
         }
@@ -278,24 +315,37 @@
                     Id = model.Id!,
                     Email = model.Email,
                     NormalizedEmail = model.Email!.ToUpper(),
+                    UserName = model.Email, // Set UserName to be the same as Email
+                    NormalizedUserName = model.Email!.ToUpper(), // Set NormalizedUserName
                     LastName = model.LastName,
                     FirstName = model.FirstName,
                     MidInitial = model.MidInitial,
-                    Address = model.Address
+                    Address = model.Address,
+                    EmailConfirmed = true, // Set EmailConfirmed to true so the user can log in immediately
+                    SecurityStamp = Guid.NewGuid().ToString() // Add security stamp
                 };
-            var hasher = new PasswordHasher<UserModel>();
-            user.PasswordHash = hasher.HashPassword(user, model.Password!);
+
+            // Hash the password
+            var passwordHasher = new PasswordHasher<UserModel>();
+            user.PasswordHash = passwordHasher.HashPassword(user, model.Password!);
+
+            // Create the user
             var createResult = await UserManager.CreateAsync(user);
-            if (!createResult.Succeeded)
+            if (createResult.Succeeded)
             {
-                // Handle creation errors here.
+                // Assign role to the user
+                await UserManager.AddToRoleAsync(user, selectedRole.Name!);
+
+                // Refresh the user list
+                FetchData();
+                showModal = false;
             }
             else
             {
-                var addRoleResult = await UserManager.AddToRoleAsync(user, selectedRole.Name!);
-                if (!addRoleResult.Succeeded)
+                // Handle creation errors
+                foreach (var error in createResult.Errors)
                 {
-                    // Handle role assignment errors here.
+                    Console.WriteLine($"Error: {error.Description}");
                 }
             }
         }

@@ -1,0 +1,519 @@
+﻿@page "/User/Reservations"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = "UserOnly")]
+
+@using LendSpace.Models
+@using LendSpace.Models.Enums
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Authorization
+@using Blazored.Toast.Services
+@inject ApplicationDbContext Context
+@inject UserManager<UserModel> UserManager
+@inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IToastService ToastService
+
+<PageTitle>My Reservations</PageTitle>
+<style>
+    body {
+        background-color: whitesmoke;
+    }
+
+    html {
+        scroll-behavior: smooth;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        font-family: 'PT Sans Narrow', sans-serif;
+    }
+
+        html::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        html::-webkit-scrollbar-track {
+            background: #f0f0f0;
+        }
+
+        html::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 4px;
+            border: 2px solid #f0f0f0;
+        }
+
+            html::-webkit-scrollbar-thumb:hover {
+                background-color: #555;
+            }
+</style>
+
+<div class="text-center">
+    <h2 class="text-3xl font-bold mb-2">My Reservations</h2>
+    <p class="text-gray-600">View your booked facilities and request additional services</p>
+    <div class="h-1 w-20 bg-green-500 mx-auto mt-4"></div>
+</div>
+
+<div class="min-h-screen w-full px-8">
+    <div class="max-w-6xl mx-auto mt-8">
+        @if (userReservations == null)
+        {
+            <div class="flex justify-center items-center h-64">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+            </div>
+        }
+        else if (!userReservations.Any())
+        {
+            <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-900">No reservations found</h3>
+                <p class="mt-2 text-gray-600">You don't have any facility reservations yet.</p>
+                <div class="mt-6">
+                    <a href="/User/Facility" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                        Browse facilities
+                    </a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <h3 class="text-xl font-semibold mb-4">Your Active Reservations</h3>
+            <div class="grid grid-cols-1 gap-6">
+                @foreach (var reservation in userReservations)
+                {
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="flex flex-col md:flex-row">
+                            <!-- Facility Image -->
+                            <div class="w-full md:w-1/3 h-64 md:h-auto relative">
+
+                                <img src="@Assets["uploads/" + reservation.Facility.ImagePath]"
+                                     alt="@reservation.Facility.Name"
+                                     class="w-full h-full object-cover" />
+                                <!-- Status Badge -->
+                                <div class="absolute top-4 right-4">
+                                    <span class="@GetReservationStatusBadge(reservation.Status)">
+                                        @reservation.Status.ToString()
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Reservation Details -->
+                            <div class="p-6 w-full md:w-2/3">
+                                <div class="flex justify-between items-start">
+                                    <h2 class="text-2xl font-bold text-gray-800">@reservation.Facility.Name</h2>
+                                    <p class="text-lg font-semibold text-green-600">$@reservation.Facility.Pricing<span class="text-sm text-gray-500">/night</span></p>
+                                </div>
+
+                                <div class="mt-4 space-y-3">
+                                    <p class="text-gray-600"><span class="font-medium">Purpose:</span> @reservation.Title</p>
+                                    <p class="text-gray-600"><span class="font-medium">Dates:</span> @reservation.StartsAt.ToString("MMM dd, yyyy") - @reservation.EndsAt.ToString("MMM dd, yyyy")</p>
+                                    <p class="text-gray-600"><span class="font-medium">Guests:</span> @reservation.GuestCount</p>
+                                    <p class="text-gray-600"><span class="font-medium">Total:</span> $@reservation.TotalAmount.ToString("0.00")</p>
+                                </div>
+
+                                <div class="mt-6 flex flex-wrap gap-3">
+                                    @if (reservation.Status == ReservationStatus.Approved)
+                                    {
+                                        <button @onclick="() => OpenRequestServiceModal(reservation)"
+                                                class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm font-medium transition-colors">
+                                            Request Service
+                                        </button>
+                                    }
+                                    <button @onclick="() => ShowReservationDetails(reservation)"
+                                            class="border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 py-2 px-4 rounded-md text-sm font-medium transition-colors">
+                                        View Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (serviceRequests.Any())
+            {
+                <h3 class="text-xl font-semibold mb-4 mt-10">Your Service Requests</h3>
+                <div class="grid grid-cols-1 gap-4">
+                    @foreach (var request in serviceRequests)
+                    {
+                        <div class="bg-white rounded-lg shadow-md p-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="text-lg font-medium">@request.Title</h4>
+                                <span class="@GetRequestStatusBadge(request.Status)">
+                                    @request.Status.ToString()
+                                </span>
+                            </div>
+                            <p class="text-gray-600 mb-3">@request.Description</p>
+                            <div class="flex justify-between items-center text-sm text-gray-500">
+                                <p>Service: @request.Service.Name</p>
+                                <p>Scheduled: @request.StartsAt.ToString("MMM dd, yyyy")</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<!-- Service Request Modal -->
+@if (showRequestServiceModal && selectedReservation != null)
+{
+    <div class="fixed inset-0 bg-gray-500/50 flex items-center justify-center z-40"
+         @onclick="CloseRequestServiceModal">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4"
+             @onclick:stopPropagation="true">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Request Service for @selectedReservation.Facility.Name</h2>
+                <button @onclick="CloseRequestServiceModal" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Service Type Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Service Type</label>
+                    <select @bind="serviceRequest.ServiceId" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        <option value="">-- Select a service --</option>
+                        @foreach (var service in availableServices)
+                        {
+                            <option value="@service.Id">@service.Name - $@service.Pricing</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Request Title -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                    <input type="text" @bind="serviceRequest.Title" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="e.g. Room Cleaning Request" />
+                </div>
+
+                <!-- Request Description -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea @bind="serviceRequest.Description" class="w-full border border-gray-300 rounded-md px-3 py-2 h-24" placeholder="Please describe your service request in detail..."></textarea>
+                </div>
+
+                <!-- Date Selection -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <input type="date"
+                               value="@serviceRequest.StartsAt.ToString("yyyy-MM-dd")"
+                               @onchange="@(e => UpdateServiceRequestDate(e))"
+                               class="w-full border border-gray-300 rounded-md px-3 py-2"
+                               min="@DateTime.Now.ToString("yyyy-MM-dd")"
+                               max="@selectedReservation.EndsAt.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                        <select @bind="serviceTime" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                            <option value="08:00">8:00 AM</option>
+                            <option value="09:00">9:00 AM</option>
+                            <option value="10:00">10:00 AM</option>
+                            <option value="11:00">11:00 AM</option>
+                            <option value="12:00">12:00 PM</option>
+                            <option value="13:00">1:00 PM</option>
+                            <option value="14:00">2:00 PM</option>
+                            <option value="15:00">3:00 PM</option>
+                            <option value="16:00">4:00 PM</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <button @onclick="CloseRequestServiceModal" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button @onclick="SubmitServiceRequest" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled="@(!IsServiceRequestValid())">
+                    Submit Request
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Confirmation Modal -->
+@if (showConfirmationModal)
+{
+    <div class="fixed inset-0 bg-gray-500/50 flex items-center justify-center z-50"
+         @onclick="CloseConfirmationModal">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4 text-center"
+             @onclick:stopPropagation="true">
+            <div class="mb-4">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                    <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Service Request Submitted!</h3>
+            <p class="text-gray-500 mb-6">Your service request has been submitted successfully. Staff will review your request shortly.</p>
+            <div class="flex justify-center">
+                <button @onclick="CloseConfirmationModal" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md font-medium">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private string currentUserId;
+    private List<ReservationWithFacility> userReservations;
+    private List<RequestWithService> serviceRequests;
+    private List<ServiceModel> availableServices;
+    private ReservationWithFacility selectedReservation;
+    private bool showRequestServiceModal = false;
+    private bool showConfirmationModal = false;
+    private string serviceTime = "09:00";
+
+    // Model for submitting a service request
+    private RequestModel serviceRequest = new RequestModel
+        {
+            Id = Guid.NewGuid().ToString(),
+            Status = RequestStatus.Pending
+        };
+
+    // Custom class to join Reservation with Facility data
+    private class ReservationWithFacility
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public DateOnly StartsAt { get; set; }
+        public DateOnly EndsAt { get; set; }
+        public int GuestCount { get; set; }
+        public decimal TotalAmount { get; set; }
+        public ReservationStatus Status { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public FacilityModel Facility { get; set; }
+    }
+
+    // Custom class to join Request with Service data
+    private class RequestWithService
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public DateOnly StartsAt { get; set; }
+        public DateOnly EndsAt { get; set; }
+        public RequestStatus Status { get; set; }
+        public ServiceModel Service { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Get current user ID
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+        currentUserId = user?.Id;
+
+        // Load data
+        await LoadUserReservations();
+        await LoadUserServiceRequests();
+        LoadAvailableServices();
+    }
+
+    private async Task LoadUserReservations()
+    {
+        if (string.IsNullOrEmpty(currentUserId))
+            return;
+
+        // Get reservations with facility data
+        var reservations = await Context.Reservations
+            .Where(r => r.UserId == currentUserId)
+            .Join(
+                Context.Facility,
+                r => r.FacilityId,
+                f => f.Id,
+                (r, f) => new ReservationWithFacility
+                    {
+                        Id = r.Id,
+                        Title = r.Title,
+                        Description = r.Description,
+                        StartsAt = r.StartsAt,
+                        EndsAt = r.EndsAt,
+                        GuestCount = r.GuestCount,
+                        TotalAmount = r.TotalAmount,
+                        Status = r.Status,
+                        CreatedAt = r.CreatedAt,
+                        Facility = f
+                    }
+            )
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync();
+
+        userReservations = reservations;
+    }
+
+    private async Task LoadUserServiceRequests()
+    {
+        if (string.IsNullOrEmpty(currentUserId))
+            return;
+
+        // Get service requests with service data
+        var requests = await Context.Requests
+            .Where(r => r.UserId == currentUserId)
+            .Join(
+                Context.Services,
+                r => r.ServiceId,
+                s => s.Id,
+                (r, s) => new RequestWithService
+                    {
+                        Id = r.Id,
+                        Title = r.Title,
+                        Description = r.Description,
+                        StartsAt = r.StartsAt,
+                        EndsAt = r.EndsAt,
+                        Status = r.Status,
+                        Service = s
+                    }
+            )
+            .ToListAsync();
+
+        serviceRequests = requests;
+    }
+
+    private void LoadAvailableServices()
+    {
+        // Get available services
+        availableServices = Context.Services
+            .Where(s => s.Available)
+            .ToList();
+    }
+
+    private void ShowReservationDetails(ReservationWithFacility reservation)
+    {
+        // Navigate to reservation details page (you could implement this)
+        // NavManager.NavigateTo($"/User/Reservation/{reservation.Id}");
+
+        // For now, just show a toast message
+        ToastService.ShowInfo("Viewing reservation details is not implemented yet.");
+    }
+
+    private void OpenRequestServiceModal(ReservationWithFacility reservation)
+    {
+        selectedReservation = reservation;
+
+        // Initialize new service request
+        serviceRequest = new RequestModel
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = currentUserId,
+                StartsAt = DateOnly.FromDateTime(DateTime.Now.Date),
+                EndsAt = DateOnly.FromDateTime(DateTime.Now.Date),
+                Status = RequestStatus.Pending
+            };
+
+        showRequestServiceModal = true;
+    }
+
+    private void CloseRequestServiceModal()
+    {
+        showRequestServiceModal = false;
+    }
+
+    private bool IsServiceRequestValid()
+    {
+        return !string.IsNullOrWhiteSpace(serviceRequest.ServiceId) &&
+               !string.IsNullOrWhiteSpace(serviceRequest.Title) &&
+               !string.IsNullOrWhiteSpace(serviceRequest.Description);
+    }
+
+    // New method to handle date changes
+    private void UpdateServiceRequestDate(ChangeEventArgs e)
+    {
+        if (e.Value != null && DateTime.TryParse(e.Value.ToString(), out DateTime selectedDate))
+        {
+            serviceRequest.StartsAt = DateOnly.FromDateTime(selectedDate);
+        }
+    }
+
+    private async Task SubmitServiceRequest()
+    {
+        if (!IsServiceRequestValid())
+            return;
+
+        try
+        {
+            // Add time to the selected date
+            var dateTime = serviceRequest.StartsAt.ToDateTime(TimeOnly.Parse(serviceTime));
+            serviceRequest.StartsAt = DateOnly.FromDateTime(dateTime);
+            serviceRequest.EndsAt = serviceRequest.StartsAt; // For services, end date is same as start date
+
+            // Save service request to database
+            Context.Requests.Add(serviceRequest);
+
+            // Get the service details to calculate the cost
+            var service = await Context.Services.FindAsync(serviceRequest.ServiceId);
+            if (service != null)
+            {
+                // Create a billing record for this service request
+                var billing = new BillingModel
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Name = $"Service Request: {service.Name} - {serviceRequest.Title}",
+                        Amount = service.Pricing,
+                        UserId = currentUserId,
+                        Status = BillingStatus.Unpaid,
+                        IssuedAt = DateOnly.FromDateTime(DateTime.Now)
+                    };
+
+                // Save billing to database
+                Context.Billing.Add(billing);
+            }
+
+            await Context.SaveChangesAsync();
+
+            // Show confirmation and close modal
+            CloseRequestServiceModal();
+            showConfirmationModal = true;
+
+            // Reload service requests
+            await LoadUserServiceRequests();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error submitting service request: {ex.Message}");
+        }
+    }
+
+    private void CloseConfirmationModal()
+    {
+        showConfirmationModal = false;
+    }
+
+    private string GetReservationStatusBadge(ReservationStatus status) =>
+        status switch
+        {
+            ReservationStatus.Pending =>
+                "px-3 py-1 text-xs font-bold text-yellow-800 bg-yellow-100 rounded-full",
+            ReservationStatus.Approved =>
+                "px-3 py-1 text-xs font-bold text-green-800 bg-green-100 rounded-full",
+            ReservationStatus.Rejected =>
+                "px-3 py-1 text-xs font-bold text-red-800 bg-red-100 rounded-full",
+            ReservationStatus.Completed =>
+                "px-3 py-1 text-xs font-bold text-blue-800 bg-blue-100 rounded-full",
+            _ => "px-3 py-1 text-xs font-bold text-gray-800 bg-gray-100 rounded-full"
+        };
+
+    private string GetRequestStatusBadge(RequestStatus status) =>
+        status switch
+        {
+            RequestStatus.Pending =>
+                "px-3 py-1 text-xs font-bold text-yellow-800 bg-yellow-100 rounded-full",
+            RequestStatus.Approved =>
+                "px-3 py-1 text-xs font-bold text-green-800 bg-green-100 rounded-full",
+            RequestStatus.Completed =>
+                "px-3 py-1 text-xs font-bold text-blue-800 bg-blue-100 rounded-full",
+
+            RequestStatus.Cancelled =>
+                "px-3 py-1 text-xs font-bold text-red-800 bg-red-100 rounded-full",
+            _ => "px-3 py-1 text-xs font-bold text-gray-800 bg-gray-100 rounded-full"
+        };
+}

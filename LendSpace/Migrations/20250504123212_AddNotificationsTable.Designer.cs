@@ -3,6 +3,7 @@ using System;
 using LendSpace.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LendSpace.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250504123212_AddNotificationsTable")]
+    partial class AddNotificationsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.3");
@@ -185,18 +188,12 @@ namespace LendSpace.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateOnly>("EndsAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateOnly>("StartsAt")
+                    b.Property<DateOnly>("StartedAt")
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -207,19 +204,15 @@ namespace LendSpace.Migrations
                         {
                             Id = "test-event-0001",
                             Description = "Home Owners Association Anniversary",
-                            EndsAt = new DateOnly(2025, 4, 6),
                             Name = "Anniversary",
-                            StartsAt = new DateOnly(2025, 4, 6),
-                            Status = 0
+                            StartedAt = new DateOnly(2025, 4, 6)
                         },
                         new
                         {
                             Id = "test-event-0002",
                             Description = "Test Event Description",
-                            EndsAt = new DateOnly(2025, 4, 6),
                             Name = "Test Event 1",
-                            StartsAt = new DateOnly(2025, 4, 6),
-                            Status = 0
+                            StartedAt = new DateOnly(2025, 4, 15)
                         });
                 });
 
@@ -533,8 +526,8 @@ namespace LendSpace.Migrations
                             Id = "test-user-0001",
                             AccessFailedCount = 0,
                             Address = "Cebu City",
-                            ConcurrencyStamp = "adeb9886-59bc-48e3-b1a0-0f98197f0072",
-                            CreatedDate = new DateTime(2025, 5, 3, 8, 47, 54, 575, DateTimeKind.Utc).AddTicks(8154),
+                            ConcurrencyStamp = "1f62256e-1d1c-4d4b-860c-f7d8dd6c9a4e",
+                            CreatedDate = new DateTime(2025, 5, 4, 12, 32, 10, 915, DateTimeKind.Utc).AddTicks(7207),
                             Email = "user1@email.com",
                             EmailConfirmed = false,
                             FirstName = "Ian John",
@@ -543,9 +536,9 @@ namespace LendSpace.Migrations
                             MidInitial = "L",
                             NormalizedEmail = "USER1@EMAIL.COM",
                             NormalizedUserName = "USER1@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEHDQdPMK2WLo6Dyy/Idxj3oYYkzEzlQcFokopgAUIg8WN6ndsOktZ3rM7Bg+bqkApQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAECtSh0+YT+XZjsJaHNuUVxd5b5Xy23kqismgPMlCcbIzl9MYAFljMzRbtsPfArPkMQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "dfffa42d-3066-4227-ba6a-c2c586935ae0",
+                            SecurityStamp = "4683e0af-a132-4af0-8632-4a8212f096e9",
                             TwoFactorEnabled = false,
                             UserName = "user1@email.com"
                         },
@@ -554,8 +547,8 @@ namespace LendSpace.Migrations
                             Id = "test-user-0002",
                             AccessFailedCount = 0,
                             Address = "Basey, Samar",
-                            ConcurrencyStamp = "5c73fc66-b15b-4a64-8253-19322e4bd15f",
-                            CreatedDate = new DateTime(2025, 5, 3, 8, 47, 54, 624, DateTimeKind.Utc).AddTicks(9094),
+                            ConcurrencyStamp = "881b50a2-d21f-4477-8f0e-8c0b9f654803",
+                            CreatedDate = new DateTime(2025, 5, 4, 12, 32, 11, 53, DateTimeKind.Utc).AddTicks(7261),
                             Email = "user2@email.com",
                             EmailConfirmed = false,
                             FirstName = "Christian",
@@ -564,9 +557,9 @@ namespace LendSpace.Migrations
                             MidInitial = "D",
                             NormalizedEmail = "USER2@EMAIL.COM",
                             NormalizedUserName = "USER2@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEH+ksXJye3OubAPczofI1Fl/rb00Xnmp55Fgs6XpkCfTOooCJ6a77grhpvCaLhZfwA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAELcujlQ3AxN+UXXBdnrnVGa5zsdTc8IilRDXziKkWoiy+6wNQou7B6DMurUPy6i1fg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "ef9a6824-ce2d-4d5b-8168-cce50334dd5a",
+                            SecurityStamp = "5c6ffffb-cd2b-4b59-afda-44a30f203b53",
                             TwoFactorEnabled = false,
                             UserName = "user2@email.com"
                         },
@@ -575,8 +568,8 @@ namespace LendSpace.Migrations
                             Id = "test-admin-0001",
                             AccessFailedCount = 0,
                             Address = "123 Admin St.",
-                            ConcurrencyStamp = "824448e5-0755-4370-ab2e-2cea9c17b4f9",
-                            CreatedDate = new DateTime(2025, 5, 3, 8, 47, 54, 670, DateTimeKind.Utc).AddTicks(1241),
+                            ConcurrencyStamp = "4683dce9-5fb9-4919-80e7-6f4ce8e5dddc",
+                            CreatedDate = new DateTime(2025, 5, 4, 12, 32, 11, 138, DateTimeKind.Utc).AddTicks(7214),
                             Email = "admin@email.com",
                             EmailConfirmed = false,
                             FirstName = "John",
@@ -585,9 +578,9 @@ namespace LendSpace.Migrations
                             MidInitial = "A",
                             NormalizedEmail = "ADMIN@EMAIL.COM",
                             NormalizedUserName = "ADMIN@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEEr338kxk9676R6yrznytIWnQsWO7Rq9F5BvkCCyxRF/xkMpSMD67W6lYF+IrdaNsg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEILyKK/eKQfDc9d6zOlSHQVBAjk0NdK9TL1BsYxDc2ZO5BVHJoGQk0IfvPLH4DkMPw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "8324d250-a0ae-4145-bb35-905d8deb84b8",
+                            SecurityStamp = "826ce03a-e6f5-449e-926b-5f5e93010c3f",
                             TwoFactorEnabled = false,
                             UserName = "admin@email.com"
                         },
@@ -596,8 +589,8 @@ namespace LendSpace.Migrations
                             Id = "test-staff-0001",
                             AccessFailedCount = 0,
                             Address = "123 Staff St.",
-                            ConcurrencyStamp = "0eff0f42-b31f-4159-8ac0-e457ff03a02e",
-                            CreatedDate = new DateTime(2025, 5, 3, 8, 47, 54, 713, DateTimeKind.Utc).AddTicks(9305),
+                            ConcurrencyStamp = "691a3ab4-9591-4377-acc7-bf23eb38737f",
+                            CreatedDate = new DateTime(2025, 5, 4, 12, 32, 11, 215, DateTimeKind.Utc).AddTicks(4553),
                             Email = "staff@email.com",
                             EmailConfirmed = false,
                             FirstName = "Jane",
@@ -606,9 +599,9 @@ namespace LendSpace.Migrations
                             MidInitial = "B",
                             NormalizedEmail = "STAFF@EMAIL.COM",
                             NormalizedUserName = "STAFF@EMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPVx/iy3RTSAcVv4vbruP3gXXvGkfOv/ea2pIVgd37hpp2DVfaogZuUMBRNX8Sz/RQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEAKf/ri3U8kKbM7v41xBrfdrIlzuwEM0nqztyMXdd6XtBoqkniK+ItSI1gR4CVnC3A==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "cc969a4d-32de-4479-8990-cd75a645af9f",
+                            SecurityStamp = "3fcf5f76-449b-44e2-be0c-b70a28d31dd5",
                             TwoFactorEnabled = false,
                             UserName = "staff@email.com"
                         });

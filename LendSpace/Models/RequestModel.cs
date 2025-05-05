@@ -1,45 +1,34 @@
-﻿using LendSpace.Models.Enums;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using LendSpace.Models.Enums;
 
 namespace LendSpace.Models
 {
-    /// <summary>
-    /// Service Request Model, to request a specific service to the subdivision.
-    /// </summary>
     public class RequestModel
     {
         [Key]
         public string? Id { get; set; }
 
         [Required]
-        public required string Title { get; set; }
+        public string? Title { get; set; }
 
         [Required]
-        public required string Description { get; set; }
+        public string? Description { get; set; }
 
         [Required]
-        public required DateOnly StartsAt { get; set; }
+        public DateOnly StartsAt { get; set; }
 
         [Required]
-        public required DateOnly EndsAt { get; set; }
+        public DateOnly EndsAt { get; set; }
 
         [Required]
-        public required RequestStatus Status { get; set; }
-
-
-        [Required]
-        public required string ServiceId { get; set; }
+        public RequestStatus Status { get; set; }
 
         [Required]
-        public required string UserId { get; set; }
-
-        /// <summary>
-        /// The service requested.
-        /// </summary>
+        public string? ServiceId { get; set; }
         public ServiceModel? Service { get; set; }
-        /// <summary>
-        /// The user who requested for the particular service.
-        /// </summary>
+
+        [Required]
+        public string? UserId { get; set; }
         public UserModel? User { get; set; }
     }
 }
