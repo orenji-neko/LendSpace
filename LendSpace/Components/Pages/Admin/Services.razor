@@ -6,7 +6,36 @@
 @inject DialogManager DialogManager
 
 <PageTitle>Services</PageTitle>
+<style>
+	body {
+		background-color: whitesmoke;
+	}
 
+	html {
+		scroll-behavior: smooth;
+		overflow-y: scroll;
+		overflow-x: hidden;
+		font-family: 'PT Sans Narrow', sans-serif;
+	}
+
+		html::-webkit-scrollbar {
+			width: 8px;
+		}
+
+		html::-webkit-scrollbar-track {
+			background: #f0f0f0;
+		}
+
+		html::-webkit-scrollbar-thumb {
+			background-color: #888;
+			border-radius: 4px;
+			border: 2px solid #f0f0f0;
+		}
+
+			html::-webkit-scrollbar-thumb:hover {
+				background-color: #555;
+			}
+</style>
 <main class="w-full h-full p-4">
 	<div class="max-w-7xl mx-auto px-4 py-8">
 		<div class="">
@@ -249,8 +278,6 @@
 					"px-3 py-1 text-xs font-bold text-green-800 bg-green-100 rounded-full",
 			ReservationStatus.Completed =>
 					"px-3 py-1 text-xs font-bold text-blue-800 bg-blue-100 rounded-full",
-			ReservationStatus.Failed =>
-					"px-3 py-1 text-xs font-bold text-red-800 bg-red-100 rounded-full",
 			ReservationStatus.Cancelled =>
 					"px-3 py-1 text-xs font-bold text-red-800 bg-red-100 rounded-full",
 			_ => string.Empty

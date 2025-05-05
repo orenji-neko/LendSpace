@@ -1,8 +1,19 @@
 ﻿@inherits LayoutComponentBase
+@using Blazored.Toast
+@using Blazored.Toast.Services
+@using Blazored.Toast.Configuration 
 
 <DialogComponent />
 
 <div class="w-screen h-screen flex flex-col">
-	<Navbar />
-	@Body
+    <Navbar @rendermode="RenderMode.InteractiveServer" />
+    @Body
+    <BlazoredToasts Position="ToastPosition.BottomRight"
+                    Timeout="5"
+                    IconType="IconType.FontAwesome"
+                    SuccessClass="success-toast-override"
+                    SuccessIcon="fa fa-check"
+                    ErrorIcon="fa fa-times"
+                    InfoIcon="fa fa-info"
+                    WarningIcon="fa fa-exclamation" />
 </div>

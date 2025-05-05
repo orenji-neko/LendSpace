@@ -365,3 +365,4 @@ FodyWeavers.xsd
 # Tailwind
 **/tailwindcss.exe
 /LendSpace/tailwindcss.exe
+/LendSpace/database.db-shm
