@@ -8,6 +8,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Components.Authorization
 @using Blazored.Toast.Services
+@using System.Linq
 @inject ApplicationDbContext Context
 @inject UserManager<UserModel> UserManager
 @inject NavigationManager NavManager
@@ -72,14 +73,15 @@
 	</header>
 
 	<!-- Facilities Grid -->
-	<div class="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-1 mt-5 gap-6 px-20 items-center">
+	<!-- Facilities Grid -->
+	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-5 gap-6 px-6 items-center">
 
 		@foreach (var facility in filteredFacilities!)
 		{
-			<div class="bg-white rounded-lg shadow-md overflow-hidden">
+			<div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
 				<!-- Facility Card Content -->
-				<div class="flex">
-					<div class="relative h-48 overflow-hidden w-150 h-80">
+				<div class="flex flex-col">
+					<div class="relative h-48 overflow-hidden">
 						<img src="@Assets["uploads/" + facility.ImagePath]"
 							 alt="@facility.Name"
 							 class="w-full h-full object-cover" />
@@ -89,20 +91,51 @@
 							</span>
 						</div>
 						<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-							<h3 class="text-xl font-semibold text-white">@facility.Name</h3>
+							<h3 class="text-lg font-semibold text-white">@facility.Name</h3>
 						</div>
 					</div>
-					<div class="p-4 w-50">
+					<div class="p-4">
 						<div class="flex items-center text-sm text-gray-500 mb-2">
 							<i class="fas fa-map-marker-alt mr-1.5 text-xs"></i>
 							<span class="truncate">@facility.Address</span>
 						</div>
+						<div class="flex items-center text-sm mb-2">
+							@{
+								var avgRating = GetAverageRating(facility.Id);
+								var reviewCount = Context.Reviews.Count(r => r.FacilityId == facility.Id);
+							}
+							<div class="flex text-yellow-500">
+								@for (int i = 1; i <= 5; i++)
+								{
+									if (i <= Math.Floor(avgRating))
+									{
+										<span class="text-yellow-500">★</span>
+									}
+									else if (i - Math.Floor(avgRating) < 1 && i - Math.Floor(avgRating) > 0)
+									{
+										<!-- Use a partially filled star effect -->
+										<span class="text-gray-300 relative">
+											★
+											<span class="absolute inset-0 overflow-hidden text-yellow-500" style="width: @(Math.Round((avgRating - Math.Floor(avgRating)) * 100))%">★</span>
+										</span>
+									}
+									else
+									{
+										<span class="text-gray-300">★</span>
+									}
+								}
+							</div>
+							<span class="ml-1 text-gray-600">@avgRating.ToString("0.0") (@reviewCount)</span>
+						</div>
 						<p class="text-gray-700 text-sm line-clamp-2 mb-3">@facility.Description</p>
 
-						<!-- View Facility Button -->
-						<button @onclick="() => OpenFacilityModal(facility)" class="mt-4 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md text-sm font-medium transition-colors">
-							View Facility
-						</button>
+						<div class="flex items-center justify-between mt-2">
+							<span class="font-bold text-green-600">$@facility.Pricing<span class="text-sm font-normal text-gray-500">/night</span></span>
+							<!-- View Facility Button -->
+							<button @onclick="() => OpenFacilityModal(facility)" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md text-sm font-medium transition-colors">
+								View
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -181,9 +214,151 @@
 						<p class="text-xl sm:text-2xl font-bold">$@selectedFacility.Pricing <span class="text-gray-500 text-sm font-normal">/night</span></p>
 						<p class="text-sm text-gray-500">+ taxes and fees</p>
 					</div>
+					
 					<button @onclick="OpenPaymentModal" class="bg-green-600 hover:bg-green-700 text-white py-2 sm:py-3 px-4 sm:px-6 rounded-md font-medium">
 						Book Now
 					</button>
+				</div>
+				<div class="border-t border-gray-200 pt-4 mt-4">
+					<div class="flex justify-between items-center mb-4">
+						<h3 class="text-lg font-semibold">Reviews</h3>
+						<div class="flex items-center">
+							<div class="flex items-center mr-2">
+								@{
+									var avgRating = GetAverageRating(selectedFacility.Id);
+								}
+								<span class="text-yellow-500 flex">
+									@for (int i = 1; i <= 5; i++)
+									{
+										if (i <= Math.Floor(avgRating))
+										{
+											<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+												<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+											</svg>
+										}
+										else if (i - Math.Floor(avgRating) < 1 && i - Math.Floor(avgRating) > 0)
+										{
+											<!-- Half star -->
+											<div class="relative">
+												<svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+													<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+												</svg>
+												<div class="absolute inset-0 overflow-hidden" style="width: @(Math.Round((avgRating - Math.Floor(avgRating)) * 100))%">
+													<svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+														<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+													</svg>
+												</div>
+											</div>
+										}
+										else
+										{
+											<svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+												<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+											</svg>
+										}
+									}
+								</span>
+								<span class="ml-1 text-gray-700">@avgRating.ToString("0.0") (@facilityReviews.Count)</span>
+							</div>
+							<button @onclick="() => { showReviewForm = true; isEditingReview = false; InitNewReview(); }"
+									class="text-sm text-green-600 hover:text-green-700 font-medium">
+								Write a Review
+							</button>
+						</div>
+					</div>
+
+					<!-- Review Form -->
+					@if (showReviewForm)
+					{
+						<div class="bg-gray-50 p-4 rounded-lg mb-4">
+							<div class="flex justify-between items-center mb-3">
+								<h4 class="font-medium">@(isEditingReview ? "Edit Your Review" : "Write a Review")</h4>
+								<button @onclick="() => showReviewForm = false" class="text-gray-500 hover:text-gray-700">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								</button>
+							</div>
+
+							<div class="mb-3">
+								<label class="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+								<div class="flex">
+									@for (int i = 1; i <= 5; i++)
+									{
+										int ratingValue = i;
+										<button type="button" @onclick="() => selectedRating = ratingValue"
+												class="text-2xl focus:outline-none mr-1">
+											<span class="@(selectedRating >= ratingValue ? "text-yellow-500" : "text-gray-300")">★</span>
+										</button>
+									}
+								</div>
+							</div>
+
+							<div class="mb-3">
+								<label class="block text-sm font-medium text-gray-700 mb-1">Comment</label>
+								<textarea @bind="newReview.Comment"
+										  class="w-full border border-gray-300 rounded-md px-3 py-2 h-24"
+										  placeholder="Share your experience with this facility..."></textarea>
+								@if (!string.IsNullOrEmpty(reviewError))
+								{
+									<p class="text-red-500 text-sm mt-1">@reviewError</p>
+								}
+							</div>
+
+							<div class="flex justify-end">
+								<button @onclick="SubmitReview"
+										class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm font-medium">
+									@(isEditingReview ? "Update Review" : "Submit Review")
+								</button>
+							</div>
+						</div>
+					}
+
+					<!-- Reviews List -->
+					<div class="space-y-4 max-h-64 overflow-y-auto">
+						@if (facilityReviews.Count == 0)
+						{
+							<p class="text-gray-500 italic">No reviews yet. Be the first to review this facility!</p>
+						}
+						else
+						{
+							@foreach (var review in facilityReviews)
+							{
+								<div class="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+									<div class="flex justify-between">
+										<div class="flex items-center">
+											<div class="font-medium">@review.User.Name</div>
+											<div class="text-gray-500 text-sm ml-2">
+												@review.CreatedAt.ToString("MMM dd, yyyy")
+												@if (review.UpdatedAt.HasValue)
+												{
+													<span class="italic">(edited)</span>
+												}
+											</div>
+										</div>
+										@if (CanEditReview(review.UserId))
+										{
+											<div class="flex space-x-2">
+												<button @onclick="() => EditReview(review)" class="text-blue-600 hover:text-blue-800 text-sm">
+													Edit
+												</button>
+												<button @onclick="() => DeleteReview(review.Id)" class="text-red-600 hover:text-red-800 text-sm">
+													Delete
+												</button>
+											</div>
+										}
+									</div>
+									<div class="flex text-yellow-500 mt-1">
+										@for (int i = 1; i <= 5; i++)
+										{
+											<span class="@(review.Rating >= i ? "text-yellow-500" : "text-gray-300")">★</span>
+										}
+									</div>
+									<p class="text-gray-700 mt-1">@review.Comment</p>
+								</div>
+							}
+						}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -329,6 +504,115 @@
 	private bool showFacilityModal = false;
 	private bool showPaymentModal = false;
 	private bool showConfirmationModal = false;
+	private List<ReviewModel> facilityReviews = new List<ReviewModel>();
+	private ReviewModel newReview = new ReviewModel();
+	private bool showReviewForm = false;
+	private bool isEditingReview = false;
+	private string reviewError = string.Empty;
+	private int selectedRating = 0;
+
+	private double GetAverageRating(string facilityId)
+	{
+		var reviews = Context.Reviews.Where(r => r.FacilityId == facilityId).ToList();
+		if (reviews.Count == 0) return 0;
+		return Math.Round(reviews.Average(r => r.Rating), 1);
+	}
+
+	private void LoadReviews(string facilityId)
+	{
+		facilityReviews = Context.Reviews
+			.Where(r => r.FacilityId == facilityId)
+			.Include(r => r.User)
+			.OrderByDescending(r => r.CreatedAt)
+			.ToList();
+	}
+
+	private void InitNewReview()
+	{
+		newReview = new ReviewModel
+			{
+				Id = Guid.NewGuid().ToString(),
+				UserId = currentUserId,
+				FacilityId = selectedFacility.Id,
+				Rating = 5
+			};
+		selectedRating = 5;
+	}
+
+	private async Task SubmitReview()
+	{
+		if (string.IsNullOrWhiteSpace(newReview.Comment))
+		{
+			reviewError = "Please enter a comment.";
+			return;
+		}
+
+		if (selectedRating < 1)
+		{
+			reviewError = "Please select a rating.";
+			return;
+		}
+
+		newReview.Rating = selectedRating;
+
+		if (isEditingReview)
+		{
+			// Update existing review
+			var existingReview = Context.Reviews.FirstOrDefault(r => r.Id == newReview.Id);
+			if (existingReview != null)
+			{
+				existingReview.Comment = newReview.Comment;
+				existingReview.Rating = newReview.Rating;
+				existingReview.UpdatedAt = DateTime.UtcNow;
+				Context.Reviews.Update(existingReview);
+			}
+		}
+		else
+		{
+			// Add new review
+			newReview.CreatedAt = DateTime.UtcNow;
+			Context.Reviews.Add(newReview);
+		}
+
+		await Context.SaveChangesAsync();
+		LoadReviews(selectedFacility.Id);
+		showReviewForm = false;
+		reviewError = string.Empty;
+
+		ToastService.ShowSuccess(isEditingReview ? "Review updated successfully!" : "Review submitted successfully!");
+	}
+
+	private void EditReview(ReviewModel review)
+	{
+		newReview = new ReviewModel
+			{
+				Id = review.Id,
+				UserId = review.UserId,
+				FacilityId = review.FacilityId,
+				Rating = review.Rating,
+				Comment = review.Comment
+			};
+		selectedRating = review.Rating;
+		isEditingReview = true;
+		showReviewForm = true;
+	}
+
+	private async Task DeleteReview(string reviewId)
+	{
+		var review = Context.Reviews.FirstOrDefault(r => r.Id == reviewId);
+		if (review != null)
+		{
+			Context.Reviews.Remove(review);
+			await Context.SaveChangesAsync();
+			LoadReviews(selectedFacility.Id);
+			ToastService.ShowSuccess("Review deleted successfully!");
+		}
+	}
+
+	private bool CanEditReview(string reviewUserId)
+	{
+		return reviewUserId == currentUserId;
+	}
 
 	// Booking info model for the booking form
 	private class BookingInfo
@@ -401,6 +685,8 @@
 		selectedFacility = facility;
 		showFacilityModal = true;
 		bookingInfo = new BookingInfo();
+		LoadReviews(facility.Id);
+		InitNewReview();
 	}
 
 	private void CloseFacilityModal()

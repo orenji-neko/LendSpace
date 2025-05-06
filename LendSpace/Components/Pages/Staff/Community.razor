@@ -1,0 +1,1074 @@
+﻿@page "/Staff/Community"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = "StaffOnly")]
+@using System.Security.Claims
+@using LendSpace.Models
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Context
+@inject ILogger<Community> Logger
+@inject AuthenticationStateProvider AuthStateProvider
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<style>
+    body {
+        background-color: whitesmoke;
+    }
+
+    html {
+        scroll-behavior: smooth;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        font-family: 'PT Sans Narrow', sans-serif;
+    }
+
+        html::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        html::-webkit-scrollbar-track {
+            background: #f0f0f0;
+        }
+
+        html::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 4px;
+            border: 2px solid #f0f0f0;
+        }
+
+            html::-webkit-scrollbar-thumb:hover {
+                background-color: #555;
+            }
+
+    .comment-box {
+        transition: all 0.3s ease;
+    }
+
+    .comment-actions {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .comment-item:hover .comment-actions {
+        opacity: 1;
+    }
+
+    /* Calendar Styles */
+    .calendar {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .calendar th {
+            background-color: #f8f9fa;
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .calendar td {
+            height: 100px;
+            width: 14.28%;
+            vertical-align: top;
+            padding: 5px;
+            border: 1px solid #e2e8f0;
+            transition: background-color 0.2s ease;
+        }
+
+        .calendar .other-month {
+            background-color: #f8f9fa;
+            color: #a0aec0;
+        }
+
+        .calendar .today {
+            background-color: #ebf8ff;
+            border: 2px solid #3182ce;
+        }
+
+        .calendar .has-events {
+            background-color: #f0fff4;
+        }
+
+        .calendar .day-number {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .calendar .event-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #38a169;
+            margin-right: 3px;
+        }
+
+        .calendar .event-item {
+            font-size: 11px;
+            margin-bottom: 2px;
+            padding: 2px 4px;
+            background-color: #c6f6d5;
+            border-radius: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+
+    .calendar-navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .event-list-item {
+        padding: 10px;
+        margin-bottom: 8px;
+        border-left: 3px solid #38a169;
+        background-color: #f0fff4;
+        border-radius: 4px;
+    }
+
+    .view-toggle-button {
+        background-color: #edf2f7;
+        border: 1px solid #e2e8f0;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+        .view-toggle-button.active {
+            background-color: #3182ce;
+            color: white;
+            border-color: #2c5282;
+        }
+</style>
+
+<PageTitle>Community</PageTitle>
+<div class="text-center">
+    <h2 class="text-3xl font-bold mb-2">Community</h2>
+    <p class="text-gray-600">Talk with the people in the community and be notified by our Event and Announcements!</p>
+    <div class="h-1 w-20 bg-green-500 mx-auto mt-4"></div>
+</div>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mx-5" role="alert">
+        <span class="block sm:inline">@errorMessage</span>
+    </div>
+}
+
+<div class="flex flex-row py-5 px-20 w-full justify-center items-start px-5 gap-x-5">
+    <!-- Community Posting Here -->
+    <div class="h-full w-200 shadow-lg p-5 overflow-y-auto bg-white">
+        <h1 class="text-3xl font-bold mb-6 text-green-500">Community Feed</h1>
+
+        <!-- Post creation form with image upload -->
+        <div class="bg-white rounded-lg shadow mb-6 p-4">
+            <div class="flex items-center mb-4">
+                <div class="font-semibold text-gray-900">Create a new post</div>
+            </div>
+            <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                      rows="3"
+                      placeholder="What's on your mind?"
+                      @bind="newPostContent"></textarea>
+
+            <!-- Image Upload -->
+            <div class="mt-3 flex items-center">
+                <InputFile OnChange="OnImageUpload" class="hidden" id="imageUpload" accept="image/*" />
+                <label for="imageUpload" class="cursor-pointer flex items-center text-gray-700 hover:text-green-500">
+                    <i class="far fa-image mr-2"></i>
+                    <span>Add Image</span>
+                </label>
+
+                @if (uploadedImageFile != null)
+                {
+                    <span class="ml-2 text-sm text-gray-600">
+                        @uploadedImageFile.Name (@(Math.Round((double)uploadedImageFile.Size / 1024, 2)) KB)
+                        <button class="ml-2 text-red-500 hover:text-red-700" @onclick="ClearuploadedImageFile">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </span>
+                }
+            </div>
+
+            <!-- Image Preview -->
+            @if (!string.IsNullOrEmpty(imagePreviewUrl))
+            {
+                <div class="mt-3 relative">
+                    <img src="@imagePreviewUrl" alt="Image preview" class="max-h-64 rounded-md" />
+                    <button class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-700"
+                            @onclick="ClearuploadedImageFile">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            }
+
+            <!-- Loading indicator -->
+            @if (isImageUploading)
+            {
+                <div class="mt-3 text-sm text-gray-600">
+                    <i class="fas fa-spinner fa-spin mr-1"></i> Uploading image...
+                </div>
+            }
+
+            <div class="flex justify-end mt-3">
+                <button class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                        @onclick="CreatePost">
+                    Post
+                </button>
+            </div>
+        </div>
+
+        <!-- Search posts -->
+        <div class="relative mb-6">
+            <input type="text"
+                   class="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-sm"
+                   placeholder="Search community posts..."
+                   @bind="searchPost"
+                   @bind:event="oninput" />
+            <svg class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        </div>
+
+        @if (communityPosts == null)
+        {
+            <div class="text-center py-8">
+                <div class="animate-pulse space-y-4">
+                    <div class="h-4 bg-gray-200 rounded w-1/4 mx-auto"></div>
+                </div>
+            </div>
+        }
+        else if (!FilteredPosts.Any())
+        {
+            <div class="text-center py-8 text-gray-500">
+                @if (string.IsNullOrWhiteSpace(searchPost))
+                {
+                    <span>No posts found. Be the first to post!</span>
+                }
+                else
+                {
+                    <span>No posts found matching <strong>"@searchPost"</strong></span>
+                }
+            </div>
+        }
+        else
+        {
+            <!-- Display community posts -->
+            @foreach (var post in FilteredPosts)
+            {
+                <div class="bg-white rounded-lg shadow mb-6 overflow-hidden @(post.IsFeatured ? "border-l-4 border-yellow-400" : "")">
+                    <div class="flex items-center justify-between p-4">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full mr-3 bg-gray-300 flex items-center justify-center text-gray-600">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">@post.UserName</h3>
+                                <p class="text-gray-500 text-sm">
+                                    @post.UserName.ToLower().Replace(" ", "") • @GetTimeAgo(post.PostedAt)
+                                </p>
+                            </div>
+                        </div>
+                        @if (post.IsFeatured)
+                        {
+                            <div class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">
+                                Featured
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(post.Category))
+                        {
+                            <div class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs">
+                                @post.Category
+                            </div>
+                        }
+                    </div>
+
+                    <div class="px-4 pb-3">
+                        <p class="text-gray-800 mb-3">
+                            @post.Content
+                        </p>
+                        @if (post.Rating.HasValue)
+                        {
+                            <div class="flex items-center space-x-2 text-yellow-400">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= post.Rating.Value)
+                                    {
+                                        <i class="fas fa-star"></i>
+                                    }
+                                    else if (i - 0.5 <= post.Rating.Value)
+                                    {
+                                        <i class="fas fa-star-half-alt"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="far fa-star"></i>
+                                    }
+                                }
+                                <span class="text-gray-600 text-sm ml-1">@post.Rating.Value/5</span>
+                            </div>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(post.ImageUrl))
+                    {
+                        <div class="w-full overflow-hidden">
+                            <img src="@post.ImageUrl"
+                                 alt="Post image" class="w-full h-auto object-cover">
+                        </div>
+                    }
+
+                    <div class="px-4 py-3 flex items-center justify-between border-t border-gray-100">
+                        <div class="flex items-center space-x-6">
+                            <button class="flex items-center space-x-1 text-gray-500 hover:text-red-500"
+                                    @onclick="() => LikePost(post.Id)">
+                                <i class="far fa-heart"></i>
+                                <span>@post.LikeCount</span>
+                            </button>
+                            <button class="flex items-center space-x-1 text-gray-500 hover:text-blue-500"
+                                    @onclick="() => ShowComments(post.Id)">
+                                <i class="far fa-comment"></i>
+                                <span>@post.CommentCount</span>
+                            </button>
+                            <button class="flex items-center space-x-1 text-gray-500 hover:text-green-500">
+                                <i class="far fa-share-square"></i>
+                                <span>@post.ShareCount</span>
+                            </button>
+                        </div>
+                        <button class="text-gray-500 hover:text-yellow-500">
+                            <i class="far fa-bookmark"></i>
+                        </button>
+                    </div>
+
+                    <!-- Comments Section -->
+                    @if (expandedPosts.Contains(post.Id))
+                    {
+                        <div class="border-t border-gray-200 px-4 py-3 bg-gray-50">
+                            <!-- Comment Form -->
+                            <div class="mb-4">
+                                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                          rows="2"
+                                          placeholder="Write a comment..."
+                                          @bind="newCommentContent"></textarea>
+                                <div class="flex justify-end mt-2">
+                                    <button class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 mr-2"
+                                            @onclick="() => CancelComment()">
+                                        Cancel
+                                    </button>
+                                    <button class="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+                                            @onclick="() => AddComment(post.Id)">
+                                        Post Comment
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Comments List -->
+                            @if (post.Comments?.Any() == true)
+                            {
+                                <div class="space-y-3">
+                                    @foreach (var comment in post.Comments.OrderByDescending(c => c.PostedAt))
+                                    {
+                                        <div class="comment-item pl-3 border-l-2 border-gray-200">
+                                            <div class="flex justify-between items-start">
+                                                <div>
+                                                    <div class="flex items-center">
+                                                        <span class="font-semibold text-sm">@comment.UserName</span>
+                                                        <span class="text-gray-500 text-xs ml-2">@GetTimeAgo(comment.PostedAt)</span>
+                                                    </div>
+                                                    <p class="text-gray-800 text-sm mt-1">@comment.Content</p>
+                                                </div>
+                                                <div class="comment-actions flex space-x-2">
+                                                    <button class="text-xs text-gray-500 hover:text-blue-500"
+                                                            @onclick="() => LikeComment(comment.Id)">
+                                                        <i class="far fa-thumbs-up"></i> (@comment.LikeCount)
+                                                    </button>
+                                                    @if (IsCurrentUser(comment.UserId))
+                                                    {
+                                                        <button class="text-xs text-gray-500 hover:text-red-500"
+                                                                @onclick="() => DeleteComment(comment.Id)">
+                                                            <i class="far fa-trash-alt"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-gray-500 text-sm text-center py-3">No comments yet. Be the first to comment!</p>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+
+    <!-- Announcements & Event Column Here -->
+    <div class="flex-col h-full bg-white w-120 shadow-lg p-5">
+        <header class="mb-8">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-lg font-bold text-gray-800 mb-2">Announcements</h1>
+                <div class="relative mt-4">
+                    <input type="text"
+                           class="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                           placeholder="Search events by name or description..."
+                           @bind="searchAnnouncement"
+                           @bind:event="oninput" />
+                    <svg class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+            </div>
+        </header>
+
+        <div class="max-w-4xl mx-auto">
+            @if (announcements == null)
+            {
+                <div class="text-center py-8">
+                    <div class="animate-pulse space-y-4">
+                        <div class="h-4 bg-gray-200 rounded w-1/4 mx-auto"></div>
+                    </div>
+                </div>
+            }
+            else if (!FilteredAnnouncements.Any())
+            {
+                <div class="text-center py-8 text-gray-500">
+                    @if (string.IsNullOrWhiteSpace(searchAnnouncement))
+                    {
+                        <span>No announcements found</span>
+                    }
+                    else
+                    {
+                        <span>No announcements found matching <strong>"@searchAnnouncement"</strong></span>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="space-y-4">
+                    @foreach (var announcement in FilteredAnnouncements)
+                    {
+                        <div class="bg-white rounded-lg shadow p-4">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-semibold text-gray-800 mb-1">@announcement.Heading</h3>
+                                    <div class="flex items-center space-x-2 text-sm text-blue-600 font-medium">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <time>@announcement.PostedAt.ToString("MMM dd, yyyy")</time>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="mt-3 text-gray-600">@announcement.Body</p>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <header class="mb-4 mt-12">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-lg font-bold text-gray-800 mb-2">Events</h1>
+                <!-- View Mode Selector -->
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex space-x-2">
+                        <button @onclick="() => eventViewMode = EventViewMode.Calendar"
+                                class="view-toggle-button @(eventViewMode == EventViewMode.Calendar ? "active" : "")">
+                            <i class="fas fa-calendar-alt mr-1"></i> Calendar
+                        </button>
+                        <button @onclick="() => eventViewMode = EventViewMode.List"
+                                class="view-toggle-button @(eventViewMode == EventViewMode.List ? "active" : "")">
+                            <i class="fas fa-list mr-1"></i> List
+                        </button>
+                    </div>
+                </div>
+                <div class="relative mt-4">
+                    <input type="text"
+                           class="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                           placeholder="Search events by name or description..."
+                           @bind="searchEvent"
+                           @bind:event="oninput" />
+                    <svg class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+            </div>
+        </header>
+
+        <div class="max-w-4xl mx-auto">
+            @if (events == null)
+            {
+                <div class="text-center py-8">
+                    <div class="animate-pulse space-y-4">
+                        <div class="h-4 bg-gray-200 rounded w-1/4 mx-auto"></div>
+                    </div>
+                </div>
+            }
+            else if (!FilteredEvents.Any())
+            {
+                <div class="text-center py-8 text-gray-500">
+                    @if (string.IsNullOrWhiteSpace(searchEvent))
+                    {
+                        <span>No upcoming events found</span>
+                    }
+                    else
+                    {
+                        <span>No events found matching <strong>"@searchEvent"</strong></span>
+                    }
+                </div>
+            }
+            else
+            {
+                @if (eventViewMode == EventViewMode.List)
+                {
+                    <!-- List View -->
+                    <div class="space-y-4">
+                        @foreach (var eventItem in FilteredEvents)
+                        {
+                            <div class="bg-white rounded-lg shadow p-4">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <h3 class="text-xl font-semibold text-gray-800 mb-1">@eventItem.Name</h3>
+                                        <div class="flex items-center space-x-2 text-sm text-blue-600 font-medium">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            <time>@eventItem.StartsAt.ToString("MMM dd, yyyy")</time>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="mt-3 text-gray-600">@eventItem.Description</p>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <!-- Calendar View -->
+                    <div class="mb-5">
+                        <div class="calendar-navigation">
+                            <button class="px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded" @onclick="PreviousMonth">
+                                <i class="fas fa-chevron-left mr-1"></i> Prev
+                            </button>
+                            <h3 class="text-lg font-semibold">@currentDate.ToString("MMMM yyyy")</h3>
+                            <button class="px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded" @onclick="NextMonth">
+                                Next <i class="fas fa-chevron-right ml-1"></i>
+                            </button>
+                        </div>
+
+                        <table class="calendar">
+                            <thead>
+                                <tr>
+                                    <th>Sun</th>
+                                    <th>Mon</th>
+                                    <th>Tue</th>
+                                    <th>Wed</th>
+                                    <th>Thu</th>
+                                    <th>Fri</th>
+                                    <th>Sat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var week in GetCalendarDays())
+                                {
+                                    <tr>
+                                        @foreach (var day in week)
+                                        {
+                                            var cellEvents = GetEventsForDay(day);
+                                            var isToday = day.Date == DateTime.Today;
+                                            var isCurrentMonth = day.Month == currentDate.Month;
+                                            var hasEvents = cellEvents.Any();
+
+                                            <td class="@(!isCurrentMonth ? "other-month" : "") @(isToday ? "today" : "") @(hasEvents && isCurrentMonth ? "has-events" : "")">
+                                                <div class="day-number">@day.Day</div>
+                                                @if (isCurrentMonth && hasEvents)
+                                                {
+                                                    @foreach (var evt in cellEvents.Take(2))
+                                                    {
+                                                        <div class="event-item" @onclick="() => ShowEventDetails(evt)">
+                                                            <span class="event-dot"></span>
+                                                            @evt.Name
+                                                        </div>
+                                                    }
+
+                                                    @if (cellEvents.Count > 2)
+                                                    {
+                                                        <div class="text-xs text-gray-500 mt-1">
+                                                            +@(cellEvents.Count - 2) more
+                                                        </div>
+                                                    }
+                                                }
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (selectedEvent != null)
+                    {
+                        <div class="mt-4 p-4 bg-white rounded-lg shadow-md">
+                            <div class="flex justify-between">
+                                <h3 class="text-xl font-bold text-gray-800">@selectedEvent.Name</h3>
+                                <button class="text-gray-500" @onclick="() => selectedEvent = null">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center mt-2 text-gray-600">
+                                <i class="far fa-calendar-alt mr-2"></i>
+                                <span>@selectedEvent.StartsAt.ToString("MMM dd, yyyy HH:mm")</span>
+                            </div>
+                            <p class="mt-3 text-gray-700">@selectedEvent.Description</p>
+                        </div>
+                    }
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<AnnouncementModel>? announcements;
+    private List<EventModel>? events;
+    private List<CommunityPostModel>? communityPosts;
+    private string searchAnnouncement = string.Empty;
+    private string searchEvent = string.Empty;
+    private string searchPost = string.Empty;
+    private string newPostContent = string.Empty;
+    private string newCommentContent = string.Empty;
+    private string errorMessage = string.Empty;
+    private HashSet<string> expandedPosts = new();
+    private string? currentUserId;
+
+    private DateTime currentDate = DateTime.Today;
+    private EventModel? selectedEvent;
+    private enum EventViewMode { List, Calendar }
+    private EventViewMode eventViewMode = EventViewMode.Calendar;
+
+    private IBrowserFile? uploadedImageFile;
+    private string imagePreviewUrl = string.Empty;
+    private bool isImageUploading = false;
+    private IWebHostEnvironment WebHostEnvironment;
+
+    private async Task OnImageUpload(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            uploadedImageFile = e.File;
+
+            // Size validation
+            if (uploadedImageFile.Size > 5 * 1024 * 1024) // 5MB limit
+            {
+                errorMessage = "Image size exceeds 5MB limit";
+                uploadedImageFile = null;
+                return;
+            }
+
+            // Type validation (optional)
+            var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif" };
+            if (!allowedTypes.Contains(uploadedImageFile.ContentType))
+            {
+                errorMessage = "Only JPEG, PNG, and GIF images are allowed";
+                uploadedImageFile = null;
+                return;
+            }
+
+            // Create upload directory if it doesn't exist
+            var uploadsPath = Path.Combine(WebHostEnvironment.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadsPath))
+            {
+                Directory.CreateDirectory(uploadsPath);
+            }
+
+            // Generate unique filename
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(uploadedImageFile.Name)}";
+            var filePath = Path.Combine(uploadsPath, fileName);
+
+            // Save the file
+            await using var stream = uploadedImageFile.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+            await using var fileStream = new FileStream(filePath, FileMode.Create);
+            await stream.CopyToAsync(fileStream);
+
+            // Set the image URL (relative to web root)
+            imagePreviewUrl = $"/uploads/{fileName}";
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error uploading image");
+            errorMessage = "Failed to upload image. Please try again.";
+            uploadedImageFile = null;
+        }
+    }
+
+    private void ClearuploadedImageFile()
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(imagePreviewUrl))
+            {
+                // Get the physical path of the file
+                var filePath = Path.Combine(WebHostEnvironment.WebRootPath, imagePreviewUrl.TrimStart('/'));
+
+                // Delete the file if it exists
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+
+                imagePreviewUrl = null;
+                uploadedImageFile = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error clearing uploaded image");
+            // We don't show an error message to the user for this operation
+        }
+    }
+
+    // Calendar methods
+    private void PreviousMonth()
+    {
+        currentDate = currentDate.AddMonths(-1);
+    }
+
+    private void NextMonth()
+    {
+        currentDate = currentDate.AddMonths(1);
+    }
+
+    private List<List<DateTime>> GetCalendarDays()
+    {
+        var calendar = new List<List<DateTime>>();
+
+        // Get the first day of the month
+        var firstDayOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1);
+
+        // Get the day of week (0 = Sunday, 1 = Monday, etc.)
+        var dayOfWeek = (int)firstDayOfMonth.DayOfWeek;
+
+        // Calculate the first day to display (might be from previous month)
+        var startDate = firstDayOfMonth.AddDays(-dayOfWeek);
+
+        // Create 6 weeks (42 days) to ensure we have enough days for any month
+        for (int week = 0; week < 6; week++)
+        {
+            var weekDays = new List<DateTime>();
+            for (int day = 0; day < 7; day++)
+            {
+                weekDays.Add(startDate.AddDays(week * 7 + day));
+            }
+            calendar.Add(weekDays);
+        }
+
+        return calendar;
+    }
+
+    private List<EventModel> GetEventsForDay(DateTime day)
+    {
+        // Convert DateTime to DateOnly for comparison
+        DateOnly dateOnly = DateOnly.FromDateTime(day);
+
+        return events?
+            .Where(e => e.StartsAt == dateOnly)
+            .OrderBy(e => e.StartsAt)  // No TimeOfDay property in DateOnly
+            .ToList()
+            ?? new List<EventModel>();
+    }
+
+    private void ShowEventDetails(EventModel eventItem)
+    {
+        selectedEvent = eventItem;
+    }
+    private List<AnnouncementModel> FilteredAnnouncements =>
+        announcements?
+            .Where(e =>
+                string.IsNullOrWhiteSpace(searchAnnouncement) ||
+                (e.Heading?.Contains(searchAnnouncement, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (e.Body?.Contains(searchAnnouncement, StringComparison.OrdinalIgnoreCase) ?? false))
+            .OrderBy(e => e.PostedAt)
+            .ToList()
+        ?? new List<AnnouncementModel>();
+
+    private List<EventModel> FilteredEvents =>
+        events?
+            .Where(e =>
+                string.IsNullOrWhiteSpace(searchEvent) ||
+                (e.Name?.Contains(searchEvent, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (e.Description?.Contains(searchEvent, StringComparison.OrdinalIgnoreCase) ?? false))
+            .OrderBy(e => e.StartsAt)
+            .ToList()
+        ?? new List<EventModel>();
+
+    private List<CommunityPostModel> FilteredPosts =>
+        communityPosts?
+            .Where(p =>
+                string.IsNullOrWhiteSpace(searchPost) ||
+                (p.Content?.Contains(searchPost, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (p.UserName?.Contains(searchPost, StringComparison.OrdinalIgnoreCase) ?? false))
+            .OrderByDescending(p => p.PostedAt)
+            .ToList()
+        ?? new List<CommunityPostModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            currentUserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading community data");
+            errorMessage = "Failed to load community data. Please try again later.";
+        }
+    }
+
+    private async Task LoadData()
+    {
+        announcements = await Context.Announcements
+            .OrderBy(e => e.PostedAt)
+            .ToListAsync();
+        events = await Context.Events
+            .OrderBy(e => e.StartsAt)
+            .ToListAsync();
+        communityPosts = await Context.CommunityPosts
+            .Include(p => p.Comments)
+            .OrderByDescending(p => p.PostedAt)
+            .ToListAsync();
+    }
+
+    private async Task CreatePost()
+    {
+        try
+        {
+            errorMessage = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(newPostContent))
+            {
+                errorMessage = "Post content cannot be empty";
+                return;
+            }
+
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState?.User;
+
+            if (user?.Identity?.IsAuthenticated != true)
+            {
+                errorMessage = "You must be logged in to post";
+                return;
+            }
+
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userName = user.FindFirst(ClaimTypes.Name)?.Value ?? "Anonymous";
+
+            var newPost = new CommunityPostModel
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    UserId = userId,
+                    UserName = userName,
+                    Content = newPostContent,
+                    PostedAt = DateTime.Now,
+                    LikeCount = 0,
+                    CommentCount = 0,
+                    ShareCount = 0,
+                    IsFeatured = false
+                };
+
+            await Context.CommunityPosts.AddAsync(newPost);
+            await Context.SaveChangesAsync();
+
+            communityPosts = await Context.CommunityPosts
+                .Include(p => p.Comments)
+                .OrderByDescending(p => p.PostedAt)
+                .ToListAsync();
+
+            newPostContent = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error creating post");
+            errorMessage = "Failed to create post. Please try again.";
+        }
+    }
+
+    private async Task LikePost(string postId)
+    {
+        try
+        {
+            var post = await Context.CommunityPosts.FindAsync(postId);
+            if (post != null)
+            {
+                post.LikeCount++;
+                await Context.SaveChangesAsync();
+
+                var localPost = communityPosts?.FirstOrDefault(p => p.Id == postId);
+                if (localPost != null)
+                {
+                    localPost.LikeCount = post.LikeCount;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error liking post");
+            errorMessage = "Failed to like post. Please try again.";
+        }
+    }
+
+    private void ShowComments(string postId)
+    {
+        if (expandedPosts.Contains(postId))
+        {
+            expandedPosts.Remove(postId);
+        }
+        else
+        {
+            expandedPosts.Add(postId);
+        }
+    }
+
+    private async Task AddComment(string postId)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(newCommentContent))
+            {
+                errorMessage = "Comment cannot be empty";
+                return;
+            }
+
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user?.Identity?.IsAuthenticated != true)
+            {
+                errorMessage = "You must be logged in to comment";
+                return;
+            }
+
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userName = user.FindFirst(ClaimTypes.Name)?.Value ?? "Anonymous";
+
+            var comment = new CommunityCommentModel
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    PostId = postId,
+                    UserId = userId,
+                    UserName = userName,
+                    Content = newCommentContent,
+                    PostedAt = DateTime.Now,
+                    LikeCount = 0
+                };
+
+            await Context.CommunityComments.AddAsync(comment);
+
+            // Update comment count on the post
+            var post = await Context.CommunityPosts.FindAsync(postId);
+            if (post != null)
+            {
+                post.CommentCount++;
+                await Context.SaveChangesAsync();
+            }
+
+            // Refresh the data
+            await LoadData();
+            newCommentContent = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error adding comment");
+            errorMessage = "Failed to add comment. Please try again.";
+        }
+    }
+
+    private async Task LikeComment(string commentId)
+    {
+        try
+        {
+            var comment = await Context.CommunityComments.FindAsync(commentId);
+            if (comment != null)
+            {
+                comment.LikeCount++;
+                await Context.SaveChangesAsync();
+
+                // Update UI
+                await LoadData();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error liking comment");
+            errorMessage = "Failed to like comment. Please try again.";
+        }
+    }
+
+    private async Task DeleteComment(string commentId)
+    {
+        try
+        {
+            var comment = await Context.CommunityComments.FindAsync(commentId);
+            if (comment != null)
+            {
+                // Update comment count on the post
+                var post = await Context.CommunityPosts.FindAsync(comment.PostId);
+                if (post != null)
+                {
+                    post.CommentCount--;
+                }
+
+                Context.CommunityComments.Remove(comment);
+                await Context.SaveChangesAsync();
+
+                // Refresh the data
+                await LoadData();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error deleting comment");
+            errorMessage = "Failed to delete comment. Please try again.";
+        }
+    }
+
+    private void CancelComment()
+    {
+        newCommentContent = string.Empty;
+        expandedPosts.Clear();
+    }
+
+    private bool IsCurrentUser(string userId)
+    {
+        return userId == currentUserId;
+    }
+
+    private string GetTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.Now - dateTime;
+
+        if (timeSpan.TotalMinutes < 1)
+            return "just now";
+        if (timeSpan.TotalMinutes < 60)
+            return $"{(int)timeSpan.TotalMinutes} minute{((int)timeSpan.TotalMinutes == 1 ? "" : "s")} ago";
+        if (timeSpan.TotalHours < 24)
+            return $"{(int)timeSpan.TotalHours} hour{((int)timeSpan.TotalHours == 1 ? "" : "s")} ago";
+        if (timeSpan.TotalDays < 7)
+            return $"{(int)timeSpan.TotalDays} day{((int)timeSpan.TotalDays == 1 ? "" : "s")} ago";
+        if (timeSpan.TotalDays < 30)
+            return $"{(int)(timeSpan.TotalDays / 7)} week{((int)(timeSpan.TotalDays / 7) == 1 ? "" : "s")} ago";
+        if (timeSpan.TotalDays < 365)
+            return $"{(int)(timeSpan.TotalDays / 30)} month{((int)(timeSpan.TotalDays / 30) == 1 ? "" : "s")} ago";
+
+        return $"{(int)(timeSpan.TotalDays / 365)} year{((int)(timeSpan.TotalDays / 365) == 1 ? "" : "s")} ago";
+    }
+}
