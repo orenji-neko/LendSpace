@@ -2,10 +2,15 @@
 @rendermode InteractiveServer
 @attribute [Authorize(Policy = "StaffOnly")]
 
+@using LendSpace.Models
+@using LendSpace.Models.Enums
+@using Microsoft.EntityFrameworkCore
+@using Blazored.Toast.Services
 @inject ApplicationDbContext Context
 @inject DialogManager DialogManager
+@inject IToastService ToastService
 
-<PageTitle>Service Requests</PageTitle>
+<PageTitle>Events Management</PageTitle>
 <style>
 	body {
 		background-color: whitesmoke;
@@ -18,171 +23,463 @@
 		font-family: 'PT Sans Narrow', sans-serif;
 	}
 
-		html::-webkit-scrollbar {
-			width: 8px;
-		}
+	html::-webkit-scrollbar {
+		width: 8px;
+	}
 
-		html::-webkit-scrollbar-track {
-			background: #f0f0f0;
-		}
+	html::-webkit-scrollbar-track {
+		background: #f0f0f0;
+	}
 
-		html::-webkit-scrollbar-thumb {
-			background-color: #888;
-			border-radius: 4px;
-			border: 2px solid #f0f0f0;
-		}
+	html::-webkit-scrollbar-thumb {
+		background-color: #888;
+		border-radius: 4px;
+		border: 2px solid #f0f0f0;
+	}
 
-			html::-webkit-scrollbar-thumb:hover {
-				background-color: #555;
-			}
+	html::-webkit-scrollbar-thumb:hover {
+		background-color: #555;
+	}
+
+	.calendar-day {
+		height: 80px;
+		transition: all 0.2s;
+	}
+
+	.calendar-day:hover {
+		background-color: #f3f4f6;
+	}
+
+	.calendar-day.has-event {
+		position: relative;
+	}
+
+	.calendar-day.has-event::after {
+		content: '';
+		position: absolute;
+		bottom: 4px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 6px;
+		height: 6px;
+		background-color: #3b82f6;
+		border-radius: 50%;
+	}
+
+	.event-indicator {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 4px;
+	}
+
+	.event-indicator.ongoing {
+		background-color: #10b981;
+	}
+
+	.event-indicator.incoming {
+		background-color: #f59e0b;
+	}
+
+	.event-indicator.ended {
+		background-color: #ef4444;
+	}
+
+	.current-day {
+		background-color: #ebf5ff;
+		border: 1px solid #3b82f6;
+	}
 </style>
-<main class="w-full h-full p-4">
-	<div class="max-w-7xl mx-auto px-4 py-8">
-		<div class="">
-			<h1 class="text-3xl font-bold text-gray-900 mb-4">Events</h1>
-			<div class="flex flex-row justify-end">
-				<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-6" @onclick="OpenAdd">
-					Add Event
-				</button>
+
+<div class="text-center">
+	<h2 class="text-3xl font-bold mb-2">Events Management</h2>
+	<p class="text-gray-600">Organize and keep track of upcoming and ongoing events</p>
+	<div class="h-1 w-20 bg-green-500 mx-auto mt-4"></div>
+</div>
+
+<div class="min-h-screen w-full px-8">
+	<header class="px-20">
+		<div class="w-full mx-auto items-center flex justify-between">
+			<div class="items-center flex">
+				<h1 class="text-lg text-gray-800 mr-3">Search</h1>
+				<div class="relative">
+					<input type="text"
+						   class="w-full pl-12 pr-4 py-3 border border-gray-300 shadow-sm"
+						   placeholder="Search events by name or description..."
+						   @oninput="@(e => SearchEvents(e.Value?.ToString()))" />
+					<svg class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+					</svg>
+				</div>
 			</div>
+			<button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded" @onclick="OpenAdd">
+				Add Event
+			</button>
+		</div>
+		<div class="border-b-3 border-gray-300 mt-3 w-full"></div>
+	</header>
 
-			@* Facility Bookings List *@
-			@if (events != null && events.Any())
-			{
-				@foreach (var ev in events)
-				{
-					<div class="bg-white shadow rounded-lg overflow-hidden mb-6 hover:shadow-md transition-shadow">
-						<div class="p-4">
-							<!-- Header: Reservation Title with Status -->
-							<div class="flex justify-between items-center mb-4">
-								<div>
-									<h2 class="text-xl font-bold text-gray-800">@ev.Name</h2>
-								</div>
-								<span class="@GetBadgeClasses(ev.Status)">
-									@if (ev.Status == EventStatus.Ongoing)
-									{
-										@("Ongoing")
-									}
-									else if (ev.Status == EventStatus.Incoming)
-									{
-										@("Incoming")
-									}
-									else if (ev.Status == EventStatus.Ended)
-									{
-										@("Ended")
-									}
-									else
-									{
-										@ev.Status.ToString()
-									}
-								</span>
-							</div>
-
-							<!-- Description Section -->
-							<div class="mb-4">
-								<p class="text-gray-700">
-									<span class="font-semibold">Description:</span>
-									<span class="ml-1">@ev.Description</span>
-								</p>
-							</div>
-
-							<!-- Reservation Dates -->
-							<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-								<!-- Start Date -->
-								<div class="flex items-start gap-2">
-									<svg class="w-5 h-5 text-gray-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-											  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-									</svg>
-									<div>
-										<p class="text-sm font-semibold text-gray-600">Start Date</p>
-										<p class="text-gray-700">@ev.StartsAt.ToString("d")</p>
-									</div>
-								</div>
-								<!-- End Date -->
-								<div class="flex items-start gap-2">
-									<svg class="w-5 h-5 text-gray-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-											  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-									</svg>
-									<div>
-										<p class="text-sm font-semibold text-gray-600">End Date</p>
-										<p class="text-gray-700">@ev.EndsAt.ToString("d")</p>
-									</div>
-								</div>
-							</div>
-
-						</div>
-						<div class="p-3 flex flex-row gap-4">
-							<button class="text-emerald-600 text-sm font-medium hover:text-emerald-800"
-									@onclick="() => OpenEdit(ev)">
-								Edit
-							</button>
-							<button class="text-red-600 text-sm font-medium hover:text-red-800"
-									@onclick="() => Delete(ev)">
-								Delete
-							</button>
-						</div>
-					</div>
-				}
-			}
-			else
-			{
-				<p class="text-gray-600">No requests found.</p>
-			}
+	<!-- View Toggle -->
+	<div class="flex justify-center mt-4 mb-6">
+		<div class="inline-flex rounded-md shadow-sm" role="group">
+			<button type="button" @onclick="@(() => viewMode = ViewMode.Calendar)"
+					class="@(viewMode == ViewMode.Calendar ? "bg-green-500 text-white" : "bg-white text-gray-700") px-4 py-2 text-sm font-medium border border-gray-200 rounded-l-lg hover:bg-blue-50 hover:text-blue-700">
+				Calendar View
+			</button>
+			<button type="button" @onclick="@(() => viewMode = ViewMode.List)"
+					class="@(viewMode == ViewMode.List ? "bg-green-500 text-white" : "bg-white text-gray-700") px-4 py-2 text-sm font-medium border border-gray-200 rounded-r-lg hover:bg-blue-50 hover:text-blue-700">
+				List View
+			</button>
 		</div>
 	</div>
-</main>
 
-@* Add/Edit Facility Modal *@
-<Modal Show="Show" OnClose="Close">
-	@if (!Edit)
+	@if (viewMode == ViewMode.Calendar)
 	{
-		<h2 class="text-2xl font-bold mb-4">Add Event</h2>
+			<!-- Calendar View -->
+			<div class="bg-white rounded-lg shadow-md mb-8 overflow-hidden">
+				<div class="flex items-center justify-between p-4 border-b">
+					<button @onclick="PreviousMonth" class="p-2 hover:bg-gray-100 rounded-full">
+						<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+						</svg>
+					</button>
+					<h2 class="text-xl font-semibold text-gray-800">@currentDate.ToString("MMMM yyyy")</h2>
+					<button @onclick="NextMonth" class="p-2 hover:bg-gray-100 rounded-full">
+						<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+						</svg>
+					</button>
+				</div>
+
+				<div class="grid grid-cols-7 gap-px bg-gray-200">
+					<!-- Days of Week -->
+				@foreach (var day in new[] { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" })
+				{
+							<div class="bg-gray-50 text-gray-500 text-center py-2 font-medium text-sm">@day</div>
+				}
+
+					<!-- Calendar Days -->
+				@{
+					var firstDay = new DateTime(currentDate.Year, currentDate.Month, 1);
+					int startOffset = (int)firstDay.DayOfWeek;
+					int daysInMonth = DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
+					var today = DateTime.Now;
+					var currentDateOnly = DateOnly.FromDateTime(today);
+				}
+
+				@for (int i = 0; i < startOffset; i++)
+				{
+							<div class="bg-white h-24 p-1 text-gray-300 text-sm"></div>
+				}
+
+				@for (int day = 1; day <= daysInMonth; day++)
+				{
+					var date = new DateTime(currentDate.Year, currentDate.Month, day);
+					var dateOnly = DateOnly.FromDateTime(date);
+					var isCurrentDay = date.Date == today.Date;
+
+					var todaysEvents = events?.Where(e =>
+						(dateOnly >= e.StartsAt && dateOnly <= e.EndsAt)).ToList();
+
+					var hasEvents = todaysEvents != null && todaysEvents.Any();
+
+							<div class="bg-white calendar-day p-1 @(isCurrentDay ? "current-day" : "") relative">
+								<div class="font-medium text-sm mb-1 @(isCurrentDay ? "text-blue-600" : "text-gray-700")">@day</div>
+
+						@if (hasEvents)
+						{
+										<div class="overflow-y-auto max-h-16">
+								@foreach (var evt in todaysEvents.Take(2))
+								{
+												<div class="text-xs truncate mb-1 pl-1 border-l-2 
+									@(evt.Status == EventStatus.Ongoing ? "border-green-500 text-green-700" : 
+									evt.Status == EventStatus.Incoming ? "border-yellow-500 text-yellow-700" :
+									"border-red-500 text-red-700")"
+													 @onclick="() => OpenView(evt)"
+													 style="cursor: pointer;">
+										@evt.Name
+												</div>
+								}
+								@if (todaysEvents.Count > 2)
+								{
+												<div class="text-xs text-green-500">+@(todaysEvents.Count - 2) more</div>
+								}
+										</div>
+						}
+							</div>
+				}
+
+				@{
+					var remainingCells = 42 - (startOffset + daysInMonth);
+				}
+				@for (int i = 0; i < remainingCells; i++)
+				{
+							<div class="bg-white h-24 p-1 text-gray-300 text-sm"></div>
+				}
+				</div>
+			</div>
+	}
+
+	<!-- Events List View -->
+	@if (filteredEvents != null && filteredEvents.Any())
+	{
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+			@foreach (var ev in filteredEvents)
+			{
+						<div class="bg-white shadow rounded-lg overflow-hidden mb-6 hover:shadow-md transition-shadow">
+							<div class="p-4">
+								<!-- Header: Event Title with Status -->
+								<div class="flex justify-between items-center mb-4">
+									<div>
+										<h2 class="text-xl font-bold text-gray-800">@ev.Name</h2>
+									</div>
+									<span class="@GetBadgeClasses(ev.Status)">
+								@if (ev.Status == EventStatus.Ongoing)
+								{
+									@("Ongoing")
+								}
+								else if (ev.Status == EventStatus.Incoming)
+								{
+									@("Incoming")
+								}
+								else if (ev.Status == EventStatus.Ended)
+								{
+									@("Ended")
+								}
+								else
+								{
+									@ev.Status.ToString()
+								}
+									</span>
+								</div>
+
+								<!-- Description Section -->
+								<div class="mb-4">
+									<p class="text-gray-700">
+										<span class="font-semibold">Description:</span>
+										<span class="ml-1">@ev.Description</span>
+									</p>
+								</div>
+
+								<!-- Event Dates -->
+								<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+									<!-- Start Date -->
+									<div class="flex items-start gap-2">
+										<svg class="w-5 h-5 text-gray-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+												  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+										</svg>
+										<div>
+											<p class="text-sm font-semibold text-gray-600">Start Date</p>
+											<p class="text-gray-700">@ev.StartsAt.ToString("d")</p>
+										</div>
+									</div>
+									<!-- End Date -->
+									<div class="flex items-start gap-2">
+										<svg class="w-5 h-5 text-gray-500 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+												  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+										</svg>
+										<div>
+											<p class="text-sm font-semibold text-gray-600">End Date</p>
+											<p class="text-gray-700">@ev.EndsAt.ToString("d")</p>
+										</div>
+									</div>
+								</div>
+
+								<!-- Action Buttons -->
+								<div class="border-t border-gray-100 pt-3 mt-2 flex flex-row gap-4">
+									<button class="text-blue-600 text-sm font-medium hover:text-blue-800"
+											@onclick="() => OpenView(ev)">
+										View
+									</button>
+									<button class="text-emerald-600 text-sm font-medium hover:text-emerald-800"
+											@onclick="() => OpenEdit(ev)">
+										Edit
+									</button>
+									<button class="text-red-600 text-sm font-medium hover:text-red-800"
+											@onclick="() => Delete(ev)">
+										Delete
+									</button>
+								</div>
+							</div>
+						</div>
+			}
+			</div>
 	}
 	else
 	{
-		<h2 class="text-2xl font-bold mb-4">Edit Event</h2>
+			<div class="text-center py-8">
+				<p class="text-gray-600">No events found.</p>
+			</div>
 	}
+</div>
 
-	<EditForm Model="model" OnValidSubmit="Confirm">
-		<DataAnnotationsValidator />
+<!-- Event View Modal -->
+@if (viewingEvent != null)
+{
+		<div class="fixed inset-0 bg-gray-500/50 flex items-center justify-center z-40 p-4"
+			 @onclick="CloseView">
+			<div class="bg-white rounded-lg shadow-xl p-0 w-full max-w-2xl mx-auto overflow-hidden max-h-[90vh] flex flex-col"
+				 @onclick:stopPropagation="true">
+				<div class="p-6 border-b border-gray-200">
+					<div class="flex justify-between items-center">
+						<h2 class="text-2xl font-bold text-gray-800">@viewingEvent.Name</h2>
+						<button @onclick="CloseView" class="text-gray-500 hover:text-gray-700">
+							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+							</svg>
+						</button>
+					</div>
+				</div>
 
-		<div class="mb-4">
-			<label class="block text-gray-700">Name</label>
-			<InputText @bind-Value="model!.Name" class="w-full border rounded p-2" />
-			<ValidationMessage For="() => model!.Name" />
-		</div>
-		<div class="mb-4">
-			<label class="block text-gray-700">Description</label>
-			<InputText @bind-Value="model!.Description" class="w-full border rounded p-2" />
-			<ValidationMessage For="() => model.Description" />
-		</div>
-		<div class="mb-4 flex flex-row md:flex-col gap-2">
-			<div>
-				<label class="block text-gray-700">Starts At</label>
-				<InputDate @bind-Value="model.StartsAt" class="w-full border rounded p-2" />
-				<ValidationMessage For="() => model.StartsAt" />
+				<div class="p-6 overflow-y-auto">
+					<div class="flex justify-between items-center mb-4">
+						<div class="flex items-center">
+							<span class="@GetBadgeClasses(viewingEvent.Status)">
+							@viewingEvent.Status.ToString()
+							</span>
+						</div>
+					</div>
+
+					<div class="mb-6">
+						<h3 class="text-lg font-semibold mb-2">Description</h3>
+						<p class="text-gray-700">@viewingEvent.Description</p>
+					</div>
+
+					<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+						<div>
+							<h3 class="text-lg font-semibold mb-2">Start Date</h3>
+							<div class="flex items-center">
+								<svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+										  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+								</svg>
+								<span class="text-gray-700">@viewingEvent.StartsAt.ToString("MMMM d, yyyy")</span>
+							</div>
+						</div>
+
+						<div>
+							<h3 class="text-lg font-semibold mb-2">End Date</h3>
+							<div class="flex items-center">
+								<svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+										  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+								</svg>
+								<span class="text-gray-700">@viewingEvent.EndsAt.ToString("MMMM d, yyyy")</span>
+							</div>
+						</div>
+					</div>
+
+					<!-- Duration and remaining time information -->
+				@{
+					var today = DateOnly.FromDateTime(DateTime.Now);
+					var totalDays = (viewingEvent.EndsAt.DayNumber - viewingEvent.StartsAt.DayNumber) + 1;
+					string statusMessage;
+
+					if (viewingEvent.Status == EventStatus.Ongoing)
+					{
+						var daysLeft = viewingEvent.EndsAt.DayNumber - today.DayNumber;
+						statusMessage = $"Event is in progress. {daysLeft} day{(daysLeft != 1 ? "s" : "")} remaining.";
+					}
+					else if (viewingEvent.Status == EventStatus.Incoming)
+					{
+						var daysUntil = viewingEvent.StartsAt.DayNumber - today.DayNumber;
+						statusMessage = $"Event starts in {daysUntil} day{(daysUntil != 1 ? "s" : "")}.";
+					}
+					else
+					{
+						var daysAgo = today.DayNumber - viewingEvent.EndsAt.DayNumber;
+						statusMessage = $"Event ended {daysAgo} day{(daysAgo != 1 ? "s" : "")} ago.";
+					}
+				}
+
+					<div class="mb-6">
+						<h3 class="text-lg font-semibold mb-2">Duration & Status</h3>
+						<p class="text-gray-700">Total duration: @totalDays day@(totalDays != 1 ? "s" : "")</p>
+						<p class="text-gray-700 mt-1">@statusMessage</p>
+					</div>
+				</div>
+
+				<div class="p-4 border-t border-gray-200 bg-gray-50 flex justify-between">
+					<button @onclick="() => OpenEdit(viewingEvent)" class="bg-green-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition-colors">
+						Edit Event
+					</button>
+					<button @onclick="() => Delete(viewingEvent)" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md transition-colors">
+						Delete Event
+					</button>
+				</div>
 			</div>
-			<div>
-				<label class="block text-gray-700">Ends At</label>
-				<InputDate @bind-Value="model.EndsAt" class="w-full border rounded p-2" />
-				<ValidationMessage For="() => model.EndsAt" />
-			</div>
 		</div>
-		<div class="flex justify-end space-x-2">
-			<button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save</button>
-			<button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" @onclick="Close">
-				Cancel
+}
+
+@* Add/Edit Event Modal *@
+<Modal Show="Show" OnClose="Close">
+	<div class="p-6 w-full max-w-2xl">
+		<div class="flex justify-between items-center mb-6">
+			<h2 class="text-2xl font-bold">@(!Edit ? "Add Event" : "Edit Event")</h2>
+			<button @onclick="Close" class="text-gray-500 hover:text-gray-700">
+				<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+				</svg>
 			</button>
 		</div>
-	</EditForm>
+
+		<EditForm Model="model" OnValidSubmit="Confirm">
+			<DataAnnotationsValidator />
+
+			<div class="mb-4">
+				<label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+				<InputText @bind-Value="model!.Name" class="w-full border rounded-md px-3 py-2 focus:ring-green-500 focus:border-green-500" />
+				<ValidationMessage For="() => model!.Name" class="text-red-500 text-xs mt-1" />
+			</div>
+			<div class="mb-4">
+				<label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+				<InputTextArea @bind-Value="model!.Description" class="w-full border rounded-md px-3 py-2 focus:ring-green-500 focus:border-green-500" rows="4" />
+				<ValidationMessage For="() => model!.Description" class="text-red-500 text-xs mt-1" />
+			</div>
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+				<div>
+					<label class="block text-sm font-medium text-gray-700 mb-1">Starts At</label>
+					<InputDate @bind-Value="model!.StartsAt" class="w-full border rounded-md px-3 py-2 focus:ring-green-500 focus:border-green-500" />
+					<ValidationMessage For="() => model!.StartsAt" class="text-red-500 text-xs mt-1" />
+				</div>
+				<div>
+					<label class="block text-sm font-medium text-gray-700 mb-1">Ends At</label>
+					<InputDate @bind-Value="model!.EndsAt" class="w-full border rounded-md px-3 py-2 focus:ring-green-500 focus:border-green-500" />
+					<ValidationMessage For="() => model!.EndsAt" class="text-red-500 text-xs mt-1" />
+				</div>
+			</div>
+
+			@if (model!.StartsAt > model!.EndsAt)
+			{
+					<div class="text-red-500 text-sm mb-4">End date cannot be before start date.</div>
+			}
+
+			<div class="pt-4 flex justify-end space-x-3 border-t border-gray-200 mt-6">
+				<button type="button" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-md transition-colors" @onclick="Close">
+					Cancel
+				</button>
+				<button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors" disabled="@(model!.StartsAt > model!.EndsAt)">
+					@(Edit ? "Save Changes" : "Create Event")
+				</button>
+			</div>
+		</EditForm>
+	</div>
 </Modal>
 
 @code {
+	private enum ViewMode { Calendar, List }
+	private ViewMode viewMode = ViewMode.Calendar;
+	private DateTime currentDate = DateTime.Now;
+
 	private IEnumerable<EventModel>? events;
+	private IEnumerable<EventModel>? filteredEvents;
 	private IEnumerable<UserModel>? users;
 	private EventModel? model { get; set; }
+	private EventModel? viewingEvent { get; set; }
+	private string searchTerm = string.Empty;
 	public bool Show { get; set; }
 	public bool Edit { get; set; }
 
@@ -201,14 +498,33 @@
 				Name = string.Empty,
 				Description = string.Empty,
 				StartsAt = DateOnly.FromDateTime(DateTime.Now),
-				EndsAt = DateOnly.FromDateTime(DateTime.Now)
+				EndsAt = DateOnly.FromDateTime(DateTime.Now.AddDays(1))
 			};
 	}
 
 	private void FetchData()
 	{
 		events = Context.Events.ToList();
+		filteredEvents = events;
 		users = Context.Users.ToList();
+	}
+
+	private void SearchEvents(string value)
+	{
+		searchTerm = value ?? string.Empty;
+		ApplyFilters();
+	}
+
+	private void ApplyFilters()
+	{
+		if (events == null)
+			return;
+
+		filteredEvents = events
+			.Where(e => string.IsNullOrEmpty(searchTerm) ||
+						e.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+						e.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+			.ToList();
 	}
 
 	private string GetBadgeClasses(EventStatus status) =>
@@ -225,14 +541,21 @@
 
 	public async Task Delete(EventModel ev)
 	{
-		if (!(await DialogManager.ShowDialogAsync("Confirm", "Proceed to delete?")))
+		if (!(await DialogManager.ShowDialogAsync("Confirm", "Are you sure you want to delete this event? This action cannot be undone.")))
 		{
 			return;
 		}
 
 		Context.Events.Remove(ev);
 		await Context.SaveChangesAsync();
+
+		if (viewingEvent == ev)
+		{
+			CloseView();
+		}
+
 		FetchData();
+		ToastService.ShowSuccess("Event deleted successfully!");
 	}
 
 	public void OpenAdd()
@@ -243,7 +566,7 @@
 				Name = string.Empty,
 				Description = string.Empty,
 				StartsAt = DateOnly.FromDateTime(DateTime.Now),
-				EndsAt = DateOnly.FromDateTime(DateTime.Now)
+				EndsAt = DateOnly.FromDateTime(DateTime.Now.AddDays(1))
 			};
 
 		Edit = false;
@@ -258,6 +581,26 @@
 		Show = true;
 	}
 
+	public void OpenView(EventModel em)
+	{
+		viewingEvent = em;
+	}
+
+	public void CloseView()
+	{
+		viewingEvent = null;
+	}
+
+	private void PreviousMonth()
+	{
+		currentDate = currentDate.AddMonths(-1);
+	}
+
+	private void NextMonth()
+	{
+		currentDate = currentDate.AddMonths(1);
+	}
+
 	public void Close()
 	{
 		Clear();
@@ -268,43 +611,50 @@
 
 	public async Task Confirm()
 	{
+		if (model!.StartsAt > model!.EndsAt)
+		{
+			return;
+		}
+
 		var today = DateOnly.FromDateTime(DateTime.Now);
 		// if today's date is within event bounds
-		if (today >= model!.StartsAt && today <= model.EndsAt)
+		if (today >= model!.StartsAt && today <= model!.EndsAt)
 		{
-			model.Status = EventStatus.Ongoing;
+			model!.Status = EventStatus.Ongoing;
 		}
 		else if (today < model!.StartsAt)
 		{
-			model.Status = EventStatus.Incoming;
+			model!.Status = EventStatus.Incoming;
 		}
 		else
 		{
-			model.Status = EventStatus.Ended;
+			model!.Status = EventStatus.Ended;
 		}
 
 		if (Edit)
 		{
 			// edit
 
-			if (!(await DialogManager.ShowDialogAsync("Confirm", "Proceed to edit?")))
+			if (!(await DialogManager.ShowDialogAsync("Confirm", "Save changes to this event?")))
 			{
 				return;
 			}
 
 			Context.Events.Update(model!);
+			ToastService.ShowSuccess("Event updated successfully!");
 		}
 		else
 		{
 			// add
 
-			if (!(await DialogManager.ShowDialogAsync("Confirm", "Proceed to add?")))
+			if (!(await DialogManager.ShowDialogAsync("Confirm", "Create this new event?")))
 			{
 				return;
 			}
 
 			model!.Id = Guid.NewGuid().ToString();
 			Context.Events.Add(model!);
+			ToastService.ShowSuccess("Event created successfully!");
 		}
 
 		await Context.SaveChangesAsync();

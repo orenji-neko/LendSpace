@@ -44,6 +44,7 @@ namespace LendSpace.Data
         public DbSet<CommunityPostModel> CommunityPosts { get; set; }
         public DbSet<CommunityCommentModel> CommunityComments { get; set; }
 
+        public DbSet<ReviewModel> Reviews { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -324,7 +325,41 @@ namespace LendSpace.Data
                     Link = "/dashboard" // Added the Link property
                 }
                 ]);
+            builder.Entity<UserModel>()
+                .HasMany<ReviewModel>()
+                .WithOne(r => r.User)
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
+            // Review -> Facility
+            builder.Entity<FacilityModel>()
+                .HasMany<ReviewModel>()
+                .WithOne(r => r.Facility)
+                .HasForeignKey(r => r.FacilityId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
+            // Optional: Add sample review data
+            builder.Entity<ReviewModel>().HasData([
+                new ReviewModel
+                {
+                    Id = "test-review-0001",
+                    UserId = "test-user-0001",
+                    FacilityId = "test-facility-0001",
+                    Rating = 5,
+                    Comment = "Excellent facility! The swimming pool was clean and well-maintained.",
+                    CreatedAt = DateTime.Now.AddDays(-5)
+                },
+                new ReviewModel
+                {
+                    Id = "test-review-0002",
+                    UserId = "test-user-0002",
+                    FacilityId = "test-facility-0001",
+                    Rating = 4,
+                    Comment = "Great place to relax with family. Could use more lounge chairs.",
+                    CreatedAt = DateTime.Now.AddDays(-2)
+                }
+            ]);
         }
     }
 }

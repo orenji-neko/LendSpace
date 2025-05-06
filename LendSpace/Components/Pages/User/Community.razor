@@ -4,9 +4,11 @@
 @using System.Security.Claims
 @using LendSpace.Models
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Hosting
 @inject ApplicationDbContext Context
 @inject ILogger<Community> Logger
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IWebHostEnvironment WebHostEnvironment
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <style>
@@ -51,6 +53,99 @@
     .comment-item:hover .comment-actions {
         opacity: 1;
     }
+
+    /* Calendar Styles */
+    .calendar {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .calendar th {
+            background-color: #f8f9fa;
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .calendar td {
+            height: 100px;
+            width: 14.28%;
+            vertical-align: top;
+            padding: 5px;
+            border: 1px solid #e2e8f0;
+            transition: background-color 0.2s ease;
+        }
+
+        .calendar .other-month {
+            background-color: #f8f9fa;
+            color: #a0aec0;
+        }
+
+        .calendar .today {
+            background-color: #ebf8ff;
+            border: 2px solid #3182ce;
+        }
+
+        .calendar .has-events {
+            background-color: #f0fff4;
+        }
+
+        .calendar .day-number {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .calendar .event-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #38a169;
+            margin-right: 3px;
+        }
+
+        .calendar .event-item {
+            font-size: 11px;
+            margin-bottom: 2px;
+            padding: 2px 4px;
+            background-color: #c6f6d5;
+            border-radius: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+
+    .calendar-navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .event-list-item {
+        padding: 10px;
+        margin-bottom: 8px;
+        border-left: 3px solid #38a169;
+        background-color: #f0fff4;
+        border-radius: 4px;
+    }
+
+    .view-toggle-button {
+        background-color: #edf2f7;
+        border: 1px solid #e2e8f0;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+        .view-toggle-button.active {
+            background-color: #3182ce;
+            color: white;
+            border-color: #2c5282;
+        }
 </style>
 
 <PageTitle>Community</PageTitle>
@@ -67,12 +162,12 @@
     </div>
 }
 
-<div class="flex flex-row py-5 px-20 w-full justify-center items-center px-5 gap-x-5">
+<div class="flex flex-row py-5 px-20 w-full justify-center items-start px-5 gap-x-5">
     <!-- Community Posting Here -->
     <div class="h-full w-200 shadow-lg p-5 overflow-y-auto bg-white">
         <h1 class="text-3xl font-bold mb-6 text-green-500">Community Feed</h1>
 
-        <!-- Post creation form -->
+        <!-- Post creation form with image upload -->
         <div class="bg-white rounded-lg shadow mb-6 p-4">
             <div class="flex items-center mb-4">
                 <div class="font-semibold text-gray-900">Create a new post</div>
@@ -81,6 +176,46 @@
                       rows="3"
                       placeholder="What's on your mind?"
                       @bind="newPostContent"></textarea>
+
+            <!-- Image Upload -->
+            <div class="mt-3 flex items-center">
+                <InputFile OnChange="OnImageUpload" class="hidden" id="imageUpload" accept="image/*" />
+                <label for="imageUpload" class="cursor-pointer flex items-center text-gray-700 hover:text-green-500">
+                    <i class="far fa-image mr-2"></i>
+                    <span>Add Image</span>
+                </label>
+
+                @if (uploadedImageFile != null)
+                {
+                    <span class="ml-2 text-sm text-gray-600">
+                        @uploadedImageFile.Name (@(Math.Round((double)uploadedImageFile.Size / 1024, 2)) KB)
+                        <button class="ml-2 text-red-500 hover:text-red-700" @onclick="ClearUploadedImageFile">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </span>
+                }
+            </div>
+
+            <!-- Image Preview -->
+            @if (!string.IsNullOrEmpty(imagePreviewUrl))
+            {
+                <div class="mt-3 relative">
+                    <img src="@imagePreviewUrl" alt="Image preview" class="max-h-64 rounded-md" />
+                    <button class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-700"
+                            @onclick="ClearUploadedImageFile">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            }
+
+            <!-- Loading indicator -->
+            @if (isImageUploading)
+            {
+                <div class="mt-3 text-sm text-gray-600">
+                    <i class="fas fa-spinner fa-spin mr-1"></i> Uploading image...
+                </div>
+            }
+
             <div class="flex justify-end mt-3">
                 <button class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
                         @onclick="CreatePost">
@@ -341,9 +476,22 @@
             }
         </div>
 
-        <header class="mb-8 mt-12">
+        <header class="mb-4 mt-12">
             <div class="max-w-4xl mx-auto">
-                <h1 class="text-lg font-bold text-gray-800 my-2">Events</h1>
+                <h1 class="text-lg font-bold text-gray-800 mb-2">Events</h1>
+                <!-- View Mode Selector -->
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex space-x-2">
+                        <button @onclick="() => eventViewMode = EventViewMode.Calendar"
+                                class="view-toggle-button @(eventViewMode == EventViewMode.Calendar ? "active" : "")">
+                            <i class="fas fa-calendar-alt mr-1"></i> Calendar
+                        </button>
+                        <button @onclick="() => eventViewMode = EventViewMode.List"
+                                class="view-toggle-button @(eventViewMode == EventViewMode.List ? "active" : "")">
+                            <i class="fas fa-list mr-1"></i> List
+                        </button>
+                    </div>
+                </div>
                 <div class="relative mt-4">
                     <input type="text"
                            class="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
@@ -381,25 +529,110 @@
             }
             else
             {
-                <div class="space-y-4">
-                    @foreach (var eventItem in FilteredEvents)
-                    {
-                        <div class="bg-white rounded-lg shadow p-4">
-                            <div class="flex justify-between items-start">
-                                <div class="flex-1">
-                                    <h3 class="text-xl font-semibold text-gray-800 mb-1">@eventItem.Name</h3>
-                                    <div class="flex items-center space-x-2 text-sm text-blue-600 font-medium">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        <time>@eventItem.StartsAt.ToString("MMM dd, yyyy")</time>
+                @if (eventViewMode == EventViewMode.List)
+                {
+                    <!-- List View -->
+                    <div class="space-y-4">
+                        @foreach (var eventItem in FilteredEvents)
+                        {
+                            <div class="bg-white rounded-lg shadow p-4">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <h3 class="text-xl font-semibold text-gray-800 mb-1">@eventItem.Name</h3>
+                                        <div class="flex items-center space-x-2 text-sm text-blue-600 font-medium">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            <time>@eventItem.StartsAt.ToString("MMM dd, yyyy")</time>
+                                        </div>
                                     </div>
                                 </div>
+                                <p class="mt-3 text-gray-600">@eventItem.Description</p>
                             </div>
-                            <p class="mt-3 text-gray-600">@eventItem.Description</p>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <!-- Calendar View -->
+                    <div class="mb-5">
+                        <div class="calendar-navigation">
+                            <button class="px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded" @onclick="PreviousMonth">
+                                <i class="fas fa-chevron-left mr-1"></i> Prev
+                            </button>
+                            <h3 class="text-lg font-semibold">@currentDate.ToString("MMMM yyyy")</h3>
+                            <button class="px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded" @onclick="NextMonth">
+                                Next <i class="fas fa-chevron-right ml-1"></i>
+                            </button>
+                        </div>
+
+                        <table class="calendar">
+                            <thead>
+                                <tr>
+                                    <th>Sun</th>
+                                    <th>Mon</th>
+                                    <th>Tue</th>
+                                    <th>Wed</th>
+                                    <th>Thu</th>
+                                    <th>Fri</th>
+                                    <th>Sat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var week in GetCalendarDays())
+                                {
+                                    <tr>
+                                        @foreach (var day in week)
+                                        {
+                                            var cellEvents = GetEventsForDay(day);
+                                            var isToday = day.Date == DateTime.Today;
+                                            var isCurrentMonth = day.Month == currentDate.Month;
+                                            var hasEvents = cellEvents.Any();
+
+                                            <td class="@(!isCurrentMonth ? "other-month" : "") @(isToday ? "today" : "") @(hasEvents && isCurrentMonth ? "has-events" : "")">
+                                                <div class="day-number">@day.Day</div>
+                                                @if (isCurrentMonth && hasEvents)
+                                                {
+                                                    @foreach (var evt in cellEvents.Take(2))
+                                                    {
+                                                        <div class="event-item" @onclick="() => ShowEventDetails(evt)">
+                                                            <span class="event-dot"></span>
+                                                            @evt.Name
+                                                        </div>
+                                                    }
+
+                                                    @if (cellEvents.Count > 2)
+                                                    {
+                                                        <div class="text-xs text-gray-500 mt-1">
+                                                            +@(cellEvents.Count - 2) more
+                                                        </div>
+                                                    }
+                                                }
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (selectedEvent != null)
+                    {
+                        <div class="mt-4 p-4 bg-white rounded-lg shadow-md">
+                            <div class="flex justify-between">
+                                <h3 class="text-xl font-bold text-gray-800">@selectedEvent.Name</h3>
+                                <button class="text-gray-500" @onclick="() => selectedEvent = null">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center mt-2 text-gray-600">
+                                <i class="far fa-calendar-alt mr-2"></i>
+                                <span>@selectedEvent.StartsAt.ToString("MMM dd, yyyy HH:mm")</span>
+                            </div>
+                            <p class="mt-3 text-gray-700">@selectedEvent.Description</p>
                         </div>
                     }
-                </div>
+                }
             }
         </div>
     </div>
@@ -418,6 +651,155 @@
     private HashSet<string> expandedPosts = new();
     private string? currentUserId;
 
+    private DateTime currentDate = DateTime.Today;
+    private EventModel? selectedEvent;
+    private enum EventViewMode { List, Calendar }
+    private EventViewMode eventViewMode = EventViewMode.Calendar;
+
+    private IBrowserFile? uploadedImageFile;
+    private string imagePreviewUrl = string.Empty;
+    private bool isImageUploading = false;
+
+    
+
+    private async Task OnImageUpload(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            isImageUploading = true;
+            errorMessage = string.Empty;
+            uploadedImageFile = e.File;
+
+            // Size validation
+            if (uploadedImageFile.Size > 5 * 1024 * 1024) // 5MB limit
+            {
+                errorMessage = "Image size exceeds 5MB limit";
+                uploadedImageFile = null;
+                return;
+            }
+
+            // Type validation
+            var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif" };
+            if (!allowedTypes.Contains(uploadedImageFile.ContentType))
+            {
+                errorMessage = "Only JPEG, PNG, and GIF images are allowed";
+                uploadedImageFile = null;
+                return;
+            }
+
+            // Create upload directory if it doesn't exist
+            var uploadsPath = Path.Combine(WebHostEnvironment.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadsPath))
+            {
+                Directory.CreateDirectory(uploadsPath);
+            }
+
+            // Generate unique filename
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(uploadedImageFile.Name)}";
+            var filePath = Path.Combine(uploadsPath, fileName);
+
+            // Save the file
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await uploadedImageFile.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024).CopyToAsync(stream);
+            }
+
+            // Set the image URL (relative to web root)
+            imagePreviewUrl = $"/uploads/{fileName}";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error uploading image");
+            errorMessage = "Failed to upload image. Please try again.";
+            uploadedImageFile = null;
+        }
+        finally
+        {
+            isImageUploading = false;
+        }
+    }
+
+    private void ClearUploadedImageFile() 
+    {
+        try 
+        {
+            if (!string.IsNullOrEmpty(imagePreviewUrl)) 
+            {
+                // Get the physical path of the file
+                var filePath = Path.Combine(WebHostEnvironment.WebRootPath, imagePreviewUrl.TrimStart('/'));
+                
+                // Delete the file if it exists
+                if (File.Exists(filePath)) 
+                {
+                    File.Delete(filePath);
+                }
+                
+                imagePreviewUrl = null;
+                uploadedImageFile = null;
+            }
+        } 
+        catch (Exception ex) 
+        {
+            Logger.LogError(ex, "Error clearing uploaded image");
+            // We don't show an error message to the user for this operation
+        }
+    }
+
+    // Calendar methods
+    private void PreviousMonth()
+    {
+        currentDate = currentDate.AddMonths(-1);
+    }
+
+    private void NextMonth()
+    {
+        currentDate = currentDate.AddMonths(1);
+    }
+
+    private List<List<DateTime>> GetCalendarDays()
+    {
+        var calendar = new List<List<DateTime>>();
+
+        // Get the first day of the month
+        var firstDayOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1);
+
+        // Get the day of week (0 = Sunday, 1 = Monday, etc.)
+        var dayOfWeek = (int)firstDayOfMonth.DayOfWeek;
+
+        // Calculate the first day to display (might be from previous month)
+        var startDate = firstDayOfMonth.AddDays(-dayOfWeek);
+
+        // Create 6 weeks (42 days) to ensure we have enough days for any month
+        for (int week = 0; week < 6; week++)
+        {
+            var weekDays = new List<DateTime>();
+            for (int day = 0; day < 7; day++)
+            {
+                weekDays.Add(startDate.AddDays(week * 7 + day));
+            }
+            calendar.Add(weekDays);
+        }
+
+        return calendar;
+    }
+
+    private List<EventModel> GetEventsForDay(DateTime day)
+    {
+        // Convert DateTime to DateOnly for comparison
+        DateOnly dateOnly = DateOnly.FromDateTime(day);
+
+        return events?
+            .Where(e => e.StartsAt == dateOnly)
+            .OrderBy(e => e.StartsAt)  // No TimeOfDay property in DateOnly
+            .ToList()
+            ?? new List<EventModel>();
+    }
+
+    private void ShowEventDetails(EventModel eventItem)
+    {
+        selectedEvent = eventItem;
+    }
     private List<AnnouncementModel> FilteredAnnouncements =>
         announcements?
             .Where(e =>
@@ -511,18 +893,23 @@
                     LikeCount = 0,
                     CommentCount = 0,
                     ShareCount = 0,
-                    IsFeatured = false
+                    IsFeatured = false,
+                    ImageUrl = imagePreviewUrl // Add the image URL to the post
                 };
 
             await Context.CommunityPosts.AddAsync(newPost);
             await Context.SaveChangesAsync();
 
+            // Refresh the posts
             communityPosts = await Context.CommunityPosts
                 .Include(p => p.Comments)
                 .OrderByDescending(p => p.PostedAt)
                 .ToListAsync();
 
+            // Clear form
             newPostContent = string.Empty;
+            imagePreviewUrl = string.Empty;
+            uploadedImageFile = null;
         }
         catch (Exception ex)
         {
